@@ -230,23 +230,10 @@ All colors MUST be HSL.
     transition: var(--transition-quick);
   }
 
-  .card-interactive::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: #00CC00;
-    transform: translateX(-100%);
-    z-index: 0;
-    transition: var(--transition-quick);
-  }
-
   .card-interactive:hover {
     transform: translate(2px, 2px);
     box-shadow: var(--shadow-card-hover);
-  }
-
-  .card-interactive:hover::before {
-    transform: translateX(0);
+    border-color: #00FF66;
   }
 
   /* Badge styles - Bold */
