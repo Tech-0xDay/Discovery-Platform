@@ -8,49 +8,51 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* 0x.ship Modern Dark Theme - Inspired by DoraHacks & ProductHunt */
-    --background: 210 40% 8%; /* #0A1428 - Deep navy-dark */
-    --foreground: 210 40% 98%; /* #F8F9FA - Almost white */
+    /* Bold, Playful Dark Theme - Inspired by Modern Interactive Design */
+    --background: 0 0% 8%; /* #141414 - Almost black */
+    --foreground: 0 0% 98%; /* #FAFAFA - Almost white */
 
-    --card: 210 20% 15%; /* #1E2A40 - Softer dark card bg */
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 12%; /* #1F1F1F - Dark card bg */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 210 20% 15%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Primary: Vibrant green accent */
-    --primary: 120 100% 50%; /* #00FF66 - Vibrant green */
-    --primary-foreground: 210 40% 8%;
+    /* Primary: Bold yellow accent */
+    --primary: 51 100% 50%; /* #FFFF00 - Vibrant yellow */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 210 20% 25%; /* #354662 - Lighter for borders */
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 25%; /* #404040 - Dark gray */
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 210 20% 25%;
-    --muted-foreground: 210 20% 70%; /* #8E9CB0 - Better text contrast */
+    --muted: 0 0% 30%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 120 100% 50%; /* #00FF66 - Green accent */
-    --accent-foreground: 210 40% 8%;
+    /* Accent: Bold pink */
+    --accent: 330 100% 55%; /* #FF1A7F - Vibrant pink */
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84% 60%; /* #FF5252 - Softer red */
-    --destructive-foreground: 210 40% 8%;
+    --destructive: 0 100% 60%; /* #FF3333 - Bold red */
+    --destructive-foreground: 0 0% 0%;
 
-    --success: 120 100% 50%; /* #00FF66 - Vibrant green */
-    --success-foreground: 210 40% 8%;
+    --success: 120 100% 45%; /* #00CC00 - Vibrant green */
+    --success-foreground: 0 0% 0%;
 
-    --border: 210 20% 20%; /* #293047 - Subtle borders */
-    --input: 210 20% 18%;
-    --ring: 120 100% 50%;
+    --border: 0 0% 20%; /* #333333 - Dark borders */
+    --input: 0 0% 18%;
+    --ring: 51 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.938rem; /* 15px - Rounded but not too much */
 
     /* Gradients and effects */
-    --gradient-primary: linear-gradient(135deg, #00FF66 0%, #00CC00 100%);
-    --gradient-secondary: linear-gradient(135deg, #00FF66 0%, #00DD00 100%);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 20px rgba(0, 255, 102, 0.15);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --gradient-primary: linear-gradient(135deg, #FFFF00 0%, #FFD700 100%);
+    --gradient-secondary: linear-gradient(135deg, #FF1A7F 0%, #FF69B4 100%);
+    --border-thick: 4px solid #000000;
+    --shadow-button: 4px 6px 0px rgba(0, 0, 0, 0.8);
+    --shadow-button-hover: 2px 3px 0px rgba(0, 0, 0, 0.8);
+    --shadow-card: 6px 8px 0px rgba(0, 0, 0, 0.6);
+    --shadow-card-hover: 8px 10px 0px rgba(0, 0, 0, 0.6);
+    --transition-quick: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -63,10 +65,10 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-sans antialiased;
   }
 
-  /* Scrollbar styling for dark theme */
+  /* Scrollbar styling for dark theme - Bold */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
@@ -74,81 +76,220 @@ All colors MUST be HSL.
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-secondary rounded-full;
+    @apply bg-primary rounded-full;
+    border: 2px solid #000000;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted;
+    @apply bg-accent;
   }
 }
 
 @layer base {
-  /* Typography improvements */
+  /* Typography improvements - Bold and expressive */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-bold tracking-tight;
   }
 
   h1 {
-    @apply text-4xl font-bold;
+    @apply text-5xl font-black;
   }
 
   h2 {
-    @apply text-3xl;
+    @apply text-4xl font-bold;
   }
 
   h3 {
-    @apply text-2xl;
+    @apply text-3xl font-bold;
+  }
+
+  h4 {
+    @apply text-2xl font-bold;
+  }
+
+  h5, h6 {
+    @apply text-xl font-bold;
   }
 
   /* Better link styling */
   a {
-    @apply transition-smooth;
+    transition: var(--transition-quick);
   }
 
-  /* Form elements */
+  /* Form elements - Bold style */
   input, textarea, select {
-    @apply rounded-md;
+    @apply rounded-[15px];
+    border: 2px solid #000000;
+    background-color: hsl(var(--input));
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+  }
+
+  /* Placeholder styling */
+  input::placeholder, textarea::placeholder {
+    color: hsl(var(--muted-foreground));
   }
 }
 
 @layer components {
-  /* Buttons - More polished */
+  /* Buttons - Bold, Interactive Style */
   .btn-primary {
-    @apply px-4 py-2 rounded-md bg-gradient-to-r from-primary to-accent text-primary-foreground font-medium hover:shadow-md transition-smooth active:scale-95;
+    @apply px-6 py-3 rounded-[15px] bg-primary text-primary-foreground font-bold text-lg;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-button);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-quick);
+  }
+
+  .btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--accent);
+    transform: translateX(-100%);
+    z-index: -1;
+    transition: var(--transition-quick);
+  }
+
+  .btn-primary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-button-hover);
+  }
+
+  .btn-primary:hover::after {
+    transform: translateX(0);
+  }
+
+  .btn-primary:active {
+    filter: saturate(0.85);
+    transform: translate(4px, 4px);
   }
 
   .btn-secondary {
-    @apply px-4 py-2 rounded-md bg-secondary text-secondary-foreground font-medium hover:bg-muted transition-smooth active:scale-95;
+    @apply px-6 py-3 rounded-[15px] bg-secondary text-secondary-foreground font-bold;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-button);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-quick);
   }
 
-  /* Cards with better styling */
+  .btn-secondary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--muted);
+    transform: translateX(-100%);
+    z-index: -1;
+    transition: var(--transition-quick);
+  }
+
+  .btn-secondary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-button-hover);
+  }
+
+  .btn-secondary:hover::after {
+    transform: translateX(0);
+  }
+
+  .btn-secondary:active {
+    filter: saturate(0.85);
+  }
+
+  /* Cards with bold styling */
   .card-elevated {
-    @apply bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-smooth;
+    @apply bg-card rounded-[15px];
+    border: var(--border-thick);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-quick);
+  }
+
+  .card-elevated:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .card-interactive {
-    @apply bg-card rounded-lg border border-border shadow-sm hover:shadow-lg hover:border-primary transition-smooth;
+    @apply bg-card rounded-[15px];
+    border: var(--border-thick);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-quick);
   }
 
-  /* Badge styles */
+  .card-interactive::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--accent);
+    transform: translateX(-100%);
+    z-index: 0;
+    transition: var(--transition-quick);
+  }
+
+  .card-interactive:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .card-interactive:hover::before {
+    transform: translateX(0);
+  }
+
+  /* Badge styles - Bold */
   .badge-primary {
-    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20;
+    @apply inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold bg-primary text-primary-foreground;
+    border: 2px solid #000000;
   }
 
   .badge-success {
-    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-success/10 text-success border border-success/20;
+    @apply inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold bg-success text-success-foreground;
+    border: 2px solid #000000;
   }
 
   .badge-muted {
-    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-muted/20 text-muted-foreground;
+    @apply inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold bg-secondary text-secondary-foreground;
+    border: 2px solid #000000;
+  }
+
+  /* Links with interactive style */
+  a {
+    position: relative;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  a::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: var(--accent);
+    transition: var(--transition-quick);
+  }
+
+  a:hover::after {
+    width: 100%;
   }
 }
 
 @layer utilities {
-  .glow-accent {
-    box-shadow: var(--shadow-glow);
-  }
-
+  /* Gradient utilities */
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -157,26 +298,67 @@ All colors MUST be HSL.
     background: var(--gradient-secondary);
   }
 
+  /* Transition utilities */
   .transition-smooth {
-    transition: var(--transition-smooth);
+    transition: var(--transition-quick);
   }
 
-  /* Shadow utilities */
-  .shadow-sm {
-    box-shadow: var(--shadow-sm);
+  .transition-quick {
+    transition: var(--transition-quick);
   }
 
-  .shadow-md {
-    box-shadow: var(--shadow-md);
+  /* Shadow utilities - Bold offset shadows */
+  .shadow-button {
+    box-shadow: var(--shadow-button);
   }
 
-  .shadow-lg {
-    box-shadow: var(--shadow-lg);
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Border utilities - Thick black borders */
+  .border-thick {
+    border: var(--border-thick);
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: var(--transition-quick);
+  }
+
+  .hover-lift:hover {
+    transform: translate(2px, 2px);
+  }
+
+  /* Interactive animations */
+  .animate-slide-x {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-slide-x::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0.1;
+    transform: translateX(-100%);
+    transition: var(--transition-quick);
+    z-index: -1;
+  }
+
+  .animate-slide-x:hover::after {
+    transform: translateX(0);
   }
 
   /* Typography utilities */
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Bold text for emphasis */
+  .text-bold {
+    @apply font-bold;
   }
 
   /* Spacing utilities */
