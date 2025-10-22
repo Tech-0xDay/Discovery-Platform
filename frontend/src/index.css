@@ -18,8 +18,8 @@ All colors MUST be HSL.
     --popover: 210 20% 15%;
     --popover-foreground: 210 40% 98%;
 
-    /* Primary: Modern cyan-teal gradient accent */
-    --primary: 180 100% 50%; /* #00D4FF - Vibrant cyan */
+    /* Primary: Vibrant green accent */
+    --primary: 120 100% 50%; /* #00FF66 - Vibrant green */
     --primary-foreground: 210 40% 8%;
 
     --secondary: 210 20% 25%; /* #354662 - Lighter for borders */
@@ -28,28 +28,28 @@ All colors MUST be HSL.
     --muted: 210 20% 25%;
     --muted-foreground: 210 20% 70%; /* #8E9CB0 - Better text contrast */
 
-    --accent: 180 100% 50%; /* #00D4FF */
+    --accent: 120 100% 50%; /* #00FF66 - Green accent */
     --accent-foreground: 210 40% 8%;
 
     --destructive: 0 84% 60%; /* #FF5252 - Softer red */
     --destructive-foreground: 210 40% 8%;
 
-    --success: 120 100% 40%; /* #00C853 - Better green */
+    --success: 120 100% 50%; /* #00FF66 - Vibrant green */
     --success-foreground: 210 40% 8%;
 
     --border: 210 20% 20%; /* #293047 - Subtle borders */
     --input: 210 20% 18%;
-    --ring: 180 100% 50%;
+    --ring: 120 100% 50%;
 
     --radius: 0.5rem;
 
     /* Gradients and effects */
-    --gradient-primary: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
-    --gradient-secondary: linear-gradient(135deg, #00D4FF 0%, #6366F1 100%);
+    --gradient-primary: linear-gradient(135deg, #00FF66 0%, #00CC00 100%);
+    --gradient-secondary: linear-gradient(135deg, #00FF66 0%, #00DD00 100%);
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.15);
+    --shadow-glow: 0 0 20px rgba(0, 255, 102, 0.15);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
