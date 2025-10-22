@@ -175,10 +175,6 @@ All colors MUST be HSL.
   }
 
   /* Typography utilities */
-  .text-xs {
-    @apply text-xs;
-  }
-
   .text-balance {
     text-wrap: balance;
   }
