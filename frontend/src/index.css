@@ -257,21 +257,11 @@ All colors MUST be HSL.
     position: relative;
     color: var(--primary);
     font-weight: 600;
-  }
-
-  a::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background-color: #00FF66;
     transition: var(--transition-quick);
   }
 
-  a:hover::after {
-    width: 100%;
+  a:hover {
+    opacity: 0.8;
   }
 }
 
