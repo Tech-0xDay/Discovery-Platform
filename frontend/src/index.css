@@ -18,8 +18,8 @@ All colors MUST be HSL.
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 98%;
 
-    /* Primary: Bold yellow accent */
-    --primary: 51 100% 50%; /* #FFFF00 - Vibrant yellow */
+    /* Primary: Vibrant green accent */
+    --primary: 120 100% 50%; /* #00FF66 - Vibrant green */
     --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 25%; /* #404040 - Dark gray */
@@ -28,25 +28,25 @@ All colors MUST be HSL.
     --muted: 0 0% 30%;
     --muted-foreground: 0 0% 70%;
 
-    /* Accent: Bold pink */
-    --accent: 330 100% 55%; /* #FF1A7F - Vibrant pink */
-    --accent-foreground: 0 0% 0%;
+    /* Accent: Bold black/dark */
+    --accent: 0 0% 15%; /* #262626 - Dark for contrast */
+    --accent-foreground: 120 100% 50%;
 
     --destructive: 0 100% 60%; /* #FF3333 - Bold red */
     --destructive-foreground: 0 0% 0%;
 
-    --success: 120 100% 45%; /* #00CC00 - Vibrant green */
+    --success: 120 100% 50%; /* #00FF66 - Vibrant green */
     --success-foreground: 0 0% 0%;
 
     --border: 0 0% 20%; /* #333333 - Dark borders */
     --input: 0 0% 18%;
-    --ring: 51 100% 50%;
+    --ring: 120 100% 50%;
 
     --radius: 0.938rem; /* 15px - Rounded but not too much */
 
     /* Gradients and effects */
-    --gradient-primary: linear-gradient(135deg, #FFFF00 0%, #FFD700 100%);
-    --gradient-secondary: linear-gradient(135deg, #FF1A7F 0%, #FF69B4 100%);
+    --gradient-primary: linear-gradient(135deg, #00FF66 0%, #00CC00 100%);
+    --gradient-secondary: linear-gradient(135deg, #00FF66 0%, #00DD00 100%);
     --border-thick: 4px solid #000000;
     --shadow-button: 4px 6px 0px rgba(0, 0, 0, 0.8);
     --shadow-button-hover: 2px 3px 0px rgba(0, 0, 0, 0.8);
@@ -153,7 +153,7 @@ All colors MUST be HSL.
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--accent);
+    background-color: #00CC00;
     transform: translateX(-100%);
     z-index: -1;
     transition: var(--transition-quick);
@@ -234,7 +234,7 @@ All colors MUST be HSL.
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--accent);
+    background-color: #00CC00;
     transform: translateX(-100%);
     z-index: 0;
     transition: var(--transition-quick);
@@ -279,7 +279,7 @@ All colors MUST be HSL.
     left: 0;
     width: 0;
     height: 3px;
-    background-color: var(--accent);
+    background-color: #00FF66;
     transition: var(--transition-quick);
   }
 
@@ -340,8 +340,8 @@ All colors MUST be HSL.
     content: "";
     position: absolute;
     inset: 0;
-    background: currentColor;
-    opacity: 0.1;
+    background: #00FF66;
+    opacity: 0.15;
     transform: translateX(-100%);
     transition: var(--transition-quick);
     z-index: -1;
