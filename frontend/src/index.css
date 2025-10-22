@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* 0x.ship Modern Dark Theme - Inspired by DoraHacks & ProductHunt */
+    --background: 210 40% 8%; /* #0A1428 - Deep navy-dark */
+    --foreground: 210 40% 98%; /* #F8F9FA - Almost white */
+
+    --card: 210 20% 15%; /* #1E2A40 - Softer dark card bg */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 210 20% 15%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary: Modern cyan-teal gradient accent */
+    --primary: 180 100% 50%; /* #00D4FF - Vibrant cyan */
+    --primary-foreground: 210 40% 8%;
+
+    --secondary: 210 20% 25%; /* #354662 - Lighter for borders */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 210 20% 25%;
+    --muted-foreground: 210 20% 70%; /* #8E9CB0 - Better text contrast */
+
+    --accent: 180 100% 50%; /* #00D4FF */
+    --accent-foreground: 210 40% 8%;
+
+    --destructive: 0 84% 60%; /* #FF5252 - Softer red */
+    --destructive-foreground: 210 40% 8%;
+
+    --success: 120 100% 40%; /* #00C853 - Better green */
+    --success-foreground: 210 40% 8%;
+
+    --border: 210 20% 20%; /* #293047 - Subtle borders */
+    --input: 210 20% 18%;
+    --ring: 180 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Gradients and effects */
+    --gradient-primary: linear-gradient(135deg, #00D4FF 0%, #0099FF 100%);
+    --gradient-secondary: linear-gradient(135deg, #00D4FF 0%, #6366F1 100%);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.15);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Scrollbar styling for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-secondary rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted;
+  }
+}
+
+@layer base {
+  /* Typography improvements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl font-bold;
+  }
+
+  h2 {
+    @apply text-3xl;
+  }
+
+  h3 {
+    @apply text-2xl;
+  }
+
+  /* Better link styling */
+  a {
+    @apply transition-smooth;
+  }
+
+  /* Form elements */
+  input, textarea, select {
+    @apply rounded-md;
+  }
+}
+
+@layer components {
+  /* Buttons - More polished */
+  .btn-primary {
+    @apply px-4 py-2 rounded-md bg-gradient-to-r from-primary to-accent text-primary-foreground font-medium hover:shadow-md transition-smooth active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-md bg-secondary text-secondary-foreground font-medium hover:bg-muted transition-smooth active:scale-95;
+  }
+
+  /* Cards with better styling */
+  .card-elevated {
+    @apply bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-smooth;
+  }
+
+  .card-interactive {
+    @apply bg-card rounded-lg border border-border shadow-sm hover:shadow-lg hover:border-primary transition-smooth;
+  }
+
+  /* Badge styles */
+  .badge-primary {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-success/10 text-success border border-success/20;
+  }
+
+  .badge-muted {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-muted/20 text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .glow-accent {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  /* Shadow utilities */
+  .shadow-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Typography utilities */
+  .text-xs {
+    @apply text-xs;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Spacing utilities */
+  .space-y-tight {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+  }
+}
