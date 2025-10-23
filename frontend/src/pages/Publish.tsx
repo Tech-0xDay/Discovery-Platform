@@ -70,23 +70,26 @@ export default function Publish() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-8">
-          <h1 className="mb-2 text-4xl font-bold">Publish Project</h1>
-          <p className="text-muted-foreground">Share your hackathon project with the community</p>
-        </div>
+    <div className="bg-background min-h-screen">
+      <div className="container mx-auto px-6 py-12">
+        <div className="mx-auto max-w-3xl">
+          {/* Header section */}
+          <div className="mb-10 card-elevated p-8">
+            <h1 className="mb-2 text-4xl font-black text-foreground">Publish Your Project</h1>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Share your incredible hackathon project with our community. Get discovered, receive feedback, and connect with other builders.
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>Tell us about your project</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Project Title *</Label>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-6">
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Basic Information
+                </h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Project Title *</Label>
                   <Input
                     id="title"
                     placeholder="e.g., DeFi Lending Platform"
@@ -123,142 +126,139 @@ export default function Publish() {
                   )}
                   <p className="text-xs text-muted-foreground">Minimum 200 characters required</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Hackathon Details</CardTitle>
-                <CardDescription>When and where was this built?</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="hackathonName">Hackathon Name *</Label>
-                  <Input
-                    id="hackathonName"
-                    placeholder="e.g., ETH Global London"
-                    {...register('hackathonName')}
-                  />
-                  {errors.hackathonName && (
-                    <p className="text-sm text-destructive">{errors.hackathonName.message}</p>
-                  )}
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="hackathonDate">Hackathon Date *</Label>
-                  <Input
-                    id="hackathonDate"
-                    type="date"
-                    {...register('hackathonDate')}
-                  />
-                  {errors.hackathonDate && (
-                    <p className="text-sm text-destructive">{errors.hackathonDate.message}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Links & Resources</CardTitle>
-                <CardDescription>Help others explore your work</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="demoUrl">Demo URL</Label>
-                  <Input
-                    id="demoUrl"
-                    type="url"
-                    placeholder="https://demo.example.com"
-                    {...register('demoUrl')}
-                  />
-                  {errors.demoUrl && (
-                    <p className="text-sm text-destructive">{errors.demoUrl.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="githubUrl">GitHub URL</Label>
-                  <Input
-                    id="githubUrl"
-                    type="url"
-                    placeholder="https://github.com/username/repo"
-                    {...register('githubUrl')}
-                  />
-                  {errors.githubUrl && (
-                    <p className="text-sm text-destructive">{errors.githubUrl.message}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Tech Stack</CardTitle>
-                <CardDescription>What technologies did you use?</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add technology (e.g., React, Solidity)"
-                    value={techInput}
-                    onChange={(e) => setTechInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
-                  />
-                  <Button type="button" onClick={handleAddTech} variant="outline">
-                    Add
-                  </Button>
-                </div>
-
-                {techStack.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {techStack.map((tech) => (
-                      <Badge key={tech} variant="secondary" className="gap-1">
-                        {tech}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTech(tech)}
-                          className="ml-1 rounded-full hover:bg-background/50"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Hackathon Details
+                </h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="hackathonName">Hackathon Name *</Label>
+                    <Input
+                      id="hackathonName"
+                      placeholder="e.g., ETH Global London"
+                      {...register('hackathonName')}
+                    />
+                    {errors.hackathonName && (
+                      <p className="text-sm text-destructive">{errors.hackathonName.message}</p>
+                    )}
                   </div>
-                )}
 
-                {techStack.length === 0 && (
-                  <p className="text-sm text-destructive">Add at least one technology</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Screenshots</CardTitle>
-                <CardDescription>Upload up to 5 screenshots (coming soon)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary/20">
-                  <p className="text-muted-foreground">Image upload functionality coming soon</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="hackathonDate">Hackathon Date *</Label>
+                    <Input
+                      id="hackathonDate"
+                      type="date"
+                      {...register('hackathonDate')}
+                    />
+                    {errors.hackathonDate && (
+                      <p className="text-sm text-destructive">{errors.hackathonDate.message}</p>
+                    )}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <div className="flex gap-4">
-              <Button
-                type="submit"
-                className="flex-1"
-                disabled={isSubmitting || createProjectMutation.isPending}
-              >
-                {isSubmitting || createProjectMutation.isPending ? 'Publishing...' : 'Publish Project'}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                Cancel
-              </Button>
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Links & Resources
+                </h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="demoUrl">Demo URL</Label>
+                    <Input
+                      id="demoUrl"
+                      type="url"
+                      placeholder="https://demo.example.com"
+                      {...register('demoUrl')}
+                    />
+                    {errors.demoUrl && (
+                      <p className="text-sm text-destructive">{errors.demoUrl.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="githubUrl">GitHub URL</Label>
+                    <Input
+                      id="githubUrl"
+                      type="url"
+                      placeholder="https://github.com/username/repo"
+                      {...register('githubUrl')}
+                    />
+                    {errors.githubUrl && (
+                      <p className="text-sm text-destructive">{errors.githubUrl.message}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Tech Stack
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add technology (e.g., React, Solidity)"
+                      value={techInput}
+                      onChange={(e) => setTechInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
+                    />
+                    <button type="button" onClick={handleAddTech} className="btn-secondary px-4 py-2">
+                      Add
+                    </button>
+                  </div>
+
+                  {techStack.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {techStack.map((tech) => (
+                        <span key={tech} className="badge-primary gap-1 flex items-center">
+                          {tech}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTech(tech)}
+                            className="ml-1 rounded-full hover:opacity-80"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {techStack.length === 0 && (
+                    <p className="text-sm font-bold text-destructive">Add at least one technology</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Screenshots
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex h-32 items-center justify-center rounded-lg border-4 border-black border-dashed bg-secondary/20">
+                    <p className="text-sm font-bold text-muted-foreground">Image upload functionality coming soon</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 border-t-4 border-primary pt-6">
+                <button
+                  type="submit"
+                  className="btn-primary flex-1"
+                  disabled={isSubmitting || createProjectMutation.isPending}
+                >
+                  {isSubmitting || createProjectMutation.isPending ? 'Publishing...' : 'Publish Project'}
+                </button>
+                <button type="button" className="btn-secondary flex-1" onClick={() => navigate(-1)}>
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
