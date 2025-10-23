@@ -37,6 +37,7 @@ class Project(db.Model):
     community_score = db.Column(db.Integer, default=0)
     validation_score = db.Column(db.Integer, default=0)
     quality_score = db.Column(db.Integer, default=0)
+    trending_score = db.Column(db.Float, default=0.0, index=True)  # Reddit-style hot score
 
     # Engagement Metrics
     upvotes = db.Column(db.Integer, default=0, index=True)
@@ -98,6 +99,7 @@ class Project(db.Model):
             'community_score': self.community_score,
             'validation_score': self.validation_score,
             'quality_score': self.quality_score,
+            'trending_score': self.trending_score,
             'upvotes': self.upvotes,
             'downvotes': self.downvotes,
             'upvote_ratio': round(self.get_upvote_ratio(), 2),

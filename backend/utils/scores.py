@@ -1,6 +1,8 @@
 """
 Proof Score Calculation Utilities
 """
+import math
+from datetime import datetime
 
 
 class ProofScoreCalculator:
@@ -91,6 +93,39 @@ class ProofScoreCalculator:
         return min(total, 100)
 
     @staticmethod
+    def calculate_trending_score(project) -> float:
+        """
+        Calculate trending/hot score using Reddit-style algorithm
+
+        Formula combines:
+        - Vote magnitude (log scale)
+        - Time recency (newer projects ranked higher)
+        - Proof score boost (quality multiplier)
+
+        Returns: Float trending score for sorting
+        """
+        # Vote score (upvotes - downvotes)
+        vote_score = project.upvotes - project.downvotes
+        vote_magnitude = math.log10(max(abs(vote_score), 1))
+
+        # Sign of votes (+1 or -1)
+        sign = 1 if vote_score > 0 else -1 if vote_score < 0 else 0
+
+        # Time decay (newer = higher score)
+        # Using platform epoch as reference point
+        epoch = datetime(2024, 1, 1)
+        time_diff_seconds = (project.created_at - epoch).total_seconds()
+        time_score = time_diff_seconds / 45000  # ~12.5 hour decay period
+
+        # Proof score boost (0-1 multiplier based on quality)
+        proof_boost = (project.proof_score / 100) * 0.5  # Max 50% boost from proof score
+
+        # Combined trending score
+        trending = (sign * vote_magnitude + time_score) * (1 + proof_boost)
+
+        return round(trending, 2)
+
+    @staticmethod
     def update_project_scores(project):
         """Update all score components for a project"""
         user = project.creator
@@ -99,4 +134,9 @@ class ProofScoreCalculator:
         project.validation_score = ProofScoreCalculator.calculate_validation_score(project)
         project.quality_score = ProofScoreCalculator.calculate_quality_score(project)
         project.calculate_proof_score()
+
+        # Update trending score
+        if hasattr(project, 'trending_score'):
+            project.trending_score = ProofScoreCalculator.calculate_trending_score(project)
+
         return project

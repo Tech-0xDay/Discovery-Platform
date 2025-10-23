@@ -4,6 +4,8 @@ Project routes
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
+from datetime import datetime, timedelta
+from sqlalchemy import func, or_
 
 from extensions import db
 from models.project import Project, ProjectScreenshot
@@ -20,25 +22,99 @@ projects_bp = Blueprint('projects', __name__)
 @projects_bp.route('', methods=['GET'])
 @optional_auth
 def list_projects(user_id):
-    """List projects with filtering and sorting"""
+    """List projects with advanced filtering and sorting"""
     try:
         page, per_page = get_pagination_params(request)
-        sort = request.args.get('sort', 'trending')  # trending, newest, top-rated
+        sort = request.args.get('sort', 'trending')  # trending, newest, top-rated, most-voted
 
-        # TODO: Implement project listing with filters
-        # Check cache first
-        cached = CacheService.get_cached_feed(page, sort)
-        if cached:
-            return paginated_response(cached['items'], cached['total'], page, per_page)
+        # Advanced filters
+        search = request.args.get('search', '').strip()
+        tech_stack = request.args.getlist('tech')
+        hackathon = request.args.get('hackathon', '').strip()
+        min_score = request.args.get('min_score', type=int)
+        has_demo = request.args.get('has_demo', type=lambda v: v.lower() == 'true') if request.args.get('has_demo') else None
+        has_github = request.args.get('has_github', type=lambda v: v.lower() == 'true') if request.args.get('has_github') else None
+        featured_only = request.args.get('featured', type=lambda v: v.lower() == 'true') if request.args.get('featured') else None
+        badge_type = request.args.get('badge', '').strip()
 
-        # Get projects from database
-        query = Project.query.filter_by(is_deleted=False).order_by(Project.created_at.desc())
+        # Build query
+        query = Project.query.filter_by(is_deleted=False)
+
+        # Search in title, description, tagline
+        if search:
+            search_term = f'%{search}%'
+            query = query.filter(
+                or_(
+                    Project.title.ilike(search_term),
+                    Project.description.ilike(search_term),
+                    Project.tagline.ilike(search_term)
+                )
+            )
+
+        # Tech stack filter (contains all specified techs)
+        if tech_stack:
+            for tech in tech_stack:
+                query = query.filter(Project.tech_stack.contains([tech]))
+
+        # Hackathon filter
+        if hackathon:
+            query = query.filter(Project.hackathon_name.ilike(f'%{hackathon}%'))
+
+        # Score filter
+        if min_score is not None:
+            query = query.filter(Project.proof_score >= min_score)
+
+        # Has demo link
+        if has_demo is not None:
+            if has_demo:
+                query = query.filter(Project.demo_url.isnot(None), Project.demo_url != '')
+            else:
+                query = query.filter(or_(Project.demo_url.is_(None), Project.demo_url == ''))
+
+        # Has GitHub link
+        if has_github is not None:
+            if has_github:
+                query = query.filter(Project.github_url.isnot(None), Project.github_url != '')
+            else:
+                query = query.filter(or_(Project.github_url.is_(None), Project.github_url == ''))
+
+        # Featured only
+        if featured_only:
+            query = query.filter(Project.is_featured == True)
+
+        # Badge filter
+        if badge_type:
+            from models.badge import ValidationBadge
+            query = query.join(ValidationBadge).filter(
+                ValidationBadge.badge_type == badge_type.lower()
+            )
+
+        # Sorting
+        if sort == 'trending' or sort == 'hot':
+            # Trending: combination of score and recent activity
+            query = query.order_by(
+                Project.proof_score.desc(),
+                Project.created_at.desc()
+            )
+        elif sort == 'newest' or sort == 'new':
+            query = query.order_by(Project.created_at.desc())
+        elif sort == 'top-rated' or sort == 'top':
+            query = query.order_by(Project.proof_score.desc())
+        elif sort == 'most-voted':
+            query = query.order_by(
+                (Project.upvotes + Project.downvotes).desc()
+            )
+        else:
+            # Default to trending
+            query = query.order_by(
+                Project.proof_score.desc(),
+                Project.created_at.desc()
+            )
 
         total = query.count()
         projects = query.limit(per_page).offset((page - 1) * per_page).all()
 
         data = [p.to_dict(include_creator=True) for p in projects]
-        CacheService.cache_feed(page, sort, {'items': data, 'total': total})
 
         return paginated_response(data, total, page, per_page)
     except Exception as e:
@@ -189,4 +265,73 @@ def feature_project(user_id, project_id):
         return error_response('Error', str(e), 500)
 
 
-from datetime import datetime
+@projects_bp.route('/leaderboard', methods=['GET'])
+@optional_auth
+def get_leaderboard(user_id):
+    """Get top projects and builders leaderboard"""
+    try:
+        timeframe = request.args.get('timeframe', 'month')  # week/month/all
+        limit = request.args.get('limit', 10, type=int)
+        limit = min(limit, 50)  # Cap at 50
+
+        # Calculate date filter
+        if timeframe == 'week':
+            since = datetime.utcnow() - timedelta(days=7)
+        elif timeframe == 'month':
+            since = datetime.utcnow() - timedelta(days=30)
+        else:
+            since = None
+
+        # Top projects
+        query = Project.query.filter_by(is_deleted=False)
+        if since:
+            query = query.filter(Project.created_at >= since)
+
+        top_projects = query.order_by(
+            Project.proof_score.desc()
+        ).limit(limit).all()
+
+        # Top builders (by total karma/proof score)
+        builder_query = db.session.query(
+            User.id,
+            User.username,
+            User.display_name,
+            User.avatar_url,
+            func.sum(Project.proof_score).label('total_score'),
+            func.count(Project.id).label('project_count')
+        ).join(Project, User.id == Project.user_id).filter(
+            Project.is_deleted == False
+        )
+
+        if since:
+            builder_query = builder_query.filter(Project.created_at >= since)
+
+        top_builders = builder_query.group_by(
+            User.id, User.username, User.display_name, User.avatar_url
+        ).order_by(
+            func.sum(Project.proof_score).desc()
+        ).limit(limit).all()
+
+        # Featured projects
+        featured = Project.query.filter_by(
+            is_deleted=False,
+            is_featured=True
+        ).order_by(Project.featured_at.desc()).limit(limit).all()
+
+        return success_response({
+            'top_projects': [p.to_dict(include_creator=True) for p in top_projects],
+            'top_builders': [{
+                'id': str(b.id),
+                'username': b.username,
+                'display_name': b.display_name,
+                'avatar_url': b.avatar_url,
+                'total_score': int(b.total_score or 0),
+                'project_count': b.project_count
+            } for b in top_builders],
+            'featured': [p.to_dict(include_creator=True) for p in featured],
+            'timeframe': timeframe,
+            'limit': limit
+        }, 'Leaderboard retrieved', 200)
+
+    except Exception as e:
+        return error_response('Error', str(e), 500)
