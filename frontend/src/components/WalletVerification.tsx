@@ -208,8 +208,8 @@ export function WalletVerification() {
         {(user?.hasOxcert || user?.has_oxcert) && user?.oxcert_metadata && (
           <div className="bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary/20 rounded-lg p-4">
             <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Your 0xCert NFT
+               
+            
             </h3>
             <div className="space-y-3">
               {/* NFT Image */}
@@ -234,30 +234,27 @@ export function WalletVerification() {
               <div className="space-y-2">
                 {user.oxcert_metadata.name && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Name</p>
-                    <p className="text-sm font-semibold text-foreground">{user.oxcert_metadata.name}</p>
+                    
+                    
                   </div>
                 )}
                 {user.oxcert_metadata.description && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Description</p>
-                    <p className="text-sm text-foreground">{user.oxcert_metadata.description}</p>
+                    
                   </div>
                 )}
                 {user.oxcert_token_id && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Token ID</p>
-                    <p className="text-sm font-mono text-foreground">#{user.oxcert_token_id}</p>
+                    
                   </div>
                 )}
                 {user.oxcert_metadata.attributes && user.oxcert_metadata.attributes.length > 0 && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-2">Attributes</p>
+                    
                     <div className="grid grid-cols-2 gap-2">
                       {user.oxcert_metadata.attributes.map((attr, idx) => (
-                        <div key={idx} className="bg-secondary/30 rounded p-2 border border-border">
-                          <p className="text-xs text-muted-foreground">{attr.trait_type}</p>
-                          <p className="text-sm font-medium text-foreground">{attr.value}</p>
+                        <div>
+                          
                         </div>
                       ))}
                     </div>
@@ -269,24 +266,13 @@ export function WalletVerification() {
               <div className="flex flex-wrap gap-2 pt-2">
                 {user.full_wallet_address && (
                   <a
-                    href={`https://kairos.kaiascan.io/account/${user.full_wallet_address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-secondary text-xs inline-flex items-center gap-2"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    View Wallet on Explorer
+                     >
+                    
                   </a>
                 )}
                 {user.oxcert_token_id && user.full_wallet_address && (
-                  <a
-                    href={`https://kairos.kaiascan.io/token/${import.meta.env.VITE_OXCERTS_CONTRACT_ADDRESS}?a=${user.oxcert_token_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary text-xs inline-flex items-center gap-2"
-                  >
-                    <Shield className="h-3 w-3" />
-                    View NFT on Explorer
+                  <a>
+                    
                   </a>
                 )}
               </div>

@@ -26,14 +26,14 @@ export default function Feed() {
         {/* Header section */}
         <div className="mb-10 card-elevated p-8">
           <div className="flex items-start gap-4 mb-4">
-            <div className="badge-primary flex items-center justify-center h-14 w-14 flex-shrink-0 rounded-[15px]">
-              <Zap className="h-7 w-7 text-foreground" />
+            <div className="badge-primary flex items-center justify-center h-12 w-12 flex-shrink-0 rounded-[15px]">
+              <Zap className="h-6 w-6 text-foreground" />
             </div>
             <div className="flex-1">
-              <h1 className="text-4xl font-black text-foreground mb-2">
+              <h1 className="text-3xl font-black text-foreground mb-2">
                 Discover Projects
               </h1>
-              <p className="text-base text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 Explore amazing hackathon projects with proof-weighted credibility. Find innovative builders, track their growth, and connect.
               </p>
             </div>

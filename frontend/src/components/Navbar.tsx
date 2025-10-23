@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Rocket, TrendingUp, Trophy, Search, Plus, LogOut, User, Settings, LayoutDashboard, Send, Menu, X } from 'lucide-react';
+import { TrendingUp, Trophy, Search, Plus, LogOut, User, Settings, LayoutDashboard, Send, Menu, X } from 'lucide-react';
 import { ConnectWallet } from '@/components/ConnectWallet';
 import { useState } from 'react';
 
@@ -29,11 +29,8 @@ export function Navbar() {
       <div className="container mx-auto px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 transition-quick hover:opacity-80 flex-shrink-0">
-            <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
-              <Rocket className="h-5 w-5 text-foreground font-bold" />
-            </div>
-            <span className="text-xl font-black text-primary hidden sm:inline">
+          <Link to="/" className="flex items-center transition-quick hover:opacity-80 flex-shrink-0">
+            <span className="text-xl font-black text-primary">
               0x.ship
             </span>
           </Link>
@@ -64,14 +61,14 @@ export function Navbar() {
                 </div>
 
                 {/* Publish Button */}
-                <a href="/publish" className="btn-primary hidden md:inline-flex gap-2 px-4 py-2">
-                  <Plus className="h-4 w-4" />
+                <a href="/publish" className="btn-primary hidden md:inline-flex gap-2 px-3 py-2 text-xs">
+                  <Plus className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Publish</span>
                 </a>
 
                 {/* Intros */}
-                <a href="/intros" className="btn-secondary hidden sm:inline-flex gap-2 px-4 py-2">
-                  <Send className="h-4 w-4" />
+                <a href="/intros" className="btn-secondary hidden sm:inline-flex gap-2 px-3 py-2 text-xs">
+                  <Send className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Intros</span>
                 </a>
 

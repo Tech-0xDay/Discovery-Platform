@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Rocket, FileText, ThumbsUp, MessageSquare, Users, Plus } from 'lucide-react';
+import { Rocket, FileText, ThumbsUp, MessageSquare, Users, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { useDashboardStats } from '@/hooks/useStats';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { data: stats, isLoading, error } = useDashboardStats();
 
   return (
     <div className="bg-background min-h-screen">
@@ -17,122 +20,162 @@ export default function Dashboard() {
             </p>
           </div>
 
+          {/* Loading State */}
+          {isLoading && (
+            <div className="card-elevated p-20 text-center flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="card-elevated p-12 text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <p className="text-lg font-bold text-foreground mb-2">Failed to load dashboard data</p>
+              <p className="text-sm text-muted-foreground">{(error as any)?.message || 'Please try again later'}</p>
+            </div>
+          )}
+
           {/* Stats Grid */}
-          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {/* Total Projects */}
-            <div className="card-elevated p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-bold text-muted-foreground mb-1">Total Projects</p>
-                  <p className="text-3xl font-black text-foreground">3</p>
+          {!isLoading && !error && stats && (
+            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Total Projects */}
+              <div className="card-elevated p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-1">Total Projects</p>
+                    <p className="text-3xl font-black text-foreground">{stats.totalProjects}</p>
+                  </div>
+                  <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
+                    <Rocket className="h-5 w-5 text-foreground" />
+                  </div>
                 </div>
-                <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
-                  <Rocket className="h-5 w-5 text-foreground" />
-                </div>
+                <Link to="/my-projects" className="text-xs text-primary hover:underline font-bold">
+                  View all projects →
+                </Link>
               </div>
-              <p className="text-xs text-muted-foreground">+1 from last month</p>
-            </div>
 
-            {/* Total Votes */}
-            <div className="card-elevated p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-bold text-muted-foreground mb-1">Total Votes</p>
-                  <p className="text-3xl font-black text-foreground">156</p>
+              {/* Total Votes */}
+              <div className="card-elevated p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-1">Total Upvotes</p>
+                    <p className="text-3xl font-black text-foreground">{stats.totalVotes}</p>
+                  </div>
+                  <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
+                    <ThumbsUp className="h-5 w-5 text-foreground" />
+                  </div>
                 </div>
-                <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
-                  <ThumbsUp className="h-5 w-5 text-foreground" />
-                </div>
+                <p className="text-xs text-muted-foreground">Across all projects</p>
               </div>
-              <p className="text-xs text-muted-foreground">+23 from last week</p>
-            </div>
 
-            {/* Comments */}
-            <div className="card-elevated p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-bold text-muted-foreground mb-1">Comments</p>
-                  <p className="text-3xl font-black text-foreground">42</p>
+              {/* Comments */}
+              <div className="card-elevated p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-1">Total Comments</p>
+                    <p className="text-3xl font-black text-foreground">{stats.totalComments}</p>
+                  </div>
+                  <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
+                    <MessageSquare className="h-5 w-5 text-foreground" />
+                  </div>
                 </div>
-                <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
-                  <MessageSquare className="h-5 w-5 text-foreground" />
-                </div>
+                <p className="text-xs text-muted-foreground">Community engagement</p>
               </div>
-              <p className="text-xs text-muted-foreground">+8 new discussions</p>
-            </div>
 
-            {/* Intro Requests */}
-            <div className="card-elevated p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-bold text-muted-foreground mb-1">Intro Requests</p>
-                  <p className="text-3xl font-black text-foreground">5</p>
+              {/* Intro Requests */}
+              <div className="card-elevated p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-1">Intro Requests</p>
+                    <p className="text-3xl font-black text-foreground">{stats.introRequests}</p>
+                  </div>
+                  <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
+                    <Users className="h-5 w-5 text-foreground" />
+                  </div>
                 </div>
-                <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
-                  <Users className="h-5 w-5 text-foreground" />
-                </div>
+                <Link to="/intros" className="text-xs text-primary hover:underline font-bold">
+                  {stats.pendingIntros} pending →
+                </Link>
               </div>
-              <p className="text-xs text-muted-foreground">2 pending</p>
             </div>
-          </div>
+          )}
 
           {/* Main Content Grid */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Quick Actions */}
-            <div className="card-elevated p-6">
-              <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
-                Quick Actions
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">What would you like to do today?</p>
+          {!isLoading && !error && stats && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Quick Actions */}
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Quick Actions
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">What would you like to do today?</p>
 
-              <div className="space-y-3">
-                <Link to="/publish" className="btn-primary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
-                  <Plus className="h-5 w-5" />
-                  <span>Publish New Project</span>
-                </Link>
-                <Link to="/my-projects" className="btn-secondary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
-                  <FileText className="h-5 w-5" />
-                  <span>Manage My Projects</span>
-                </Link>
-                <Link to={`/u/${user?.username}`} className="btn-secondary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
-                  <Users className="h-5 w-5" />
-                  <span>View My Profile</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="card-elevated p-6">
-              <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
-                Recent Activity
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">Your latest interactions</p>
-
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="h-3 w-3 rounded-full bg-primary flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-foreground">Your project "DeFi Platform" received 12 new votes</p>
-                    <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="h-3 w-3 rounded-full bg-primary flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-foreground">New comment on "NFT Marketplace"</p>
-                    <p className="text-xs text-muted-foreground mt-1">5 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="h-3 w-3 rounded-full bg-primary flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-foreground">Intro request accepted by @alice_dev</p>
-                    <p className="text-xs text-muted-foreground mt-1">1 day ago</p>
-                  </div>
+                <div className="space-y-3">
+                  <Link to="/publish" className="btn-primary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
+                    <Plus className="h-5 w-5" />
+                    <span>Publish New Project</span>
+                  </Link>
+                  <Link to="/my-projects" className="btn-secondary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
+                    <FileText className="h-5 w-5" />
+                    <span>Manage My Projects</span>
+                  </Link>
+                  <Link to={`/u/${user?.username}`} className="btn-secondary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
+                    <Users className="h-5 w-5" />
+                    <span>View My Profile</span>
+                  </Link>
                 </div>
               </div>
+
+              {/* Recent Activity */}
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  Recent Projects
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">Your latest published projects</p>
+
+                {stats.projects && stats.projects.length > 0 ? (
+                  <div className="space-y-6">
+                    {stats.projects.slice(0, 3).map((project: any) => (
+                      <Link
+                        key={project.id}
+                        to={`/project/${project.id}`}
+                        className="flex items-start gap-4 group hover:opacity-80 transition-smooth"
+                      >
+                        <div className="h-3 w-3 rounded-full bg-primary flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-foreground group-hover:text-primary transition-smooth">
+                            {project.title}
+                          </p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              {project.upvotes || 0} upvotes
+                            </span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground">
+                              {project.comment_count || 0} comments
+                            </span>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(project.created_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground mb-4">No projects yet</p>
+                    <Link to="/publish" className="btn-primary inline-flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Publish Your First Project
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

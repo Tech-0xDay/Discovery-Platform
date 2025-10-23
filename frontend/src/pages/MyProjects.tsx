@@ -48,43 +48,50 @@ export default function MyProjects() {
 
           {/* Projects List */}
           {!isLoading && !error && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {data?.data && data.data.length > 0 ? (
                 data.data.map((project: any) => (
-                  <div key={project.id} className="relative">
+                  <div key={project.id} className="card-elevated overflow-hidden">
                     {/* Use the same ProjectCard as feed */}
                     <ProjectCard project={project} />
 
-                    {/* Action buttons overlay */}
-                    <div className="absolute top-6 right-6 flex items-center gap-2 z-10">
-                      <Link
-                        to={`/project/${project.id}`}
-                        className="btn-secondary inline-flex items-center gap-2 px-3 py-2 shadow-lg"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="hidden sm:inline">View</span>
-                      </Link>
-                      <Link
-                        to={`/project/${project.id}/edit`}
-                        className="btn-secondary inline-flex items-center gap-2 px-3 py-2 shadow-lg"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Edit className="h-4 w-4" />
-                        <span className="hidden sm:inline">Edit</span>
-                      </Link>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (window.confirm('Are you sure you want to delete this project?')) {
-                            deleteProjectMutation.mutate(project.id);
-                          }
-                        }}
-                        className="btn-secondary inline-flex items-center gap-2 px-3 py-2 shadow-lg text-destructive hover:opacity-80"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="hidden sm:inline">Delete</span>
-                      </button>
+                    {/* Action buttons section - separate area below card */}
+                    <div className="border-t-2 border-border bg-secondary/20 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-bold text-muted-foreground">
+                          Project Actions
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={`/project/${project.id}`}
+                            className="btn-secondary inline-flex items-center gap-2 px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Eye className="h-4 w-4" />
+                            <span>View</span>
+                          </Link>
+                          <Link
+                            to={`/project/${project.id}/edit`}
+                            className="btn-secondary inline-flex items-center gap-2 px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Edit className="h-4 w-4" />
+                            <span>Edit</span>
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                                deleteProjectMutation.mutate(project.id);
+                              }
+                            }}
+                            className="btn-secondary inline-flex items-center gap-2 px-3 py-2 text-destructive hover:bg-destructive/10 border-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))

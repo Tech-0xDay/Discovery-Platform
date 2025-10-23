@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, AlertTriangle, Loader2, Users } from 'lucide-react';
+import { X, AlertTriangle, Loader2, Users, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { WalletVerification } from '@/components/WalletVerification';
 import { useAuth } from '@/context/AuthContext';
@@ -27,6 +27,7 @@ export default function Publish() {
   const [teamMembers, setTeamMembers] = useState<{ name: string; role: string }[]>([]);
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
+  const [showProofScoreInfo, setShowProofScoreInfo] = useState(false);
 
   const createProjectMutation = useCreateProject();
 
@@ -242,119 +243,145 @@ export default function Publish() {
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-6 py-12">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-5xl">
           {/* Header section */}
           <div className="mb-10 card-elevated p-8">
-            <h1 className="mb-2 text-4xl font-black text-foreground">Publish Your Project</h1>
-            <p className="text-base text-muted-foreground leading-relaxed mb-6">
-              Share your incredible hackathon project with our community. Get discovered, receive feedback, and connect with other builders.
-            </p>
-
-            {/* Proof Score Explainer */}
-            <div className="bg-primary/10 border-4 border-primary rounded-[15px] p-6">
-              <h2 className="text-xl font-black text-foreground mb-3">Maximize Your Proof Score (0-100)</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <h3 className="font-bold text-foreground mb-2">Quality Score (Max 20 points)</h3>
-                  <ul className="space-y-1 text-muted-foreground">
-                    <li>✓ Demo URL: +5 points</li>
-                    <li>✓ GitHub URL: +5 points</li>
-                    <li>✓ Screenshots: +5 points</li>
-                    <li>✓ Description (200+ chars): +5 points</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground mb-2">Verification Score (Max 20 points)</h3>
-                  <ul className="space-y-1 text-muted-foreground">
-                    <li>✓ Email verified: +5 points</li>
-                    <li>✓ 0xCert connected: +10 points</li>
-                    <li>✓ GitHub connected: +5 points</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground mb-2">Community Score (Max 30 points)</h3>
-                  <ul className="space-y-1 text-muted-foreground">
-                    <li>✓ Upvote ratio: up to 20 points</li>
-                    <li>✓ Comments: up to 10 points</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground mb-2">Validation Score (Max 30 points)</h3>
-                  <ul className="space-y-1 text-muted-foreground">
-                    <li>✓ Badges from experts</li>
-                    <li>✓ Silver: 10 points</li>
-                    <li>✓ Gold: 15 points</li>
-                    <li>✓ Platinum: 20 points</li>
-                  </ul>
-                </div>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h1 className="mb-2 text-4xl font-black text-foreground">Publish Your Project</h1>
+                <p className="text-base text-muted-foreground leading-relaxed">
+                  Share your incredible hackathon project with our community. Get discovered, receive feedback, and connect with other builders.
+                </p>
               </div>
-              <p className="mt-4 text-xs text-foreground font-bold">
-                💡 Fill in all optional fields to achieve a maximum Quality Score of 20/20!
-              </p>
+              <button
+                type="button"
+                onClick={() => setShowProofScoreInfo(!showProofScoreInfo)}
+                className="ml-4 p-3 rounded-full bg-primary/20 hover:bg-primary/30 transition-smooth border-2 border-primary flex-shrink-0"
+                title="Learn about Proof Score"
+              >
+                <Info className="h-6 w-6 text-primary" />
+              </button>
             </div>
+
+            {/* Proof Score Info - Collapsible */}
+            {showProofScoreInfo && (
+              <div className="bg-primary/10 border-4 border-primary rounded-[15px] p-6 mt-6 animate-in slide-in-from-top-2">
+                <h2 className="text-lg font-black text-foreground mb-4">Maximize Your Proof Score (0-100)</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground mb-2">Quality Score (Max 20 points)</h3>
+                    <ul className="space-y-1 text-muted-foreground text-xs">
+                      <li>✓ Demo URL: +5 points</li>
+                      <li>✓ GitHub URL: +5 points</li>
+                      <li>✓ Screenshots: +5 points</li>
+                      <li>✓ Description (200+ chars): +5 points</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground mb-2">Verification Score (Max 20 points)</h3>
+                    <ul className="space-y-1 text-muted-foreground text-xs">
+                      <li>✓ Email verified: +5 points</li>
+                      <li>✓ 0xCert connected: +10 points</li>
+                      <li>✓ GitHub connected: +5 points</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground mb-2">Community Score (Max 30 points)</h3>
+                    <ul className="space-y-1 text-muted-foreground text-xs">
+                      <li>✓ Upvote ratio: up to 20 points</li>
+                      <li>✓ Comments: up to 10 points</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground mb-2">Validation Score (Max 30 points)</h3>
+                    <ul className="space-y-1 text-muted-foreground text-xs">
+                      <li>✓ Badges from experts</li>
+                      <li>✓ Silver: 10 points</li>
+                      <li>✓ Gold: 15 points</li>
+                      <li>✓ Platinum: 20 points</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="mt-4 text-xs text-foreground font-bold bg-primary/20 p-3 rounded-lg border-2 border-primary">
+                  💡 Fill in all optional fields to achieve a maximum Quality Score of 20/20!
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Wallet Verification Section */}
-          <div className="mb-6">
+          {/* Wallet & Verification Section */}
+          <div className="mb-8">
             <WalletVerification />
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-6">
-              <div className="card-elevated p-6">
-                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+            <div className="space-y-8">
+              <div className="card-elevated p-8">
+                <h2 className="text-2xl font-black mb-6 text-foreground border-b-4 border-primary pb-3">
                   Basic Information
                 </h2>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Project Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="e.g., DeFi Lending Platform"
-                    {...register('title')}
-                  />
-                  {errors.title && (
-                    <p className="text-sm text-destructive">{errors.title.message}</p>
-                  )}
-                </div>
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="title" className="text-base font-bold">Project Title *</Label>
+                    <Input
+                      id="title"
+                      placeholder="e.g., DeFi Lending Platform"
+                      className="text-base"
+                      {...register('title')}
+                    />
+                    {errors.title && (
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertTriangle className="h-4 w-4" />
+                        {errors.title.message}
+                      </p>
+                    )}
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="tagline">Tagline (Optional)</Label>
-                  <Input
-                    id="tagline"
-                    placeholder="A brief one-liner description"
-                    maxLength={300}
-                    {...register('tagline')}
-                  />
-                  {errors.tagline && (
-                    <p className="text-sm text-destructive">{errors.tagline.message}</p>
-                  )}
-                </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="tagline" className="text-base font-bold">Tagline (Optional)</Label>
+                    <Input
+                      id="tagline"
+                      placeholder="A brief one-liner description"
+                      maxLength={300}
+                      className="text-base"
+                      {...register('tagline')}
+                    />
+                    {errors.tagline && (
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertTriangle className="h-4 w-4" />
+                        {errors.tagline.message}
+                      </p>
+                    )}
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">
-                    Description *
-                    <span className="ml-2 text-xs badge-primary">+5 Quality Score for 200+ chars</span>
-                  </Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Describe your project in detail (minimum 200 characters for quality score)"
-                    rows={8}
-                    {...register('description')}
-                  />
-                  {errors.description && (
-                    <p className="text-sm text-destructive">{errors.description.message}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">Minimum 200 characters recommended for +5 quality score</p>
-                </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="description" className="text-base font-bold">
+                      Description *
+                      <span className="ml-2 text-xs badge-primary">+5 Quality Score for 200+ chars</span>
+                    </Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe your project in detail (minimum 200 characters for quality score)"
+                      rows={8}
+                      className="text-base"
+                      {...register('description')}
+                    />
+                    {errors.description && (
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertTriangle className="h-4 w-4" />
+                        {errors.description.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">Minimum 200 characters recommended for +5 quality score</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="card-elevated p-6">
-                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+              <div className="card-elevated p-8">
+                <h2 className="text-2xl font-black mb-6 text-foreground border-b-4 border-primary pb-3">
                   Hackathon Details (Optional)
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="hackathonName">Hackathon Name</Label>
                     <Input
@@ -385,11 +412,11 @@ export default function Publish() {
                 </div>
               </div>
 
-              <div className="card-elevated p-6">
-                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+              <div className="card-elevated p-8">
+                <h2 className="text-2xl font-black mb-6 text-foreground border-b-4 border-primary pb-3">
                   Links & Resources
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="demoUrl">
                       Demo URL
@@ -450,34 +477,35 @@ export default function Publish() {
                 </div>
               </div>
 
-              <div className="card-elevated p-6">
-                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
-                  Tech Stack
+              <div className="card-elevated p-8">
+                <h2 className="text-2xl font-black mb-6 text-foreground border-b-4 border-primary pb-3">
+                  Tech Stack *
                 </h2>
-                <div className="space-y-4">
-                  <div className="flex gap-2">
+                <div className="space-y-5">
+                  <div className="flex gap-3">
                     <Input
                       placeholder="Add technology (e.g., React, Solidity)"
                       value={techInput}
                       onChange={(e) => setTechInput(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
+                      className="text-base"
                     />
-                    <button type="button" onClick={handleAddTech} className="btn-secondary px-4 py-2">
+                    <button type="button" onClick={handleAddTech} className="btn-secondary px-6 py-2 font-bold">
                       Add
                     </button>
                   </div>
 
                   {techStack.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {techStack.map((tech) => (
-                        <span key={tech} className="badge-primary gap-1 flex items-center">
+                        <span key={tech} className="badge-primary gap-2 flex items-center text-sm px-4 py-2">
                           {tech}
                           <button
                             type="button"
                             onClick={() => handleRemoveTech(tech)}
-                            className="ml-1 rounded-full hover:opacity-80"
+                            className="rounded-full hover:opacity-80 transition-opacity"
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-4 w-4" />
                           </button>
                         </span>
                       ))}
@@ -485,39 +513,44 @@ export default function Publish() {
                   )}
 
                   {techStack.length === 0 && (
-                    <p className="text-sm font-bold text-destructive">Add at least one technology</p>
+                    <p className="text-sm font-bold text-destructive flex items-center gap-1">
+                      <AlertTriangle className="h-4 w-4" />
+                      Add at least one technology
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Team Members Section */}
-              <div className="card-elevated p-6">
-                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3 flex items-center gap-2">
+              <div className="card-elevated p-8">
+                <h2 className="text-2xl font-black mb-6 text-foreground border-b-4 border-primary pb-3 flex items-center gap-2">
                   <Users className="h-6 w-6" />
-                  Team Members / Crew
+                  Team Members / Crew (Optional)
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <p className="text-sm text-muted-foreground">
                     Add your team members or collaborators who worked on this project. This will be displayed on project cards and details.
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <div>
-                      <Label>Name *</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-bold">Name *</Label>
                       <Input
                         placeholder="Team member name"
                         value={memberName}
                         onChange={(e) => setMemberName(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTeamMember())}
+                        className="text-base"
                       />
                     </div>
-                    <div>
-                      <Label>Role (optional)</Label>
+                    <div className="space-y-2">
+                      <Label className="font-bold">Role (optional)</Label>
                       <Input
                         placeholder="e.g., Frontend Dev, Designer"
                         value={memberRole}
                         onChange={(e) => setMemberRole(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTeamMember())}
+                        className="text-base"
                       />
                     </div>
                   </div>
@@ -525,29 +558,29 @@ export default function Publish() {
                   <button
                     type="button"
                     onClick={handleAddTeamMember}
-                    className="btn-secondary px-4 py-2"
+                    className="btn-secondary px-6 py-2 font-bold"
                     disabled={!memberName.trim()}
                   >
                     Add Team Member
                   </button>
 
                   {teamMembers.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {teamMembers.map((member, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg border border-border"
+                          className="flex items-center justify-between p-4 bg-secondary/20 rounded-lg border-2 border-border hover:border-primary/30 transition-smooth"
                         >
                           <div>
-                            <p className="font-semibold text-foreground">{member.name}</p>
-                            <p className="text-xs text-muted-foreground">{member.role}</p>
+                            <p className="font-bold text-foreground text-base">{member.name}</p>
+                            <p className="text-sm text-muted-foreground">{member.role}</p>
                           </div>
                           <button
                             type="button"
                             onClick={() => handleRemoveTeamMember(index)}
-                            className="p-2 hover:bg-destructive/20 rounded transition-smooth"
+                            className="p-2 hover:bg-destructive/20 rounded-full transition-smooth"
                           >
-                            <X className="h-4 w-4 text-destructive" />
+                            <X className="h-5 w-5 text-destructive" />
                           </button>
                         </div>
                       ))}
@@ -556,12 +589,12 @@ export default function Publish() {
                 </div>
               </div>
 
-              <div className="card-elevated p-6">
-                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
-                  Screenshots
+              <div className="card-elevated p-8">
+                <h2 className="text-2xl font-black mb-6 text-foreground border-b-4 border-primary pb-3">
+                  Screenshots (Optional)
                   <span className="ml-2 text-xs badge-primary">+5 Quality Score</span>
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <p className="text-sm text-muted-foreground">
                     Upload screenshots to increase your project's quality score. At least one screenshot earns +5 points.
                     Images are stored on IPFS via Pinata.
@@ -613,22 +646,22 @@ export default function Publish() {
 
                   {/* Uploaded Screenshots */}
                   {screenshotUrls.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {screenshotUrls.map((url, index) => (
                         <div key={index} className="relative group">
                           <img
                             src={url}
                             alt={`Screenshot ${index + 1}`}
-                            className="w-full h-48 object-cover rounded-lg border-2 border-black"
+                            className="w-full h-56 object-cover rounded-lg border-4 border-border group-hover:border-primary/50 transition-smooth"
                           />
                           <button
                             type="button"
                             onClick={() => handleRemoveScreenshot(index)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-3 right-3 bg-destructive text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-smooth hover:scale-110"
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-5 w-5" />
                           </button>
-                          <span className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          <span className="absolute bottom-3 left-3 bg-black/80 text-white text-sm font-bold px-3 py-1.5 rounded-md">
                             Screenshot {index + 1}
                           </span>
                         </div>
@@ -647,17 +680,31 @@ export default function Publish() {
                 </div>
               </div>
 
-              <div className="flex gap-4 border-t-4 border-primary pt-6">
-                <button
-                  type="submit"
-                  className="btn-primary flex-1"
-                  disabled={isSubmitting || createProjectMutation.isPending}
-                >
-                  {isSubmitting || createProjectMutation.isPending ? 'Publishing...' : 'Publish Project'}
-                </button>
-                <button type="button" className="btn-secondary flex-1" onClick={() => navigate(-1)}>
-                  Cancel
-                </button>
+              <div className="card-elevated p-8 mt-8">
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="btn-primary flex-1 py-4 text-lg font-black"
+                    disabled={isSubmitting || createProjectMutation.isPending}
+                  >
+                    {isSubmitting || createProjectMutation.isPending ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Publishing...
+                      </span>
+                    ) : (
+                      'Publish Project'
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary flex-1 py-4 text-lg font-bold"
+                    onClick={() => navigate(-1)}
+                    disabled={isSubmitting || createProjectMutation.isPending}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </form>
