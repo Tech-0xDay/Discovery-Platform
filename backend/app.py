@@ -2,18 +2,22 @@
 0x.ship MVP - Main Flask Application
 """
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
 
 from config import config
+from extensions import db, jwt, migrate
 
-# Initialize extensions
-db = SQLAlchemy()
-jwt = JWTManager()
-migrate = Migrate()
+
+def import_models():
+    """Import all models - needed for db.create_all()"""
+    from models.user import User
+    from models.project import Project, ProjectScreenshot
+    from models.vote import Vote
+    from models.comment import Comment
+    from models.badge import ValidationBadge
+    from models.intro import Intro
+    return True
 
 
 def create_app(config_name=None):
@@ -33,17 +37,33 @@ def create_app(config_name=None):
     # Register error handlers
     register_error_handlers(app)
 
-    # Register blueprints
+    # Register blueprints (this also imports models through routes)
     register_blueprints(app)
 
-    # Create tables
+    # Import models BEFORE creating tables
+    import_models()
+
+    # Create database tables
     with app.app_context():
+        # Create all tables
         db.create_all()
+
+        # Verify tables were created (only log if there's an issue)
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+
+        if not tables:
+            print("⚠️  WARNING: No database tables found after db.create_all()")
+            print("   Check that models are properly defined and imported.")
 
     # Health check
     @app.route('/health', methods=['GET'])
     def health_check():
         return jsonify({'status': 'ok', 'message': '0x.ship backend is running'}), 200
+
+    # Note: File uploads now handled via Pinata IPFS
+    # Files are served directly from IPFS gateway (https://gateway.pinata.cloud/ipfs/...)
 
     return app
 

@@ -1,16 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(psql:*)",
-      "Bash(ren:*)",
-      "Bash(cmd /c \"rmdir /s /q .git\")",
-      "Bash(cmd /c \"rmdir /s /q node_modules\")",
-      "Bash(dir:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(npm run build:*)",
-      "Bash(findstr:*)",
-      "Bash(cat:*)"
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

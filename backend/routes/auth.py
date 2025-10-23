@@ -6,7 +6,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 from marshmallow import ValidationError
 from datetime import datetime
 
-from app import db
+from extensions import db
 from models.user import User
 from schemas.user import UserRegisterSchema, UserLoginSchema
 from utils.validators import validate_email, validate_username, validate_password
@@ -39,9 +39,10 @@ def register():
         user = User(
             email=validated_data['email'],
             username=validated_data['username'],
-            display_name=validated_data.get('display_name', validated_data['username'])
+            display_name=validated_data.get('display_name', validated_data['username']),
+            email_verified=True  # Auto-verify for MVP (no email service yet)
         )
-        user.set_password(validated_data['password'])
+        user.set_password(validated_data['password']) 
 
         db.session.add(user)
         db.session.commit()

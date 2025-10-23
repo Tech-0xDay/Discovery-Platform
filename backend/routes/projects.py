@@ -5,7 +5,7 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 
-from app import db
+from extensions import db
 from models.project import Project, ProjectScreenshot
 from models.user import User
 from schemas.project import ProjectSchema, ProjectCreateSchema, ProjectUpdateSchema
@@ -90,11 +90,13 @@ def create_project(user_id):
             screenshot = ProjectScreenshot(url=url)
             project.screenshots.append(screenshot)
 
+        # Add to session first
+        db.session.add(project)
+        db.session.flush()  # Flush to get the relationship loaded
+
         # Calculate initial scores
-        user = User.query.get(user_id)
         ProofScoreCalculator.update_project_scores(project)
 
-        db.session.add(project)
         db.session.commit()
 
         CacheService.invalidate_project_feed()

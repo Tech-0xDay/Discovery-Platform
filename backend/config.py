@@ -47,6 +47,11 @@ class Config:
         '0x0000000000000000000000000000000000000000'  # Update with actual contract
     )
 
+    # Pinata IPFS
+    PINATA_API_KEY = os.getenv('PINATA_API_KEY')
+    PINATA_SECRET_API_KEY = os.getenv('PINATA_SECRET_API_KEY')
+    PINATA_JWT = os.getenv('PINATA_JWT')
+
     # CORS
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
 
@@ -66,7 +71,7 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False  # Disable SQL query logging
 
 
 class TestingConfig(Config):
