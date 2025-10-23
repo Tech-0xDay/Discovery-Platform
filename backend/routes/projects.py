@@ -158,7 +158,8 @@ def create_project(user_id):
             github_url=validated_data.get('github_url'),
             hackathon_name=validated_data.get('hackathon_name'),
             hackathon_date=validated_data.get('hackathon_date'),
-            tech_stack=validated_data.get('tech_stack', [])
+            tech_stack=validated_data.get('tech_stack', []),
+            team_members=validated_data.get('team_members', [])
         )
 
         # Add screenshots

@@ -3,7 +3,7 @@ import { Project } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowUp, MessageSquare, Award, Star, TrendingUp, Github, ExternalLink } from 'lucide-react';
+import { ArrowUp, MessageSquare, Award, Star, TrendingUp, Github, ExternalLink, Shield } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project;
@@ -15,9 +15,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
     : 0;
 
   return (
-    <div className="group">
-      <Link to={`/project/${project.id}`} className="block">
-        <Card className="card-interactive overflow-hidden">
+    <div className="group relative">
+      <Card className="card-interactive overflow-hidden relative">
+        <Link to={`/project/${project.id}`} className="block">
           <div className="p-6 space-y-4">
             {/* Header with title and badge */}
             <div className="flex items-start justify-between gap-4">
@@ -55,14 +55,29 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  {project.author.username}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-semibold text-foreground">
+                    {project.author.username}
+                  </p>
                   {project.author.isVerified && (
-                    <span className="badge-success ml-2 inline-flex">
+                    <span className="badge-success text-xs inline-flex">
                       ✓ Verified
                     </span>
                   )}
-                </p>
+                  {(project.author.hasOxcert || project.author.has_oxcert) && project.author.full_wallet_address && (
+                    <a
+                      href={`https://kairos.kaiascan.io/account/${project.author.full_wallet_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 text-primary hover:border-primary/50 transition-smooth"
+                      title="0xCert Verified - View on Kairos Explorer"
+                    >
+                      <Shield className="h-3 w-3" />
+                      0xCert
+                    </a>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground truncate">
                   {project.hackathonName} • {new Date(project.hackathonDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </p>
@@ -82,6 +97,26 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 </Badge>
               )}
             </div>
+
+            {/* Team members */}
+            {(project.team_members && project.team_members.length > 0) && (
+              <div className="pt-3 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-2 font-semibold">Team</p>
+                <div className="flex flex-wrap gap-2">
+                  {project.team_members.slice(0, 3).map((member, idx) => (
+                    <div key={idx} className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded border border-primary/30">
+                      <span className="font-medium">{member.name}</span>
+                      {member.role && <span className="text-muted-foreground">• {member.role}</span>}
+                    </div>
+                  ))}
+                  {project.team_members.length > 3 && (
+                    <div className="text-xs text-muted-foreground px-2 py-1">
+                      +{project.team_members.length - 3} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Badges section */}
             {project.badges.length > 0 && (
@@ -124,38 +159,38 @@ export function ProjectCard({ project }: ProjectCardProps) {
                   </div>
                 )}
               </div>
-
-              {/* CTA buttons */}
-              <div className="flex items-center gap-2">
-                {project.demoUrl && (
-                  <a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-2 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth"
-                    title="View Live Demo"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
-                {project.githubUrl && (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-2 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth"
-                    title="View on GitHub"
-                  >
-                    <Github className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
             </div>
           </div>
-        </Card>
-      </Link>
+        </Link>
+
+        {/* CTA buttons - Outside Link to avoid nested <a> tags */}
+        <div className="absolute bottom-6 right-6 flex items-center gap-2">
+          {project.demoUrl && (
+            <a
+              href={project.demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="p-2 rounded-md bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border"
+              title="View Live Demo"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
+          {project.githubUrl && (
+            <a
+              href={project.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="p-2 rounded-md bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border"
+              title="View on GitHub"
+            >
+              <Github className="h-4 w-4" />
+            </a>
+          )}
+        </div>
+      </Card>
     </div>
   );
 }

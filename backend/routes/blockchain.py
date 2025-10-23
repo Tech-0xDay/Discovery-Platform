@@ -50,6 +50,13 @@ def verify_cert(user_id):
         user.wallet_address = wallet_address
         user.has_oxcert = result['has_cert']
 
+        # Store NFT details if available
+        if result['has_cert'] and result.get('nft_details'):
+            nft_details = result['nft_details']
+            user.oxcert_token_id = str(result.get('token_id'))
+            user.oxcert_metadata = nft_details.get('metadata')
+            user.oxcert_tx_hash = nft_details.get('tx_hash')
+
         # Get all projects to update scores
         if result['has_cert']:
             for project in user.projects:
@@ -63,6 +70,8 @@ def verify_cert(user_id):
             'wallet_address': wallet_address,
             'has_cert': result['has_cert'],
             'balance': result['balance'],
+            'token_id': result.get('token_id'),
+            'nft_details': result.get('nft_details'),
             'user': user.to_dict()
         }, 'Cert verified successfully', 200)
 

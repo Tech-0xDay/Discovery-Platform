@@ -31,6 +31,9 @@ class Project(db.Model):
     # Tech Stack (Array)
     tech_stack = db.Column(ARRAY(db.String(50)), default=[])
 
+    # Team Members (Array of JSON objects with name and role)
+    team_members = db.Column(db.JSON, default=[])
+
     # Proof Score Components
     proof_score = db.Column(db.Integer, default=0, index=True)
     verification_score = db.Column(db.Integer, default=0)
@@ -64,6 +67,8 @@ class Project(db.Model):
     badges = db.relationship('ValidationBadge', backref='project', lazy='dynamic',
                               cascade='all, delete-orphan')
     intros = db.relationship('Intro', backref='project', lazy='dynamic', cascade='all, delete-orphan')
+    event_associations = db.relationship('EventProject', backref='project', lazy='dynamic',
+                                          cascade='all, delete-orphan')
 
     def calculate_proof_score(self):
         """Recalculate proof score from components"""
@@ -94,6 +99,7 @@ class Project(db.Model):
             'hackathon_name': self.hackathon_name,
             'hackathon_date': self.hackathon_date.isoformat() if self.hackathon_date else None,
             'tech_stack': self.tech_stack or [],
+            'team_members': self.team_members or [],
             'proof_score': self.proof_score,
             'verification_score': self.verification_score,
             'community_score': self.community_score,

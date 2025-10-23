@@ -70,13 +70,25 @@ class ProofScoreCalculator:
         """Calculate project quality score"""
         score = 0
 
-        if project.demo_url:
+        # Demo URL check
+        if project.demo_url and project.demo_url.strip():
             score += ProofScoreCalculator.QUALITY_DEMO_LINK
-        if project.github_url:
+
+        # GitHub URL check
+        if project.github_url and project.github_url.strip():
             score += ProofScoreCalculator.QUALITY_GITHUB_LINK
-        if project.screenshots.count() > 0:
-            score += ProofScoreCalculator.QUALITY_SCREENSHOTS
-        if project.description and len(project.description) > 200:
+
+        # Screenshots check - check if relationship has items
+        try:
+            if project.screenshots and project.screenshots.count() > 0:
+                score += ProofScoreCalculator.QUALITY_SCREENSHOTS
+        except:
+            # Fallback if screenshots is a list
+            if hasattr(project, 'screenshots') and len(project.screenshots) > 0:
+                score += ProofScoreCalculator.QUALITY_SCREENSHOTS
+
+        # Description length check
+        if project.description and len(project.description.strip()) >= 200:
             score += ProofScoreCalculator.QUALITY_DESCRIPTION
 
         return min(score, 20)

@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Ensure API base always ends with /api
+const getApiBase = () => {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+};
+
+const API_BASE = getApiBase();
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -139,6 +145,8 @@ export const authService = {
   getCurrentUser: () => api.get('/auth/me'),
   logout: () => api.post('/auth/logout'),
   refreshToken: () => api.post('/auth/refresh'),
+  githubConnect: () => api.get('/auth/github/connect'),
+  githubDisconnect: () => api.post('/auth/github/disconnect'),
 };
 
 // File Upload
@@ -169,9 +177,9 @@ export const searchService = {
 };
 
 export const leaderboardService = {
-  getProjects: (timeframe: string = 'month') => api.get(`/leaderboard/projects?timeframe=${timeframe}`),
-  getBuilders: (timeframe: string = 'month') => api.get(`/leaderboard/builders?timeframe=${timeframe}`),
-  getFeatured: () => api.get('/leaderboard/featured'),
+  getProjects: (limit: number = 50) => api.get(`/users/leaderboard/projects?limit=${limit}`),
+  getBuilders: (limit: number = 50) => api.get(`/users/leaderboard/builders?limit=${limit}`),
+  getFeatured: () => api.get('/users/leaderboard/featured'),
 };
 
 export default api;

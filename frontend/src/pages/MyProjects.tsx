@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProjects, useDeleteProject } from '@/hooks/useProjects';
+import { ProjectCard } from '@/components/ProjectCard';
 import { toast } from 'sonner';
 
 export default function MyProjects() {
@@ -50,43 +51,40 @@ export default function MyProjects() {
             <div className="space-y-4">
               {data?.data && data.data.length > 0 ? (
                 data.data.map((project: any) => (
-                  <div key={project.id} className="card-elevated p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center gap-3">
-                          <h3 className="text-xl font-black text-foreground">{project.title}</h3>
-                          <Badge variant={!project.is_deleted ? 'default' : 'secondary'}>
-                            {!project.is_deleted ? 'published' : 'deleted'}
-                          </Badge>
-                        </div>
-                        <p className="mb-4 text-sm text-muted-foreground">{project.tagline}</p>
-                        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-muted-foreground">
-                          <span>{project.upvote_count || 0} votes</span>
-                          <span>{project.comment_count || 0} comments</span>
-                          <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
+                  <div key={project.id} className="relative">
+                    {/* Use the same ProjectCard as feed */}
+                    <ProjectCard project={project} />
 
-                      <div className="flex gap-2 flex-shrink-0">
-                        <Link to={`/project/${project.id}`} className="btn-secondary inline-flex items-center gap-2 px-3 py-2">
-                          <Eye className="h-4 w-4" />
-                          <span className="hidden sm:inline">View</span>
-                        </Link>
-                        <Link to={`/project/${project.id}/edit`} className="btn-secondary inline-flex items-center gap-2 px-3 py-2">
-                          <Edit className="h-4 w-4" />
-                          <span className="hidden sm:inline">Edit</span>
-                        </Link>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this project?')) {
-                              deleteProjectMutation.mutate(project.id);
-                            }
-                          }}
-                          className="btn-secondary inline-flex items-center gap-2 px-3 py-2 text-destructive hover:opacity-80"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                    {/* Action buttons overlay */}
+                    <div className="absolute top-6 right-6 flex items-center gap-2 z-10">
+                      <Link
+                        to={`/project/${project.id}`}
+                        className="btn-secondary inline-flex items-center gap-2 px-3 py-2 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">View</span>
+                      </Link>
+                      <Link
+                        to={`/project/${project.id}/edit`}
+                        className="btn-secondary inline-flex items-center gap-2 px-3 py-2 shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="hidden sm:inline">Edit</span>
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this project?')) {
+                            deleteProjectMutation.mutate(project.id);
+                          }
+                        }}
+                        className="btn-secondary inline-flex items-center gap-2 px-3 py-2 shadow-lg text-destructive hover:opacity-80"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Delete</span>
+                      </button>
                     </div>
                   </div>
                 ))

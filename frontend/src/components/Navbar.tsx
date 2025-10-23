@@ -114,13 +114,13 @@ export function Navbar() {
                     <DropdownMenuItem asChild>
                       <Link to={`/u/${user.username}`} className="cursor-pointer flex items-center gap-2 font-medium">
                         <User className="h-4 w-4" />
-                        <span>Profile</span>
+                        <span>Public Profile</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/settings" className="cursor-pointer flex items-center gap-2 font-medium">
+                      <Link to="/profile" className="cursor-pointer flex items-center gap-2 font-medium">
                         <Settings className="h-4 w-4" />
-                        <span>Settings</span>
+                        <span>Edit Profile & Verify Wallet</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

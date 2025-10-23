@@ -1,15 +1,44 @@
 export interface User {
   id: string;
   username: string;
-  email: string;
+  email?: string;
   displayName?: string;
+  display_name?: string; // Backend field
   avatar?: string;
+  avatar_url?: string; // Backend field
   bio?: string;
-  isVerified: boolean;
-  isAdmin: boolean;
+  isVerified?: boolean;
+  email_verified?: boolean; // Backend field
+  isAdmin?: boolean;
+  is_admin?: boolean; // Backend field
   walletAddress?: string;
-  createdAt: string;
-  updatedAt: string;
+  wallet_address?: string; // Backend field (truncated)
+  full_wallet_address?: string; // Full wallet address for explorer links
+  hasOxcert?: boolean;
+  has_oxcert?: boolean; // Backend field
+  oxcert_tx_hash?: string;
+  oxcert_token_id?: string;
+  oxcert_metadata?: {
+    name?: string;
+    description?: string;
+    image?: string;
+    attributes?: Array<{
+      trait_type: string;
+      value: string | number;
+    }>;
+  };
+  github_username?: string;
+  github_connected?: boolean;
+  karma?: number;
+  createdAt?: string;
+  created_at?: string; // Backend field
+  updatedAt?: string;
+  updated_at?: string; // Backend field
+}
+
+export interface TeamMember {
+  name: string;
+  role?: string;
 }
 
 export interface Project {
@@ -22,6 +51,8 @@ export interface Project {
   hackathonName: string;
   hackathonDate: string;
   techStack: string[];
+  teamMembers?: TeamMember[];
+  team_members?: TeamMember[]; // Backend field
   screenshots: string[];
   authorId: string;
   author: User;

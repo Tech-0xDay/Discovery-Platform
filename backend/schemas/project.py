@@ -11,6 +11,12 @@ class ProjectScreenshotSchema(Schema):
     order_index = fields.Int()
 
 
+class TeamMemberSchema(Schema):
+    """Team member schema"""
+    name = fields.Str(required=True, validate=validate.Length(min=1, max=100))
+    role = fields.Str(validate=validate.Length(max=100))
+
+
 class ProjectSchema(Schema):
     """Project response schema"""
     id = fields.Str()
@@ -22,6 +28,7 @@ class ProjectSchema(Schema):
     hackathon_name = fields.Str()
     hackathon_date = fields.Date()
     tech_stack = fields.List(fields.Str())
+    team_members = fields.List(fields.Nested(TeamMemberSchema))
     proof_score = fields.Int()
     verification_score = fields.Int()
     community_score = fields.Int()
@@ -55,12 +62,13 @@ class ProjectCreateSchema(Schema):
     hackathon_date = fields.Date()
     tech_stack = fields.List(fields.Str())
     screenshot_urls = fields.List(fields.Url())
+    team_members = fields.List(fields.Nested(TeamMemberSchema))
 
     class Meta:
         fields = (
             'title', 'tagline', 'description', 'demo_url',
             'github_url', 'hackathon_name', 'hackathon_date',
-            'tech_stack', 'screenshot_urls'
+            'tech_stack', 'screenshot_urls', 'team_members'
         )
 
 

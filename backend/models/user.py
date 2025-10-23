@@ -20,6 +20,9 @@ class User(db.Model):
     # Wallet & Blockchain
     wallet_address = db.Column(db.String(42), unique=True, nullable=True)
     has_oxcert = db.Column(db.Boolean, default=False)
+    oxcert_tx_hash = db.Column(db.String(66), nullable=True)  # NFT mint/transfer transaction hash
+    oxcert_token_id = db.Column(db.String(100), nullable=True)  # NFT token ID
+    oxcert_metadata = db.Column(db.JSON, nullable=True)  # NFT metadata (name, image, attributes)
 
     # GitHub
     github_username = db.Column(db.String(255), nullable=True)
@@ -50,6 +53,10 @@ class User(db.Model):
                                     foreign_keys='Intro.requester_id')
     intros_received = db.relationship('Intro', backref='recipient', lazy='dynamic',
                                         foreign_keys='Intro.recipient_id')
+    organized_events = db.relationship('Event', backref='organizer', lazy='dynamic',
+                                        foreign_keys='Event.organizer_id')
+    event_subscriptions = db.relationship('EventSubscriber', backref='subscriber', lazy='dynamic',
+                                          foreign_keys='EventSubscriber.user_id', cascade='all, delete-orphan')
 
     def set_password(self, password: str):
         """Hash and set password"""
@@ -71,8 +78,13 @@ class User(db.Model):
             'is_admin': self.is_admin,
             'email_verified': self.email_verified,
             'has_oxcert': self.has_oxcert,
+            'oxcert_tx_hash': self.oxcert_tx_hash,
+            'oxcert_token_id': self.oxcert_token_id,
+            'oxcert_metadata': self.oxcert_metadata,
             'github_connected': self.github_connected,
+            'github_username': self.github_username,
             'wallet_address': self.wallet_address[:6] + '...' + self.wallet_address[-4:] if self.wallet_address else None,
+            'full_wallet_address': self.wallet_address,  # Full address for explorer links
             'created_at': self.created_at.isoformat(),
         }
         if include_email:

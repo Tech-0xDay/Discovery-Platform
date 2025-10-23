@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -19,6 +20,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
+  // Helper to transform backend user data
+  const transformUser = (backendUser: any): User => {
+    return {
+      id: backendUser.id,
+      username: backendUser.username,
+      email: backendUser.email,
+      displayName: backendUser.display_name,
+      display_name: backendUser.display_name,
+      avatar: backendUser.avatar_url,
+      avatar_url: backendUser.avatar_url,
+      bio: backendUser.bio,
+      isVerified: backendUser.email_verified || false,
+      email_verified: backendUser.email_verified || false,
+      isAdmin: backendUser.is_admin || false,
+      is_admin: backendUser.is_admin || false,
+      walletAddress: backendUser.wallet_address,
+      wallet_address: backendUser.wallet_address,
+      full_wallet_address: backendUser.full_wallet_address,
+      hasOxcert: backendUser.has_oxcert || false,
+      has_oxcert: backendUser.has_oxcert || false,
+      oxcert_tx_hash: backendUser.oxcert_tx_hash,
+      oxcert_token_id: backendUser.oxcert_token_id,
+      oxcert_metadata: backendUser.oxcert_metadata,
+      github_username: backendUser.github_username,
+      github_connected: backendUser.github_connected || false,
+      karma: backendUser.karma || 0,
+      createdAt: backendUser.created_at,
+      created_at: backendUser.created_at,
+      updatedAt: backendUser.updated_at,
+      updated_at: backendUser.updated_at,
+    };
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       const savedToken = localStorage.getItem('token');
@@ -26,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
           const response = await authService.getCurrentUser();
-          setUser(response.data.data);
+          setUser(transformUser(response.data.data));
         } catch (error) {
           localStorage.removeItem('token');
           setToken(null);
@@ -46,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
     setToken(tokens.access);
-    setUser(newUser);
+    setUser(transformUser(newUser));
   };
 
   const register = async (email: string, password: string, username: string) => {
@@ -58,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
     setToken(tokens.access);
-    setUser(newUser);
+    setUser(transformUser(newUser));
   };
 
   const logout = () => {
@@ -69,8 +103,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      try {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+        const response = await authService.getCurrentUser();
+        setUser(transformUser(response.data.data));
+      } catch (error) {
+        console.error('Failed to refresh user:', error);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, refreshUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

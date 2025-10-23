@@ -17,6 +17,7 @@ def import_models():
     from models.comment import Comment
     from models.badge import ValidationBadge
     from models.intro import Intro
+    from models.event import Event, EventProject, EventSubscriber
     return True
 
 
@@ -32,7 +33,11 @@ def create_app(config_name=None):
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
-    CORS(app, origins=app.config['CORS_ORIGINS'])
+    CORS(app,
+         origins=app.config['CORS_ORIGINS'],
+         supports_credentials=True,
+         allow_headers=['Content-Type', 'Authorization'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
 
     # Register error handlers
     register_error_handlers(app)
@@ -79,6 +84,7 @@ def register_blueprints(app):
     from routes.blockchain import blockchain_bp
     from routes.users import users_bp
     from routes.uploads import uploads_bp
+    from routes.events import events_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(projects_bp, url_prefix='/api/projects')
@@ -89,6 +95,7 @@ def register_blueprints(app):
     app.register_blueprint(blockchain_bp, url_prefix='/api/blockchain')
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(uploads_bp, url_prefix='/api/upload')
+    app.register_blueprint(events_bp, url_prefix='/api/events')
 
 
 def register_error_handlers(app):

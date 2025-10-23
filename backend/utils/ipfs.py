@@ -57,7 +57,8 @@ class PinataService:
                 'file': (safe_filename, file.stream, file.content_type)
             }
 
-            # Optional metadata
+            # Optional metadata (as JSON string)
+            import json
             metadata = {
                 'name': safe_filename,
                 'keyvalues': {
@@ -68,8 +69,8 @@ class PinataService:
 
             # Prepare request data
             data = {
-                'pinataMetadata': str(metadata),
-                'pinataOptions': '{"cidVersion": 1}'
+                'pinataMetadata': json.dumps(metadata),
+                'pinataOptions': json.dumps({"cidVersion": 1})
             }
 
             # Upload to Pinata

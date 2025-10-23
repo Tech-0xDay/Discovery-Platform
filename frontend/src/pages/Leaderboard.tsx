@@ -1,26 +1,17 @@
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Trophy, Medal } from 'lucide-react';
+import { Trophy, Medal, Loader2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useProjectsLeaderboard, useBuildersLeaderboard } from '@/hooks/useLeaderboard';
 
 type LeaderboardTab = 'projects' | 'builders' | 'featured';
 
-const mockLeaderboard = {
-  projects: [
-    { rank: 1, title: 'DeFi Lending Platform', score: 234, author: 'alice_dev' },
-    { rank: 2, title: 'NFT Marketplace for Music', score: 189, author: 'bob_builder' },
-    { rank: 3, title: 'DAO Governance Dashboard', score: 156, author: 'charlie_crypto' },
-  ],
-  builders: [
-    { rank: 1, username: 'alice_dev', score: 456, projects: 5 },
-    { rank: 2, username: 'bob_builder', score: 389, projects: 3 },
-    { rank: 3, username: 'charlie_crypto', score: 298, projects: 4 },
-  ],
-};
-
 export default function Leaderboard() {
   const [tab, setTab] = useState<LeaderboardTab>('projects');
+
+  const { data: projectsData, isLoading: projectsLoading, error: projectsError } = useProjectsLeaderboard();
+  const { data: buildersData, isLoading: buildersLoading, error: buildersError } = useBuildersLeaderboard();
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-400" />;
@@ -69,54 +60,109 @@ export default function Leaderboard() {
 
           {/* Leaderboard Items */}
           <div className="space-y-4">
-            {tab === 'projects' &&
-              mockLeaderboard.projects.map((item) => (
-                <div key={item.rank} className="card-elevated p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center flex-shrink-0">
-                      {getRankIcon(item.rank)}
-                    </div>
-                    <div className="flex-1">
-                      <Link to={`/project/${item.rank}`} className="text-lg font-black text-primary hover:opacity-80 transition-quick block mb-1">
-                        {item.title}
-                      </Link>
-                      <p className="text-sm text-muted-foreground">by {item.author}</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-3xl font-black text-primary">{item.score}</div>
-                      <div className="text-xs font-bold text-muted-foreground">votes</div>
-                    </div>
+            {/* Projects Tab */}
+            {tab === 'projects' && (
+              <>
+                {projectsLoading && (
+                  <div className="card-elevated p-20 text-center flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                </div>
-              ))}
+                )}
 
-            {tab === 'builders' &&
-              mockLeaderboard.builders.map((item) => (
-                <div key={item.rank} className="card-elevated p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center flex-shrink-0">
-                      {getRankIcon(item.rank)}
-                    </div>
-                    <Avatar className="h-12 w-12 border-3 border-primary flex-shrink-0">
-                      <AvatarImage src="" alt={item.username} />
-                      <AvatarFallback className="bg-primary text-foreground font-bold text-sm">
-                        {item.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <Link to={`/u/${item.username}`} className="text-lg font-black text-primary hover:opacity-80 transition-quick block mb-1">
-                        {item.username}
-                      </Link>
-                      <p className="text-sm text-muted-foreground">{item.projects} projects</p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-3xl font-black text-primary">{item.score}</div>
-                      <div className="text-xs font-bold text-muted-foreground">total score</div>
-                    </div>
+                {projectsError && (
+                  <div className="card-elevated p-12 text-center">
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                    <p className="text-lg font-bold text-foreground mb-2">Failed to load leaderboard</p>
+                    <p className="text-sm text-muted-foreground">{(projectsError as any)?.message || 'Please try again later'}</p>
                   </div>
-                </div>
-              ))}
+                )}
 
+                {!projectsLoading && !projectsError && projectsData && projectsData.length > 0 ? (
+                  projectsData.map((item: any) => (
+                    <div key={item.rank} className="card-elevated p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center flex-shrink-0">
+                          {getRankIcon(item.rank)}
+                        </div>
+                        <div className="flex-1">
+                          <Link to={`/project/${item.id}`} className="text-lg font-black text-primary hover:opacity-80 transition-quick block mb-1">
+                            {item.title}
+                          </Link>
+                          <p className="text-sm text-muted-foreground">by {item.author.username}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-3xl font-black text-primary">{item.score}</div>
+                          <div className="text-xs font-bold text-muted-foreground">votes</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  !projectsLoading && !projectsError && (
+                    <div className="card-elevated p-12 text-center">
+                      <p className="text-lg font-bold text-foreground">No projects yet</p>
+                      <p className="text-sm text-muted-foreground mt-2">Be the first to publish a project!</p>
+                    </div>
+                  )
+                )}
+              </>
+            )}
+
+            {/* Builders Tab */}
+            {tab === 'builders' && (
+              <>
+                {buildersLoading && (
+                  <div className="card-elevated p-20 text-center flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
+
+                {buildersError && (
+                  <div className="card-elevated p-12 text-center">
+                    <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                    <p className="text-lg font-bold text-foreground mb-2">Failed to load leaderboard</p>
+                    <p className="text-sm text-muted-foreground">{(buildersError as any)?.message || 'Please try again later'}</p>
+                  </div>
+                )}
+
+                {!buildersLoading && !buildersError && buildersData && buildersData.length > 0 ? (
+                  buildersData.map((item: any) => (
+                    <div key={item.rank} className="card-elevated p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center flex-shrink-0">
+                          {getRankIcon(item.rank)}
+                        </div>
+                        <Avatar className="h-12 w-12 border-3 border-primary flex-shrink-0">
+                          <AvatarImage src={item.avatar} alt={item.username} />
+                          <AvatarFallback className="bg-primary text-foreground font-bold text-sm">
+                            {item.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <Link to={`/u/${item.username}`} className="text-lg font-black text-primary hover:opacity-80 transition-quick block mb-1">
+                            {item.username}
+                          </Link>
+                          <p className="text-sm text-muted-foreground">{item.projects} projects</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-3xl font-black text-primary">{item.score}</div>
+                          <div className="text-xs font-bold text-muted-foreground">karma</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  !buildersLoading && !buildersError && (
+                    <div className="card-elevated p-12 text-center">
+                      <p className="text-lg font-bold text-foreground">No builders yet</p>
+                      <p className="text-sm text-muted-foreground mt-2">Be the first to join the community!</p>
+                    </div>
+                  )
+                )}
+              </>
+            )}
+
+            {/* Featured Tab */}
             {tab === 'featured' && (
               <div className="card-elevated p-12 text-center">
                 <p className="text-lg font-bold text-foreground">Featured projects coming soon...</p>
