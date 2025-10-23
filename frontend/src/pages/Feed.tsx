@@ -151,44 +151,46 @@ export default function Feed() {
   const [sortType, setSortType] = useState<SortType>('hot');
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-12">
+    <div className="bg-background min-h-screen">
+      <div className="container mx-auto px-6 py-12">
         {/* Header section */}
-        <div className="mb-12 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/20 flex items-center justify-center">
-              <Zap className="h-6 w-6 text-primary" />
+        <div className="mb-10 card-elevated p-8">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="badge-primary flex items-center justify-center h-14 w-14 flex-shrink-0 rounded-[15px]">
+              <Zap className="h-7 w-7 text-foreground" />
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">
-              Discover Projects
-            </h1>
+            <div className="flex-1">
+              <h1 className="text-4xl font-black text-foreground mb-2">
+                Discover Projects
+              </h1>
+              <p className="text-base text-muted-foreground leading-relaxed">
+                Explore amazing hackathon projects with proof-weighted credibility. Find innovative builders, track their growth, and connect.
+              </p>
+            </div>
           </div>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Explore amazing hackathon projects with proof-weighted credibility. Find innovative builders, track their growth, and connect.
-          </p>
         </div>
 
-        {/* Sorting tabs */}
-        <div className="mb-8 flex items-center justify-between">
-          <Tabs value={sortType} onValueChange={(v) => setSortType(v as SortType)} className="">
-            <TabsList className="inline-flex h-auto rounded-lg bg-secondary/50 p-1 border border-border">
+        {/* Sorting section */}
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <Tabs value={sortType} onValueChange={(v) => setSortType(v as SortType)}>
+            <TabsList className="inline-flex h-auto rounded-[15px] bg-secondary border-4 border-black p-1">
               <TabsTrigger
                 value="hot"
-                className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
               >
                 <Flame className="h-4 w-4" />
                 <span className="hidden sm:inline">Hot</span>
               </TabsTrigger>
               <TabsTrigger
                 value="new"
-                className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
               >
                 <Clock className="h-4 w-4" />
                 <span className="hidden sm:inline">New</span>
               </TabsTrigger>
               <TabsTrigger
                 value="top"
-                className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">Top</span>
@@ -197,19 +199,19 @@ export default function Feed() {
           </Tabs>
 
           {/* Results info */}
-          <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{mockProjects.length}</span> projects
+          <div className="text-sm font-bold text-muted-foreground">
+            <span className="text-primary font-black">{mockProjects.length}</span> projects
           </div>
         </div>
 
         {/* Projects grid */}
-        <div className="grid gap-4 lg:gap-6">
+        <div className="grid gap-4">
           {mockProjects.length === 0 ? (
-            <div className="py-20 text-center">
+            <div className="card-elevated py-20 text-center p-8">
               <div className="space-y-4">
                 <div className="text-6xl">🚀</div>
-                <p className="text-lg font-semibold text-foreground">No projects found</p>
-                <p className="text-muted-foreground">Be the first to publish your amazing hackathon project!</p>
+                <p className="text-2xl font-black text-foreground">No projects found</p>
+                <p className="text-base text-muted-foreground">Be the first to publish your amazing hackathon project!</p>
               </div>
             </div>
           ) : (
@@ -221,8 +223,8 @@ export default function Feed() {
 
         {/* Load more button */}
         {mockProjects.length > 0 && (
-          <div className="mt-12 flex justify-center">
-            <button className="px-8 py-3 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground font-medium transition-smooth border border-border hover:border-primary">
+          <div className="mt-10 flex justify-center">
+            <button className="btn-primary">
               Load More Projects
             </button>
           </div>
