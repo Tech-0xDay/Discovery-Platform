@@ -1,0 +1,347 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Bold, Playful Dark Theme - Inspired by Modern Interactive Design */
+    --background: 0 0% 8%; /* #141414 - Almost black */
+    --foreground: 0 0% 98%; /* #FAFAFA - Almost white */
+
+    --card: 0 0% 12%; /* #1F1F1F - Dark card bg */
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Vibrant green accent */
+    --primary: 120 100% 50%; /* #00FF66 - Vibrant green */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 25%; /* #404040 - Dark gray */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 30%;
+    --muted-foreground: 0 0% 70%;
+
+    /* Accent: Bold black/dark */
+    --accent: 0 0% 15%; /* #262626 - Dark for contrast */
+    --accent-foreground: 120 100% 50%;
+
+    --destructive: 0 100% 60%; /* #FF3333 - Bold red */
+    --destructive-foreground: 0 0% 0%;
+
+    --success: 120 100% 50%; /* #00FF66 - Vibrant green */
+    --success-foreground: 0 0% 0%;
+
+    --border: 0 0% 20%; /* #333333 - Dark borders */
+    --input: 0 0% 18%;
+    --ring: 120 100% 50%;
+
+    --radius: 0.938rem; /* 15px - Rounded but not too much */
+
+    /* Gradients and effects */
+    --gradient-primary: linear-gradient(135deg, #00FF66 0%, #00CC00 100%);
+    --gradient-secondary: linear-gradient(135deg, #00FF66 0%, #00DD00 100%);
+    --border-thick: 4px solid #000000;
+    --shadow-button: 4px 6px 0px rgba(0, 0, 0, 0.8);
+    --shadow-button-hover: 2px 3px 0px rgba(0, 0, 0, 0.8);
+    --shadow-card: 6px 8px 0px rgba(0, 0, 0, 0.6);
+    --shadow-card-hover: 8px 10px 0px rgba(0, 0, 0, 0.6);
+    --transition-quick: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Scrollbar styling for dark theme - Bold */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary rounded-full;
+    border: 2px solid #000000;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent;
+  }
+}
+
+@layer base {
+  /* Typography improvements - Bold and expressive */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+
+  h1 {
+    @apply text-5xl font-black;
+  }
+
+  h2 {
+    @apply text-4xl font-bold;
+  }
+
+  h3 {
+    @apply text-3xl font-bold;
+  }
+
+  h4 {
+    @apply text-2xl font-bold;
+  }
+
+  h5, h6 {
+    @apply text-xl font-bold;
+  }
+
+  /* Better link styling */
+  a {
+    transition: var(--transition-quick);
+  }
+
+  /* Form elements - Bold style */
+  input, textarea, select {
+    @apply rounded-[15px];
+    border: 2px solid #000000;
+    background-color: hsl(var(--input));
+    color: hsl(var(--foreground));
+    font-weight: 500;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+  }
+
+  /* Placeholder styling */
+  input::placeholder, textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+}
+
+@layer components {
+  /* Buttons - Bold, Interactive Style */
+  .btn-primary {
+    @apply px-6 py-3 rounded-[15px] bg-primary text-primary-foreground font-bold text-lg;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-button);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-quick);
+  }
+
+  .btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: #00CC00;
+    transform: translateX(-100%);
+    z-index: -1;
+    transition: var(--transition-quick);
+  }
+
+  .btn-primary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-button-hover);
+  }
+
+  .btn-primary:hover::after {
+    transform: translateX(0);
+  }
+
+  .btn-primary:active {
+    filter: saturate(0.85);
+    transform: translate(4px, 4px);
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 rounded-[15px] bg-secondary text-secondary-foreground font-bold;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-button);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: var(--transition-quick);
+  }
+
+  .btn-secondary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--muted);
+    transform: translateX(-100%);
+    z-index: -1;
+    transition: var(--transition-quick);
+  }
+
+  .btn-secondary:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-button-hover);
+  }
+
+  .btn-secondary:hover::after {
+    transform: translateX(0);
+  }
+
+  .btn-secondary:active {
+    filter: saturate(0.85);
+  }
+
+  /* Cards with bold styling */
+  .card-elevated {
+    @apply bg-card rounded-[15px];
+    border: var(--border-thick);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-quick);
+  }
+
+  .card-elevated:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .card-interactive {
+    @apply bg-card rounded-[15px];
+    border: var(--border-thick);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-quick);
+  }
+
+  .card-interactive:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: #00FF66;
+  }
+
+  /* Badge styles - Bold */
+  .badge-primary {
+    @apply inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold bg-primary text-primary-foreground;
+    border: 2px solid #000000;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold bg-success text-success-foreground;
+    border: 2px solid #000000;
+  }
+
+  .badge-muted {
+    @apply inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-bold bg-secondary text-secondary-foreground;
+    border: 2px solid #000000;
+  }
+
+  /* Links with interactive style */
+  a {
+    position: relative;
+    color: var(--primary);
+    font-weight: 600;
+    transition: var(--transition-quick);
+  }
+
+  a:hover {
+    opacity: 0.8;
+  }
+}
+
+@layer utilities {
+  /* Gradient utilities */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  /* Transition utilities */
+  .transition-smooth {
+    transition: var(--transition-quick);
+  }
+
+  .transition-quick {
+    transition: var(--transition-quick);
+  }
+
+  /* Shadow utilities - Bold offset shadows */
+  .shadow-button {
+    box-shadow: var(--shadow-button);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Border utilities - Thick black borders */
+  .border-thick {
+    border: var(--border-thick);
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    transition: var(--transition-quick);
+  }
+
+  .hover-lift:hover {
+    transform: translate(2px, 2px);
+  }
+
+  /* Interactive animations */
+  .animate-slide-x {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animate-slide-x::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #00FF66;
+    opacity: 0.15;
+    transform: translateX(-100%);
+    transition: var(--transition-quick);
+    z-index: -1;
+  }
+
+  .animate-slide-x:hover::after {
+    transform: translateX(0);
+  }
+
+  /* Typography utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Bold text for emphasis */
+  .text-bold {
+    @apply font-bold;
+  }
+
+  /* Spacing utilities */
+  .space-y-tight {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+  }
+}

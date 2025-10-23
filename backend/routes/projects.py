@@ -265,6 +265,121 @@ def feature_project(user_id, project_id):
         return error_response('Error', str(e), 500)
 
 
+@projects_bp.route('/<project_id>/upvote', methods=['POST'])
+@token_required
+def upvote_project(user_id, project_id):
+    """Upvote a project"""
+    try:
+        from models.vote import Vote
+
+        project = Project.query.get(project_id)
+        if not project or project.is_deleted:
+            return error_response('Not found', 'Project not found', 404)
+
+        # Check if vote exists
+        existing_vote = Vote.query.filter_by(user_id=user_id, project_id=project_id).first()
+
+        if existing_vote:
+            # If already upvoted, remove vote
+            if existing_vote.vote_type == 'up':
+                project.upvotes = max(0, project.upvotes - 1)
+                db.session.delete(existing_vote)
+            else:
+                # Change from downvote to upvote
+                project.downvotes = max(0, project.downvotes - 1)
+                project.upvotes += 1
+                existing_vote.vote_type = 'up'
+        else:
+            # Create new upvote
+            vote = Vote(user_id=user_id, project_id=project_id, vote_type='up')
+            project.upvotes += 1
+            db.session.add(vote)
+
+        # Recalculate scores
+        ProofScoreCalculator.update_project_scores(project)
+        db.session.commit()
+        CacheService.invalidate_project(project_id)
+
+        return success_response(project.to_dict(include_creator=True), 'Project upvoted', 200)
+    except Exception as e:
+        db.session.rollback()
+        return error_response('Error', str(e), 500)
+
+
+@projects_bp.route('/<project_id>/downvote', methods=['POST'])
+@token_required
+def downvote_project(user_id, project_id):
+    """Downvote a project"""
+    try:
+        from models.vote import Vote
+
+        project = Project.query.get(project_id)
+        if not project or project.is_deleted:
+            return error_response('Not found', 'Project not found', 404)
+
+        # Check if vote exists
+        existing_vote = Vote.query.filter_by(user_id=user_id, project_id=project_id).first()
+
+        if existing_vote:
+            # If already downvoted, remove vote
+            if existing_vote.vote_type == 'down':
+                project.downvotes = max(0, project.downvotes - 1)
+                db.session.delete(existing_vote)
+            else:
+                # Change from upvote to downvote
+                project.upvotes = max(0, project.upvotes - 1)
+                project.downvotes += 1
+                existing_vote.vote_type = 'down'
+        else:
+            # Create new downvote
+            vote = Vote(user_id=user_id, project_id=project_id, vote_type='down')
+            project.downvotes += 1
+            db.session.add(vote)
+
+        # Recalculate scores
+        ProofScoreCalculator.update_project_scores(project)
+        db.session.commit()
+        CacheService.invalidate_project(project_id)
+
+        return success_response(project.to_dict(include_creator=True), 'Project downvoted', 200)
+    except Exception as e:
+        db.session.rollback()
+        return error_response('Error', str(e), 500)
+
+
+@projects_bp.route('/<project_id>/vote', methods=['DELETE'])
+@token_required
+def remove_vote(user_id, project_id):
+    """Remove vote from project"""
+    try:
+        from models.vote import Vote
+
+        project = Project.query.get(project_id)
+        if not project or project.is_deleted:
+            return error_response('Not found', 'Project not found', 404)
+
+        # Find and remove vote
+        vote = Vote.query.filter_by(user_id=user_id, project_id=project_id).first()
+
+        if not vote:
+            return error_response('Not found', 'No vote to remove', 404)
+
+        if vote.vote_type == 'up':
+            project.upvotes = max(0, project.upvotes - 1)
+        else:
+            project.downvotes = max(0, project.downvotes - 1)
+
+        db.session.delete(vote)
+        ProofScoreCalculator.update_project_scores(project)
+        db.session.commit()
+        CacheService.invalidate_project(project_id)
+
+        return success_response(None, 'Vote removed', 200)
+    except Exception as e:
+        db.session.rollback()
+        return error_response('Error', str(e), 500)
+
+
 @projects_bp.route('/leaderboard', methods=['GET'])
 @optional_auth
 def get_leaderboard(user_id):
