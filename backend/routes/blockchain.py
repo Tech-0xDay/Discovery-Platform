@@ -4,7 +4,7 @@ Blockchain routes for 0xCerts verification
 from flask import Blueprint, request
 from marshmallow import Schema, fields, ValidationError
 
-from app import db
+from extensions import db
 from models.user import User
 from utils.decorators import token_required, optional_auth
 from utils.blockchain import BlockchainService

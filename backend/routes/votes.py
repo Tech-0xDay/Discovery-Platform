@@ -3,7 +3,7 @@ Vote routes
 """
 from flask import Blueprint, request
 
-from app import db
+from extensions import db
 from models.vote import Vote
 from models.project import Project
 from schemas.vote import VoteCreateSchema

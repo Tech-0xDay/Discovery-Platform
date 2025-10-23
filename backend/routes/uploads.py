@@ -1,5 +1,5 @@
 """
-File upload routes
+File upload routes - Using Pinata IPFS
 """
 import os
 from flask import Blueprint, request
@@ -7,16 +7,13 @@ from werkzeug.utils import secure_filename
 
 from utils.decorators import token_required
 from utils.helpers import success_response, error_response
+from utils.ipfs import PinataService
 
 uploads_bp = Blueprint('uploads', __name__)
 
 # Configuration
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'uploads')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-
-# Create upload folder if it doesn't exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB (IPFS can handle larger files)
 
 
 def allowed_file(filename):
@@ -27,7 +24,7 @@ def allowed_file(filename):
 @uploads_bp.route('', methods=['POST'])
 @token_required
 def upload_file(user_id):
-    """Upload screenshot"""
+    """Upload screenshot to IPFS via Pinata"""
     try:
         if 'file' not in request.files:
             return error_response('Bad request', 'No file provided', 400)
@@ -38,7 +35,7 @@ def upload_file(user_id):
             return error_response('Bad request', 'No file selected', 400)
 
         if not allowed_file(file.filename):
-            return error_response('Bad request', 'File type not allowed', 400)
+            return error_response('Bad request', 'File type not allowed. Allowed: png, jpg, jpeg, gif, webp, svg', 400)
 
         # Check file size
         file.seek(0, os.SEEK_END)
@@ -46,30 +43,33 @@ def upload_file(user_id):
         file.seek(0)
 
         if file_size > MAX_FILE_SIZE:
-            return error_response('Bad request', 'File size exceeds limit', 413)
+            return error_response('Bad request', f'File size exceeds {MAX_FILE_SIZE / 1024 / 1024}MB limit', 413)
 
-        # Save file
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
+        # Upload to IPFS via Pinata
+        result = PinataService.upload_file(file)
 
-        # Return file URL (adjust this based on your serving setup)
-        file_url = f'/uploads/{filename}'
+        if not result['success']:
+            return error_response('Upload failed', result['error'], 500)
 
         return success_response({
-            'filename': filename,
-            'url': file_url,
+            'filename': result['filename'],
+            'url': result['url'],  # IPFS gateway URL
+            'ipfs_hash': result['ipfs_hash'],
+            'pinata_url': result['pinata_url'],
             'size': file_size
-        }, 'File uploaded successfully', 201)
+        }, 'File uploaded to IPFS successfully', 201)
 
     except Exception as e:
         return error_response('Upload failed', str(e), 500)
 
 
-# For local development, you can serve uploads like this:
-# from flask import send_from_directory
-# @app.route('/uploads/<path:filename>')
-# def download_file(filename):
-#     return send_from_directory(UPLOAD_FOLDER, filename)
-#
-# For production, use S3 or CDN
+@uploads_bp.route('/test', methods=['GET'])
+@token_required
+def test_pinata(user_id):
+    """Test Pinata connection"""
+    result = PinataService.test_connection()
+
+    if result['connected']:
+        return success_response(result, 'Pinata connection successful', 200)
+    else:
+        return error_response('Connection failed', result['error'], 500)

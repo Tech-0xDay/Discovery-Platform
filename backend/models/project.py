@@ -4,7 +4,7 @@ Project Model
 from datetime import datetime
 from uuid import uuid4
 from sqlalchemy.dialects.postgresql import ARRAY
-from app import db
+from extensions import db
 
 
 class Project(db.Model):

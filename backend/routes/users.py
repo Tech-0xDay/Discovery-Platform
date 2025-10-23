@@ -4,7 +4,7 @@ User routes
 from flask import Blueprint, request
 from marshmallow import ValidationError
 
-from app import db
+from extensions import db
 from models.user import User
 from schemas.user import UserProfileUpdateSchema
 from utils.decorators import token_required, optional_auth

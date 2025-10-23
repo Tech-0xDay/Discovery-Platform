@@ -3,7 +3,7 @@ Comment Model
 """
 from datetime import datetime
 from uuid import uuid4
-from app import db
+from extensions import db
 
 
 class Comment(db.Model):

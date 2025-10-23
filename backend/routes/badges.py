@@ -5,7 +5,7 @@ from flask import Blueprint, request
 from datetime import datetime
 from marshmallow import ValidationError
 
-from app import db
+from extensions import db
 from models.badge import ValidationBadge
 from models.project import Project
 from schemas.badge import BadgeAwardSchema

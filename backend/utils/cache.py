@@ -14,7 +14,13 @@ class CacheService:
         """Get Redis client instance"""
         try:
             redis_url = current_app.config.get('REDIS_URL', 'redis://localhost:6379/0')
-            return redis.from_url(redis_url, decode_responses=True)
+            # Handle both redis:// and rediss:// (TLS) connections
+            # Upstash uses rediss:// for TLS
+            return redis.from_url(
+                redis_url,
+                decode_responses=True,
+                ssl_cert_reqs=None  # For Upstash TLS compatibility
+            )
         except Exception as e:
             print(f"Redis connection failed: {e}")
             return None
