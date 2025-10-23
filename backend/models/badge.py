@@ -15,9 +15,9 @@ class ValidationBadge(db.Model):
     project_id = db.Column(db.String(36), db.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
     validator_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
 
-    badge_type = db.Column(db.String(20), nullable=False)  # 'silver', 'gold', 'platinum'
+    badge_type = db.Column(db.String(20), nullable=False)  # 'stone', 'silver', 'gold', 'platinum', 'demerit'
     rationale = db.Column(db.Text)
-    points = db.Column(db.Integer, nullable=False)  # 10, 15, or 20
+    points = db.Column(db.Integer, nullable=False)  # -10, 5, 10, 15, or 20
 
     is_featured = db.Column(db.Boolean, default=False)  # Featured badge flag
 
@@ -25,13 +25,15 @@ class ValidationBadge(db.Model):
 
     # Badge type validation
     __table_args__ = (
-        db.CheckConstraint("badge_type IN ('silver', 'gold', 'platinum')"),
+        db.CheckConstraint("badge_type IN ('stone', 'silver', 'gold', 'platinum', 'demerit')"),
     )
 
     BADGE_POINTS = {
+        'stone': 5,
         'silver': 10,
         'gold': 15,
         'platinum': 20,
+        'demerit': -10,
     }
 
     def to_dict(self, include_validator=False):
@@ -44,9 +46,11 @@ class ValidationBadge(db.Model):
             'rationale': self.rationale,
             'is_featured': self.is_featured,
             'created_at': self.created_at.isoformat(),
+            'awarded_at': self.created_at.isoformat(),  # Alias for frontend compatibility
         }
         if include_validator:
             data['validator'] = self.validator.to_dict()
+            data['awarded_by'] = self.validator.to_dict()  # Alias for frontend compatibility
         return data
 
     def __repr__(self):

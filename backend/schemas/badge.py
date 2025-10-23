@@ -19,7 +19,7 @@ class BadgeSchema(Schema):
 class BadgeAwardSchema(Schema):
     """Badge award schema"""
     project_id = fields.Str(required=True)
-    badge_type = fields.Str(required=True, validate=validate.OneOf(['silver', 'gold', 'platinum']))
+    badge_type = fields.Str(required=True, validate=validate.OneOf(['stone', 'silver', 'gold', 'platinum', 'demerit']))
     rationale = fields.Str()
 
     class Meta:

@@ -60,7 +60,7 @@ function transformProject(backendProject: any) {
       validation: backendProject.validation_score || 0,
       quality: backendProject.quality_score || 0,
     },
-    badges: [], // TODO: Transform badges if needed
+    badges: backendProject.badges || [],
     voteCount: (backendProject.upvotes || 0) - (backendProject.downvotes || 0),
     commentCount: backendProject.comment_count || 0,
     userVote: backendProject.user_vote || null,

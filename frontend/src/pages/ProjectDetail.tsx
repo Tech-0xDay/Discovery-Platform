@@ -5,6 +5,7 @@ import { VoteButtons } from '@/components/VoteButtons';
 import { CommentSection } from '@/components/CommentSection';
 import { BadgeAwarder } from '@/components/BadgeAwarder';
 import { IntroRequest } from '@/components/IntroRequest';
+import { ValidationStatusCard } from '@/components/ValidationStatusCard';
 import { useAuth } from '@/context/AuthContext';
 import { useProjectById } from '@/hooks/useProjects';
 
@@ -113,7 +114,7 @@ export default function ProjectDetail() {
           {/* Creator & Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {/* Creator Card */}
-            <div className="card-elevated p-5 md:col-span-2">
+            <div className="card-elevated p-5 md:col-span-3">
               <div className="flex items-center gap-3 mb-4">
                 <Avatar className="h-12 w-12 border-3 border-primary">
                   <AvatarImage src={project.author?.avatar} alt={project.author?.username} />
@@ -170,61 +171,13 @@ export default function ProjectDetail() {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Score Breakdown Card */}
-            {project.proofScore && (
-              <div className="card-elevated p-5">
-                <h3 className="font-black text-sm mb-3 text-foreground">Score Breakdown</h3>
-                <div className="space-y-3">
-                  {project.proofScore.verification !== undefined && (
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-bold">Verification</span>
-                        <span className="text-primary font-black">{project.proofScore.verification}</span>
-                      </div>
-                      <div className="h-2 bg-secondary border-2 border-black rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all"
-                          style={{ width: `${Math.min(project.proofScore.verification, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {project.proofScore.community !== undefined && (
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-bold">Community</span>
-                        <span className="text-primary font-black">{project.proofScore.community}</span>
-                      </div>
-                      <div className="h-2 bg-secondary border-2 border-black rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all"
-                          style={{ width: `${Math.min(project.proofScore.community, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {project.proofScore.quality !== undefined && (
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="font-bold">Quality</span>
-                        <span className="text-primary font-black">{project.proofScore.quality}</span>
-                      </div>
-                      <div className="h-2 bg-secondary border-2 border-black rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all"
-                          style={{ width: `${Math.min(project.proofScore.quality, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
+          {/* Verification Cards Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {/* 0xCert Verification */}
             {project.author?.has_oxcert && (
-              <div className="card-elevated p-5 mt-4">
+              <div className="card-elevated p-5">
                 <h3 className="font-black text-sm mb-3 text-foreground flex items-center gap-2">
                   <Shield className="h-4 w-4 text-primary" />
                   0xCert Verification
@@ -322,6 +275,9 @@ export default function ProjectDetail() {
                 </div>
               </div>
             )}
+
+            {/* Validation Status Card */}
+            <ValidationStatusCard badges={project.badges} />
           </div>
 
           {/* Badges Section */}

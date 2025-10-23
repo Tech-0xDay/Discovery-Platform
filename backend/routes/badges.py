@@ -9,7 +9,7 @@ from extensions import db
 from models.badge import ValidationBadge
 from models.project import Project
 from schemas.badge import BadgeAwardSchema
-from utils.decorators import admin_required
+from utils.decorators import admin_required, token_required
 from utils.helpers import success_response, error_response
 from utils.scores import ProofScoreCalculator
 from utils.cache import CacheService
@@ -18,7 +18,7 @@ badges_bp = Blueprint('badges', __name__)
 
 
 @badges_bp.route('/award', methods=['POST'])
-@admin_required
+@token_required
 def award_badge(user_id):
     """Award validation badge (admin only)"""
     try:

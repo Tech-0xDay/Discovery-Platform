@@ -26,6 +26,7 @@ import Publish from "./pages/Publish";
 import EditProject from "./pages/EditProject";
 import Intros from "./pages/Intros";
 import Admin from "./pages/Admin";
+import AdminValidator from "./pages/AdminValidator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +62,9 @@ const App = () => (
 
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+
+              {/* Admin+Validator Route (Password Protected) */}
+              <Route path="/admin+validator" element={<AdminValidator />} />
 
               {/* 404 */}
               <Route path="*" element={<NotFound />} />

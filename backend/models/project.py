@@ -125,6 +125,7 @@ class Project(db.Model):
             'user_id': self.user_id,
             'screenshots': [ss.to_dict() for ss in self.screenshots],
             'badge_count': self.badges.count(),
+            'badges': [b.to_dict(include_validator=True) for b in self.badges],
         }
 
         if include_creator:
