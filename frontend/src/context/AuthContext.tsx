@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { authService } from '@/services/api';
 import { User } from '@/types';
 
 interface AuthContextType {
@@ -24,8 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (savedToken) {
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-          const response = await axios.get('/api/auth/me');
-          setUser(response.data);
+          const response = await authService.getCurrentUser();
+          setUser(response.data.data);
         } catch (error) {
           localStorage.removeItem('token');
           setToken(null);
@@ -37,26 +38,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post('/api/auth/login', { email, password });
-    const { access_token, refresh_token, user: newUser } = response.data;
-    localStorage.setItem('token', access_token);
-    if (refresh_token) {
-      localStorage.setItem('refreshToken', refresh_token);
+    const response = await authService.login(email, password);
+    const { tokens, user: newUser } = response.data.data;
+    localStorage.setItem('token', tokens.access);
+    if (tokens.refresh) {
+      localStorage.setItem('refreshToken', tokens.refresh);
     }
-    axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    setToken(access_token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
+    setToken(tokens.access);
     setUser(newUser);
   };
 
   const register = async (email: string, password: string, username: string) => {
-    const response = await axios.post('/api/auth/register', { email, password, username });
-    const { access_token, refresh_token, user: newUser } = response.data;
-    localStorage.setItem('token', access_token);
-    if (refresh_token) {
-      localStorage.setItem('refreshToken', refresh_token);
+    const response = await authService.register(email, username, password);
+    const { tokens, user: newUser } = response.data.data;
+    localStorage.setItem('token', tokens.access);
+    if (tokens.refresh) {
+      localStorage.setItem('refreshToken', tokens.refresh);
     }
-    axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-    setToken(access_token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
+    setToken(tokens.access);
     setUser(newUser);
   };
 

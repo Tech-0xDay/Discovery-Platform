@@ -5,7 +5,9 @@
       "Bash(dir:*)",
       "Bash(pip install:*)",
       "Bash(python app.py:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

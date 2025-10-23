@@ -21,7 +21,7 @@ export function CommentSection({ projectId }: CommentSectionProps) {
   const { data: commentsData, isLoading } = useComments(projectId);
   const createCommentMutation = useCreateComment(projectId);
   const deleteCommentMutation = useDeleteComment('', projectId);
-  const voteCommentMutation = useVoteComment('', projectId);
+  const voteCommentMutation = useVoteComment(projectId);
 
   const comments = commentsData?.data || [];
 
@@ -123,7 +123,7 @@ export function CommentSection({ projectId }: CommentSectionProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => voteCommentMutation.mutate('up')}
+                      onClick={() => voteCommentMutation.mutate({ commentId: comment.id, voteType: 'up' })}
                       disabled={voteCommentMutation.isPending}
                       className="text-muted-foreground"
                     >

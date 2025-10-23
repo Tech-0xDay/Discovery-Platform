@@ -53,7 +53,7 @@ class Config:
     PINATA_JWT = os.getenv('PINATA_JWT')
 
     # CORS
-    CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
+    CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8080').split(',')
 
     # Rate Limiting
     RATELIMIT_ENABLED = os.getenv('RATELIMIT_ENABLED', 'true').lower() == 'true'

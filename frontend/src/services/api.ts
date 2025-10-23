@@ -15,14 +15,26 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config.data || {});
   return config;
 });
 
 // Handle responses and errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API Response] ${response.status}`, response.data);
+    return response;
+  },
   async (error) => {
     const config = error.config;
+
+    console.error(`[API Error] ${error.response?.status || 'Network'}:`, {
+      url: config?.url,
+      method: config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
 
     // Handle 401 Unauthorized - try to refresh token
     if (error.response?.status === 401 && !config._retry) {
@@ -34,14 +46,18 @@ api.interceptors.response.use(
             headers: { Authorization: `Bearer ${refreshToken}` },
           });
 
-          if (response.data?.access_token) {
-            localStorage.setItem('token', response.data.access_token);
-            api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
-            config.headers['Authorization'] = `Bearer ${response.data.access_token}`;
+          // Backend returns { status, message, data: { access } }
+          const newAccessToken = response.data?.data?.access;
+          if (newAccessToken) {
+            console.log('[Auth] Token refreshed successfully');
+            localStorage.setItem('token', newAccessToken);
+            api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+            config.headers['Authorization'] = `Bearer ${newAccessToken}`;
             return api(config);
           }
         }
       } catch (refreshError) {
+        console.error('[Auth] Token refresh failed:', refreshError);
         // Refresh failed, clear auth and redirect to login
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
@@ -49,13 +65,17 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle other error statuses
-    if (error.response?.status === 403) {
+    // Handle other error statuses with backend messages
+    if (error.response?.data?.message) {
+      error.message = error.response.data.message;
+    } else if (error.response?.status === 403) {
       error.message = 'You do not have permission to perform this action';
     } else if (error.response?.status === 404) {
       error.message = 'Resource not found';
     } else if (error.response?.status === 500) {
       error.message = 'Server error. Please try again later';
+    } else if (!error.response) {
+      error.message = 'Network error. Please check your connection';
     }
 
     return Promise.reject(error);
@@ -86,6 +106,8 @@ export const commentsService = {
   create: (data: any) => api.post('/comments', data),
   update: (commentId: string, data: any) => api.put(`/comments/${commentId}`, data),
   delete: (commentId: string) => api.delete(`/comments/${commentId}`),
+  vote: (commentId: string, voteType: 'up' | 'down') =>
+    api.post(`/comments/${commentId}/vote`, { vote_type: voteType }),
 };
 
 // Badges

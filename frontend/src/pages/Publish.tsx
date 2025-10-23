@@ -57,15 +57,40 @@ export default function Publish() {
     }
 
     try {
-      await createProjectMutation.mutateAsync({
-        ...data,
-        techStack,
-      });
+      // Convert camelCase to snake_case for backend
+      const payload: any = {
+        title: data.title,
+        description: data.description,
+        tech_stack: techStack,
+      };
+
+      // Add optional fields only if they have values
+      if (data.tagline && data.tagline.trim()) {
+        payload.tagline = data.tagline;
+      }
+      if (data.demoUrl && data.demoUrl.trim()) {
+        payload.demo_url = data.demoUrl;
+      }
+      if (data.githubUrl && data.githubUrl.trim()) {
+        payload.github_url = data.githubUrl;
+      }
+      if (data.hackathonName && data.hackathonName.trim()) {
+        payload.hackathon_name = data.hackathonName;
+      }
+      if (data.hackathonDate && data.hackathonDate.trim()) {
+        payload.hackathon_date = data.hackathonDate;
+      }
+
+      console.log('Submitting payload:', payload);
+      await createProjectMutation.mutateAsync(payload);
+      toast.success('Project published successfully!');
       reset();
       setTechStack([]);
       navigate('/my-projects');
-    } catch (error) {
-      toast.error('Failed to publish project');
+    } catch (error: any) {
+      console.error('Error publishing project:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to publish project';
+      toast.error(errorMessage);
     }
   };
 
@@ -101,11 +126,11 @@ export default function Publish() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tagline">Tagline *</Label>
+                  <Label htmlFor="tagline">Tagline (Optional)</Label>
                   <Input
                     id="tagline"
                     placeholder="A brief one-liner description"
-                    maxLength={100}
+                    maxLength={300}
                     {...register('tagline')}
                   />
                   {errors.tagline && (
@@ -117,25 +142,25 @@ export default function Publish() {
                   <Label htmlFor="description">Description *</Label>
                   <Textarea
                     id="description"
-                    placeholder="Describe your project in detail (minimum 200 characters)"
+                    placeholder="Describe your project in detail (minimum 50 characters)"
                     rows={8}
                     {...register('description')}
                   />
                   {errors.description && (
                     <p className="text-sm text-destructive">{errors.description.message}</p>
                   )}
-                  <p className="text-xs text-muted-foreground">Minimum 200 characters required</p>
+                  <p className="text-xs text-muted-foreground">Minimum 50 characters required</p>
                 </div>
                 </div>
               </div>
 
               <div className="card-elevated p-6">
                 <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
-                  Hackathon Details
+                  Hackathon Details (Optional)
                 </h2>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="hackathonName">Hackathon Name *</Label>
+                    <Label htmlFor="hackathonName">Hackathon Name</Label>
                     <Input
                       id="hackathonName"
                       placeholder="e.g., ETH Global London"
@@ -147,7 +172,7 @@ export default function Publish() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="hackathonDate">Hackathon Date *</Label>
+                    <Label htmlFor="hackathonDate">Hackathon Date</Label>
                     <Input
                       id="hackathonDate"
                       type="date"

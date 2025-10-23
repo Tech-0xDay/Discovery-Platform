@@ -74,7 +74,7 @@ export default function Feed() {
           {/* Results info */}
           {!isLoading && (
             <div className="text-sm font-bold text-muted-foreground">
-              <span className="text-primary font-black">{data?.data?.pagination?.total || 0}</span> projects
+              <span className="text-primary font-black">{data?.pagination?.total || 0}</span> projects
             </div>
           )}
         </div>
@@ -100,7 +100,7 @@ export default function Feed() {
         {/* Projects grid */}
         {!isLoading && !error && (
           <div className="grid gap-4">
-            {!data?.data || data.data.length === 0 ? (
+            {!Array.isArray(data?.data) || data.data.length === 0 ? (
               <div className="card-elevated py-20 text-center p-8">
                 <div className="space-y-4">
                   <div className="text-6xl">🚀</div>
@@ -121,17 +121,17 @@ export default function Feed() {
           <div className="mt-10 flex justify-center gap-4">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={!data.pagination.has_prev}
+              disabled={page <= 1}
               className="btn-primary disabled:opacity-50"
             >
               Previous
             </button>
             <span className="flex items-center px-4 font-bold">
-              Page {data.pagination.page} of {data.pagination.pages}
+              Page {data.pagination.page} of {data.pagination.total_pages}
             </span>
             <button
               onClick={() => setPage(p => p + 1)}
-              disabled={!data.pagination.has_next}
+              disabled={page >= data.pagination.total_pages}
               className="btn-primary disabled:opacity-50"
             >
               Next

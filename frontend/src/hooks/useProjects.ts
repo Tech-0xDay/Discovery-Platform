@@ -29,13 +29,20 @@ export function useCreateProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => projectsService.create(data),
-    onSuccess: () => {
+    mutationFn: (data: any) => {
+      console.log('Creating project with data:', data);
+      return projectsService.create(data);
+    },
+    onSuccess: (response) => {
+      console.log('Project created successfully:', response);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['user-projects'] });
       toast.success('Project published successfully!');
     },
-    onError: () => {
-      toast.error('Failed to publish project');
+    onError: (error: any) => {
+      console.error('Project creation error:', error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to publish project';
+      toast.error(errorMessage);
     },
   });
 }

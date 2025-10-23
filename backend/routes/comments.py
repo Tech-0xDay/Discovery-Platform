@@ -125,3 +125,30 @@ def delete_comment(user_id, comment_id):
     except Exception as e:
         db.session.rollback()
         return error_response('Error', str(e), 500)
+
+
+@comments_bp.route('/<comment_id>/vote', methods=['POST'])
+@token_required
+def vote_comment(user_id, comment_id):
+    """Vote on a comment (upvote/downvote)"""
+    try:
+        comment = Comment.query.get(comment_id)
+        if not comment:
+            return error_response('Not found', 'Comment not found', 404)
+
+        data = request.get_json()
+        vote_type = data.get('vote_type', 'up')  # 'up' or 'down'
+
+        if vote_type == 'up':
+            comment.upvotes += 1
+        elif vote_type == 'down':
+            comment.downvotes += 1
+        else:
+            return error_response('Bad request', 'Invalid vote_type. Use "up" or "down"', 400)
+
+        db.session.commit()
+
+        return success_response(comment.to_dict(include_author=True), f'Comment {vote_type}voted', 200)
+    except Exception as e:
+        db.session.rollback()
+        return error_response('Error', str(e), 500)

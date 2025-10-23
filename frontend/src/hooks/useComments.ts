@@ -56,3 +56,19 @@ export function useDeleteComment(commentId: string, projectId: string) {
   });
 }
 
+export function useVoteComment(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ commentId, voteType }: { commentId: string; voteType: 'up' | 'down' }) =>
+      commentsService.vote(commentId, voteType),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', projectId] });
+      toast.success('Vote added!');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to vote on comment');
+    },
+  });
+}
+
