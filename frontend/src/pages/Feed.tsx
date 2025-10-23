@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectCard } from '@/components/ProjectCard';
 import { SortType } from '@/types';
 import { Flame, Clock, TrendingUp, Zap, Loader2, Building2, ArrowRight } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/context/AuthContext';
+import { projectsService } from '@/services/api';
 
 // Map frontend sort types to backend sort types
 const sortTypeMap: Record<SortType, string> = {
@@ -17,12 +19,36 @@ const sortTypeMap: Record<SortType, string> = {
 export default function Feed() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [sortType, setSortType] = useState<SortType>('hot');
   const [page, setPage] = useState(1);
 
   // Convert frontend sort type to backend sort type
   const backendSort = sortTypeMap[sortType];
   const { data, isLoading, error } = useProjects(backendSort, page);
+
+  // Prefetch all tabs on mount for instant switching
+  useEffect(() => {
+    const prefetchTabs = async () => {
+      // Prefetch the other two tabs that aren't currently active
+      const tabsToPrefetch = Object.values(sortTypeMap).filter(sort => sort !== backendSort);
+
+      for (const sort of tabsToPrefetch) {
+        queryClient.prefetchQuery({
+          queryKey: ['projects', sort, 1],
+          queryFn: async () => {
+            const response = await projectsService.getAll(sort, 1);
+            return {
+              ...response.data,
+              data: response.data.data || [],
+            };
+          },
+        });
+      }
+    };
+
+    prefetchTabs();
+  }, []); // Only run once on mount
 
   return (
     <div className="bg-background min-h-screen">

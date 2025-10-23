@@ -4,6 +4,7 @@
 import os
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_compress import Compress
 
 from config import config
 from extensions import db, jwt, migrate
@@ -36,6 +37,10 @@ def create_app(config_name=None):
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
+
+    # Enable compression for all responses
+    Compress(app)
+
     CORS(app,
          origins=app.config['CORS_ORIGINS'],
          supports_credentials=True,

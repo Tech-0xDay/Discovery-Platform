@@ -83,6 +83,8 @@ export function useProjects(sort: string = 'hot', page: number = 1) {
         data: response.data.data?.map(transformProject) || [],
       };
     },
+    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes (formerly cacheTime)
   });
 }
 
@@ -99,6 +101,8 @@ export function useProjectById(id: string) {
       };
     },
     enabled: !!id,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes (project details change less often)
+    gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
   });
 }
 
@@ -115,6 +119,8 @@ export function useUserProjects(userId: string) {
       };
     },
     enabled: !!userId,
+    staleTime: 1000 * 60 * 3, // Consider data fresh for 3 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
   });
 }
 

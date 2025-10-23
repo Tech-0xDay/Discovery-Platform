@@ -35,5 +35,7 @@ export function useUserByUsername(username: string) {
       return transformUser(response.data.data);
     },
     enabled: !!username,
+    staleTime: 1000 * 60 * 5, // User data stays fresh for 5 minutes
+    gcTime: 1000 * 60 * 20, // Keep in cache for 20 minutes
   });
 }

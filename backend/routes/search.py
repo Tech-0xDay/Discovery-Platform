@@ -3,6 +3,7 @@ Search routes
 """
 from flask import Blueprint, request
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from extensions import db
 from models.project import Project
 from models.user import User
@@ -25,9 +26,9 @@ def search(user_id):
         if len(query) < 2:
             return error_response('Validation error', 'Search query must be at least 2 characters', 400)
 
-        # Search projects
+        # Search projects - eager load creator to avoid N+1 queries
         search_pattern = f'%{query}%'
-        projects = Project.query.filter(
+        projects = Project.query.options(joinedload(Project.creator)).filter(
             Project.is_deleted == False,
             or_(
                 Project.title.ilike(search_pattern),

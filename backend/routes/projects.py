@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
 from sqlalchemy import func, or_
+from sqlalchemy.orm import joinedload
 
 from extensions import db
 from models.project import Project, ProjectScreenshot
@@ -112,7 +113,8 @@ def list_projects(user_id):
             )
 
         total = query.count()
-        projects = query.limit(per_page).offset((page - 1) * per_page).all()
+        # Eager load creator to avoid N+1 queries
+        projects = query.options(joinedload(Project.creator)).limit(per_page).offset((page - 1) * per_page).all()
 
         data = [p.to_dict(include_creator=True, user_id=user_id) for p in projects]
 
@@ -412,7 +414,7 @@ def get_leaderboard(user_id):
         if since:
             query = query.filter(Project.created_at >= since)
 
-        top_projects = query.order_by(
+        top_projects = query.options(joinedload(Project.creator)).order_by(
             Project.proof_score.desc()
         ).limit(limit).all()
 
@@ -438,7 +440,7 @@ def get_leaderboard(user_id):
         ).limit(limit).all()
 
         # Featured projects
-        featured = Project.query.filter_by(
+        featured = Project.query.options(joinedload(Project.creator)).filter_by(
             is_deleted=False,
             is_featured=True
         ).order_by(Project.featured_at.desc()).limit(limit).all()
