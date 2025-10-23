@@ -38,24 +38,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await axios.post('/api/auth/login', { email, password });
-    const { token: newToken, user: newUser } = response.data;
-    localStorage.setItem('token', newToken);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-    setToken(newToken);
+    const { access_token, refresh_token, user: newUser } = response.data;
+    localStorage.setItem('token', access_token);
+    if (refresh_token) {
+      localStorage.setItem('refreshToken', refresh_token);
+    }
+    axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+    setToken(access_token);
     setUser(newUser);
   };
 
   const register = async (email: string, password: string, username: string) => {
     const response = await axios.post('/api/auth/register', { email, password, username });
-    const { token: newToken, user: newUser } = response.data;
-    localStorage.setItem('token', newToken);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-    setToken(newToken);
+    const { access_token, refresh_token, user: newUser } = response.data;
+    localStorage.setItem('token', access_token);
+    if (refresh_token) {
+      localStorage.setItem('refreshToken', refresh_token);
+    }
+    axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+    setToken(access_token);
     setUser(newUser);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     delete axios.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);

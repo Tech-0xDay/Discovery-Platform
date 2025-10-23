@@ -14,7 +14,7 @@ export function useCreateComment(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => commentsService.create(projectId, data),
+    mutationFn: (data: any) => commentsService.create({ ...data, project_id: projectId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', projectId] });
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
@@ -56,16 +56,3 @@ export function useDeleteComment(commentId: string, projectId: string) {
   });
 }
 
-export function useVoteComment(commentId: string, projectId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (voteType: 'up' | 'down') => commentsService.voteComment(commentId, voteType),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', projectId] });
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to vote');
-    },
-  });
-}

@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(dir:*)",
+      "Bash(pip install:*)",
+      "Bash(python app.py:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

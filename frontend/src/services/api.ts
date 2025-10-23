@@ -18,6 +18,50 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle responses and errors
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+
+    // Handle 401 Unauthorized - try to refresh token
+    if (error.response?.status === 401 && !config._retry) {
+      config._retry = true;
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+          const response = await axios.post(`${API_BASE}/auth/refresh`, {}, {
+            headers: { Authorization: `Bearer ${refreshToken}` },
+          });
+
+          if (response.data?.access_token) {
+            localStorage.setItem('token', response.data.access_token);
+            api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+            config.headers['Authorization'] = `Bearer ${response.data.access_token}`;
+            return api(config);
+          }
+        }
+      } catch (refreshError) {
+        // Refresh failed, clear auth and redirect to login
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      }
+    }
+
+    // Handle other error statuses
+    if (error.response?.status === 403) {
+      error.message = 'You do not have permission to perform this action';
+    } else if (error.response?.status === 404) {
+      error.message = 'Resource not found';
+    } else if (error.response?.status === 500) {
+      error.message = 'Server error. Please try again later';
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Projects
 export const projectsService = {
   getAll: (sort: string = 'hot', page: number = 1) =>
@@ -38,42 +82,62 @@ export const votesService = {
 
 // Comments
 export const commentsService = {
-  getByProject: (projectId: string) => api.get(`/projects/${projectId}/comments`),
-  create: (projectId: string, data: any) => api.post(`/projects/${projectId}/comments`, data),
+  getByProject: (projectId: string) => api.get(`/comments?project_id=${projectId}`),
+  create: (data: any) => api.post('/comments', data),
   update: (commentId: string, data: any) => api.put(`/comments/${commentId}`, data),
   delete: (commentId: string) => api.delete(`/comments/${commentId}`),
-  voteComment: (commentId: string, voteType: 'up' | 'down') =>
-    api.post(`/comments/${commentId}/vote`, { voteType }),
 };
 
 // Badges
 export const badgesService = {
-  award: (projectId: string, data: any) => api.post(`/projects/${projectId}/badges`, data),
-  getByProject: (projectId: string) => api.get(`/projects/${projectId}/badges`),
+  award: (data: any) => api.post('/badges/award', data),
+  getByProject: (projectId: string) => api.get(`/badges/${projectId}`),
 };
 
 // Users
 export const usersService = {
-  getById: (id: string) => api.get(`/users/${id}`),
-  getByUsername: (username: string) => api.get(`/users/username/${username}`),
-  update: (id: string, data: any) => api.put(`/users/${id}`, data),
+  getByUsername: (username: string) => api.get(`/users/${username}`),
+  update: (data: any) => api.put('/users/profile', data),
   getProfile: () => api.get('/auth/me'),
+  getStats: () => api.get('/users/stats'),
 };
 
 // Wallet & Verification
 export const walletService = {
   verifyCert: (walletAddress: string) => api.post('/blockchain/verify-cert', { wallet_address: walletAddress }),
-  connectWallet: (id: string, walletAddress: string) =>
-    api.put(`/users/${id}`, { wallet_address: walletAddress }),
+  getCertInfo: (walletAddress: string) => api.get(`/blockchain/cert-info/${walletAddress}`),
+  checkHealth: () => api.get('/blockchain/health'),
+};
+
+// Authentication
+export const authService = {
+  login: (email: string, password: string) => api.post('/auth/login', { email, password }),
+  register: (email: string, username: string, password: string, display_name?: string) =>
+    api.post('/auth/register', { email, username, password, display_name }),
+  getCurrentUser: () => api.get('/auth/me'),
+  logout: () => api.post('/auth/logout'),
+  refreshToken: () => api.post('/auth/refresh'),
+};
+
+// File Upload
+export const uploadService = {
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  testConnection: () => api.get('/upload/test'),
 };
 
 // Intro Requests
 export const introsService = {
-  create: (data: any) => api.post('/intros', data),
+  create: (data: any) => api.post('/intros/request', data),
   getReceived: () => api.get('/intros/received'),
   getSent: () => api.get('/intros/sent'),
-  accept: (id: string) => api.post(`/intros/${id}/accept`),
-  decline: (id: string) => api.post(`/intros/${id}/decline`),
+  accept: (id: string) => api.put(`/intros/${id}/accept`),
+  decline: (id: string) => api.put(`/intros/${id}/decline`),
 };
 
 // Search & Leaderboard

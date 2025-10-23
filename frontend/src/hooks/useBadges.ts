@@ -14,7 +14,7 @@ export function useAwardBadge(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => badgesService.award(projectId, data),
+    mutationFn: (data: any) => badgesService.award({ ...data, project_id: projectId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['badges', projectId] });
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
