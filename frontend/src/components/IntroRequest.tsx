@@ -51,10 +51,10 @@ export function IntroRequest({ projectId, builderId }: IntroRequestProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <button className="btn-secondary gap-2 inline-flex items-center">
           <Send className="h-4 w-4" />
           Request Intro
-        </Button>
+        </button>
       </DialogTrigger>
 
       <DialogContent>

@@ -52,10 +52,10 @@ export function BadgeAwarder({ projectId }: BadgeAwarderProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <button className="btn-secondary gap-2 inline-flex items-center">
           <Award className="h-4 w-4" />
           Award Badge
-        </Button>
+        </button>
       </DialogTrigger>
 
       <DialogContent>

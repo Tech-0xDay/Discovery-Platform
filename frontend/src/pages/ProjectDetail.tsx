@@ -87,31 +87,31 @@ export default function ProjectDetail() {
       <div className="container mx-auto px-6 py-12">
         <div className="mx-auto max-w-5xl">
           {/* Hero Header Section */}
-          <div className="mb-12 card-elevated p-8">
-            <div className="flex items-start justify-between gap-8 mb-6">
+          <div className="mb-8 card-elevated p-6">
+            <div className="flex items-start justify-between gap-6 mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-3">
                   {mockProject.isFeatured && (
-                    <span className="badge-primary">⭐ Featured</span>
+                    <span className="badge-primary text-xs">⭐ Featured</span>
                   )}
                 </div>
-                <h1 className="text-5xl font-black text-foreground mb-3">
+                <h1 className="text-3xl font-black text-foreground mb-2">
                   {mockProject.title}
                 </h1>
-                <p className="text-xl text-muted-foreground mb-6 leading-relaxed">
+                <p className="text-base text-muted-foreground mb-4 leading-relaxed">
                   {mockProject.tagline}
                 </p>
               </div>
 
               {/* Score Badge */}
-              <div className="badge-primary flex flex-col items-center justify-center px-8 py-6 rounded-[15px]">
-                <div className="text-4xl font-black text-foreground">{mockProject.proofScore.total}</div>
-                <div className="text-sm font-bold text-foreground">Proof Score</div>
+              <div className="badge-primary flex flex-col items-center justify-center px-6 py-4 rounded-[15px] flex-shrink-0">
+                <div className="text-3xl font-black text-foreground">{mockProject.proofScore.total}</div>
+                <div className="text-xs font-bold text-foreground">Score</div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 border-t-4 border-black pt-6">
+            <div className="flex flex-wrap gap-3 border-t-4 border-black pt-4">
               {mockProject.demoUrl && (
                 <a href={mockProject.demoUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
                   <ExternalLink className="mr-2 h-5 w-5 inline" />
@@ -132,28 +132,28 @@ export default function ProjectDetail() {
           </div>
 
           {/* Creator & Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {/* Creator Card */}
-            <div className="card-elevated p-6 md:col-span-2">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 border-4 border-primary">
+            <div className="card-elevated p-5 md:col-span-2">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 border-3 border-primary">
                   <AvatarImage src={mockProject.author.avatar} alt={mockProject.author.username} />
-                  <AvatarFallback className="bg-primary text-foreground font-bold text-lg">
+                  <AvatarFallback className="bg-primary text-foreground font-bold text-sm">
                     {mockProject.author.username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <Link
                     to={`/u/${mockProject.author.username}`}
-                    className="text-2xl font-bold text-primary hover:opacity-80 transition-quick"
+                    className="text-lg font-bold text-primary hover:opacity-80 transition-quick"
                   >
                     {mockProject.author.username}
                   </Link>
                   {mockProject.author.isVerified && (
-                    <span className="badge-primary ml-3 inline-block">✓ Verified</span>
+                    <span className="badge-primary ml-2 inline-block text-xs">✓ Verified</span>
                   )}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                    <Calendar className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                    <Calendar className="h-3 w-3" />
                     {mockProject.hackathonName} • {new Date(mockProject.hackathonDate).toLocaleDateString()}
                   </div>
                 </div>
@@ -161,8 +161,8 @@ export default function ProjectDetail() {
             </div>
 
             {/* Score Breakdown Card */}
-            <div className="card-elevated p-6">
-              <h3 className="font-black text-lg mb-4 text-foreground">Score Breakdown</h3>
+            <div className="card-elevated p-5">
+              <h3 className="font-black text-sm mb-3 text-foreground">Score Breakdown</h3>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
@@ -206,12 +206,12 @@ export default function ProjectDetail() {
 
           {/* Badges Section */}
           {mockProject.badges.length > 0 && (
-            <div className="card-elevated p-8 mb-12">
-              <h2 className="text-3xl font-black mb-6 text-foreground flex items-center gap-3">
-                <Award className="h-8 w-8 text-primary" />
+            <div className="card-elevated p-6 mb-8">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <Award className="h-6 w-6 text-primary" />
                 Achievements
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {mockProject.badges.map((badge) => {
                   const badgeIcons: Record<string, string> = {
                     gold: '🥇',
@@ -219,17 +219,17 @@ export default function ProjectDetail() {
                     platinum: '💎',
                   };
                   return (
-                    <div key={badge.id} className="border-l-4 border-primary pl-6 py-4">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-3xl">{badgeIcons[badge.type] || '⭐'}</span>
+                    <div key={badge.id} className="border-l-4 border-primary pl-4 py-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl">{badgeIcons[badge.type] || '⭐'}</span>
                         <div>
-                          <h4 className="font-bold text-lg text-foreground">{badge.name}</h4>
-                          <p className="text-sm text-muted-foreground">
+                          <h4 className="font-bold text-sm text-foreground">{badge.name}</h4>
+                          <p className="text-xs text-muted-foreground">
                             Awarded by <span className="text-primary font-bold">{badge.awardedBy.username}</span> • {new Date(badge.awardedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground ml-12">{badge.description}</p>
+                      <p className="text-xs text-muted-foreground ml-8">{badge.description}</p>
                     </div>
                   );
                 })}
@@ -238,22 +238,22 @@ export default function ProjectDetail() {
           )}
 
           {/* About Section */}
-          <div className="card-elevated p-8 mb-12">
-            <h2 className="text-3xl font-black mb-6 text-foreground">About This Project</h2>
-            <div className="prose prose-invert max-w-none whitespace-pre-wrap text-foreground leading-relaxed text-lg">
+          <div className="card-elevated p-6 mb-8">
+            <h2 className="text-2xl font-black mb-4 text-foreground">About This Project</h2>
+            <div className="prose prose-invert max-w-none whitespace-pre-wrap text-foreground leading-relaxed text-sm">
               {mockProject.description}
             </div>
           </div>
 
           {/* Tech Stack Section */}
-          <div className="card-elevated p-8 mb-12">
-            <h2 className="text-3xl font-black mb-6 text-foreground flex items-center gap-3">
-              <Code className="h-8 w-8 text-primary" />
+          <div className="card-elevated p-6 mb-8">
+            <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+              <Code className="h-6 w-6 text-primary" />
               Tech Stack
             </h2>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2">
               {mockProject.techStack.map((tech) => (
-                <span key={tech} className="badge-primary font-bold">
+                <span key={tech} className="badge-primary text-xs">
                   {tech}
                 </span>
               ))}
@@ -261,8 +261,8 @@ export default function ProjectDetail() {
           </div>
 
           {/* Comments Section */}
-          <div className="card-elevated p-8">
-            <h2 className="text-3xl font-black mb-8 text-foreground">Comments & Discussion</h2>
+          <div className="card-elevated p-6">
+            <h2 className="text-2xl font-black mb-6 text-foreground">Comments & Discussion</h2>
             <CommentSection projectId={mockProject.id} />
           </div>
         </div>
