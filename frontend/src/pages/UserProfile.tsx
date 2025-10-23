@@ -61,32 +61,14 @@ export default function UserProfile() {
 
               <div className="flex-1 text-center md:text-left">
                 <div className="mb-4 flex flex-col items-center gap-3 md:items-start md:flex-row flex-wrap">
-                  <h1 className="text-4xl font-black text-foreground">
+                  <h1 className="text-3xl font-black text-foreground">
                     {user.displayName || user.username}
                   </h1>
-                  {user.isVerified && (
-                    <Badge className="badge-success">
-                      <Shield className="mr-1 h-3 w-3" />
-                      Verified
-                    </Badge>
-                  )}
                   {user.isAdmin && (
                     <Badge className="bg-destructive text-white">
                       <Award className="mr-1 h-3 w-3" />
                       Admin
                     </Badge>
-                  )}
-                  {(user.hasOxcert || user.has_oxcert) && user.full_wallet_address && (
-                    <a
-                      href={`https://kairos.kaiascan.io/account/${user.full_wallet_address}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 text-primary hover:border-primary/50 transition-smooth text-sm font-semibold"
-                      title="0xCert Verified - View on Kairos Explorer"
-                    >
-                      <Shield className="h-4 w-4" />
-                      0xCert
-                    </a>
                   )}
                   {user.github_connected && user.github_username && (
                     <a

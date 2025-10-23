@@ -27,6 +27,8 @@ import EditProject from "./pages/EditProject";
 import Intros from "./pages/Intros";
 import Admin from "./pages/Admin";
 import AdminValidator from "./pages/AdminValidator";
+import InvestorPlans from "./pages/InvestorPlans";
+import DirectMessages from "./pages/DirectMessages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +52,7 @@ const App = () => (
               <Route path="/search" element={<Search />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/about" element={<About />} />
+              <Route path="/investor-plans" element={<InvestorPlans />} />
 
               {/* Protected Routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -59,6 +62,7 @@ const App = () => (
               <Route path="/publish" element={<ProtectedRoute><Publish /></ProtectedRoute>} />
               <Route path="/project/:id/edit" element={<ProtectedRoute><EditProject /></ProtectedRoute>} />
               <Route path="/intros" element={<ProtectedRoute><Intros /></ProtectedRoute>} />
+              <Route path="/messages" element={<ProtectedRoute><DirectMessages /></ProtectedRoute>} />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />

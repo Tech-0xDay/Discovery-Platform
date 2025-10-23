@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectCard } from '@/components/ProjectCard';
 import { SortType } from '@/types';
-import { Flame, Clock, TrendingUp, Zap, Loader2 } from 'lucide-react';
+import { Flame, Clock, TrendingUp, Zap, Loader2, Building2, ArrowRight } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
+import { useAuth } from '@/context/AuthContext';
 
 // Map frontend sort types to backend sort types
 const sortTypeMap: Record<SortType, string> = {
@@ -13,6 +15,8 @@ const sortTypeMap: Record<SortType, string> = {
 };
 
 export default function Feed() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [sortType, setSortType] = useState<SortType>('hot');
   const [page, setPage] = useState(1);
 

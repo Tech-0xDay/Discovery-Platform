@@ -25,8 +25,30 @@ export function IntroRequest({ projectId, builderId }: IntroRequestProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const createIntroMutation = useCreateIntro();
+  // DEBUG: Log user and investor status
+  console.log('🔍 IntroRequest Debug:', {
+    user,
+    is_investor: user?.is_investor,
+    projectId,
+    builderId,
+    isOwnProject: user?.id === builderId
+  });
+
+  // Only show for investors
+  if (!user?.is_investor) {
+    console.log('❌ IntroRequest: Not showing - user is not investor');
+    return null;
+  }
+
+  // Don't show for own projects
+  if (user.id === builderId) {
+    console.log('❌ IntroRequest: Not showing - own project');
+    return null;
+  }
+
+  console.log('✅ IntroRequest: Showing button for investor');
 
   const handleSendIntro = async () => {
     if (!user) {
@@ -34,69 +56,116 @@ export function IntroRequest({ projectId, builderId }: IntroRequestProps) {
       return;
     }
 
-    if (user.id === builderId) {
-      alert("You can't send an intro to yourself!");
-      return;
+    setLoading(true);
+    try {
+      const response = await fetch('/api/intro-requests/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          project_id: projectId,
+          message: message,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.status === 'success') {
+        setMessage('');
+        setIsOpen(false);
+        alert('Intro request sent successfully!');
+      } else {
+        alert(data.message || 'Failed to send intro request');
+      }
+    } catch (error) {
+      alert('Failed to send intro request');
+    } finally {
+      setLoading(false);
     }
-
-    await createIntroMutation.mutateAsync({
-      project_id: projectId,
-      message: message,
-    });
-
-    setMessage('');
-    setIsOpen(false);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button className="btn-secondary gap-2 inline-flex items-center">
-          <Send className="h-4 w-4" />
-          Request Intro
+        <button className="btn-primary gap-2 inline-flex items-center w-full group hover:scale-[1.02] transition-transform">
+          <Send className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+          <span className="font-bold">Request Intro</span>
         </button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Request Introduction</DialogTitle>
-          <DialogDescription>
-            Connect with the builder behind this project
+          <DialogTitle className="text-2xl font-black flex items-center gap-2">
+            <div className="h-10 w-10 rounded-[12px] bg-primary/20 flex items-center justify-center border-2 border-primary">
+              <Send className="h-5 w-5 text-primary" />
+            </div>
+            Request Introduction
+          </DialogTitle>
+          <DialogDescription className="text-base">
+            Introduce yourself and let the builder know why you'd like to connect
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
+        <div className="space-y-6 pt-4">
+          <div className="space-y-3">
+            <Label htmlFor="message" className="text-sm font-bold flex items-center justify-between">
+              <span>Your Message</span>
+              <span className={`text-xs ${message.length >= 10 && message.length <= 1000 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                {message.length}/1000
+              </span>
+            </Label>
             <Textarea
               id="message"
-              placeholder="Tell them why you'd like to connect... (min 10 characters)"
+              placeholder="Hi! I'm interested in learning more about your project. I think there might be some interesting opportunities to collaborate..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              rows={4}
+              rows={5}
+              className="resize-none border-2 focus:border-primary"
             />
-            <p className="text-xs text-muted-foreground">
-              {message.length}/1000 characters
+            {message.trim().length > 0 && message.trim().length < 10 && (
+              <p className="text-xs text-red-600 font-medium">
+                Message must be at least 10 characters
+              </p>
+            )}
+          </div>
+
+          <div className="bg-secondary/50 rounded-[12px] p-4 border-2 border-border">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground">Tip:</strong> Great intro requests are specific about your interest,
+              mention what caught your attention, and suggest how you might add value.
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
               onClick={() => setIsOpen(false)}
-              disabled={createIntroMutation.isPending}
+              disabled={loading}
+              className="flex-1 font-bold"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSendIntro}
               disabled={
-                createIntroMutation.isPending ||
+                loading ||
                 message.trim().length < 10 ||
                 message.length > 1000
               }
+              className="flex-1 btn-primary font-bold gap-2"
             >
-              {createIntroMutation.isPending ? 'Sending...' : 'Send Request'}
+              {loading ? (
+                <>
+                  <span className="animate-pulse">Sending</span>
+                  <span className="animate-pulse">...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Send Request
+                </>
+              )}
             </Button>
           </div>
         </div>

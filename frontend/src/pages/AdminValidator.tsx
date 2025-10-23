@@ -39,11 +39,29 @@ interface Project {
   created_at: string;
 }
 
+interface InvestorRequest {
+  id: string;
+  user_id: string;
+  plan_type: string;
+  company_name?: string;
+  linkedin_url?: string;
+  reason?: string;
+  status: string;
+  created_at: string;
+  user?: {
+    id: string;
+    username: string;
+    display_name?: string;
+    email?: string;
+  };
+}
+
 export default function AdminValidator() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [investorRequests, setInvestorRequests] = useState<InvestorRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [badgeType, setBadgeType] = useState<'stone' | 'silver' | 'gold' | 'platinum' | 'demerit'>('silver');
@@ -58,18 +76,36 @@ export default function AdminValidator() {
     if (isAuth) {
       setIsAuthenticated(true);
       fetchProjects();
+      fetchInvestorRequests();
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('adminValidatorAuth', 'true');
-      setError('');
-      fetchProjects();
-    } else {
-      setError('Invalid password');
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('adminValidatorAuth', 'true');
+        setError('');
+        fetchProjects();
+        fetchInvestorRequests();
+      } else {
+        setError(data.message || 'Invalid password');
+      }
+    } catch (error) {
+      setError('Failed to authenticate');
+      console.error('Login error:', error);
     }
   };
 
@@ -104,6 +140,84 @@ export default function AdminValidator() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchInvestorRequests = async () => {
+    try {
+      const response = await fetch('/api/investor-requests/all', {
+        headers: {
+          'X-Admin-Password': 'Admin',
+        },
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setInvestorRequests(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch investor requests:', err);
+    }
+  };
+
+  const handleApproveInvestor = async (requestId: string) => {
+    try {
+      const response = await fetch(`/api/investor-requests/${requestId}/approve`, {
+        method: 'POST',
+        headers: {
+          'X-Admin-Password': 'Admin',
+        },
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        toast({
+          title: 'Success',
+          description: 'Investor request approved',
+        });
+        fetchInvestorRequests();
+      } else {
+        toast({
+          title: 'Error',
+          description: data.message || 'Failed to approve request',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to approve request',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRejectInvestor = async (requestId: string) => {
+    try {
+      const response = await fetch(`/api/investor-requests/${requestId}/reject`, {
+        method: 'POST',
+        headers: {
+          'X-Admin-Password': 'Admin',
+        },
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        toast({
+          title: 'Success',
+          description: 'Investor request rejected',
+        });
+        fetchInvestorRequests();
+      } else {
+        toast({
+          title: 'Error',
+          description: data.message || 'Failed to reject request',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to reject request',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -250,6 +364,7 @@ export default function AdminValidator() {
           <TabsTrigger value="all">All Projects</TabsTrigger>
           <TabsTrigger value="pending">Pending Validation</TabsTrigger>
           <TabsTrigger value="validated">Validated</TabsTrigger>
+          <TabsTrigger value="investor-requests">Investor Requests</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all">
@@ -545,6 +660,91 @@ export default function AdminValidator() {
                 No validated projects yet
               </div>
             )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="investor-requests">
+          <div className="space-y-4">
+            {investorRequests.filter((req) => req.status === 'pending').length === 0 && (
+              <Card className="border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <CardContent className="py-12 text-center">
+                  <p className="text-muted-foreground">No pending investor requests</p>
+                </CardContent>
+              </Card>
+            )}
+            {investorRequests
+              .filter((req) => req.status === 'pending')
+              .map((req) => (
+                <Card
+                  key={req.id}
+                  className="border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl font-black">
+                          {req.user?.display_name || req.user?.username || 'Unknown User'}
+                        </CardTitle>
+                        <CardDescription className="space-y-1 mt-2">
+                          <div>@{req.user?.username}</div>
+                          {req.user?.email && <div>{req.user.email}</div>}
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge className="bg-primary/20 border-2 border-primary text-primary">
+                              {req.plan_type.toUpperCase()}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Requested {new Date(req.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {req.company_name && (
+                      <div>
+                        <p className="text-sm font-bold mb-1">Company/Fund:</p>
+                        <p className="text-sm text-muted-foreground">{req.company_name}</p>
+                      </div>
+                    )}
+                    {req.linkedin_url && (
+                      <div>
+                        <p className="text-sm font-bold mb-1">LinkedIn:</p>
+                        <a
+                          href={req.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                        >
+                          {req.linkedin_url}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    )}
+                    {req.reason && (
+                      <div>
+                        <p className="text-sm font-bold mb-1">Reason:</p>
+                        <p className="text-sm text-muted-foreground">{req.reason}</p>
+                      </div>
+                    )}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        onClick={() => handleApproveInvestor(req.id)}
+                        className="flex-1 btn-primary"
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        onClick={() => handleRejectInvestor(req.id)}
+                        variant="outline"
+                        className="flex-1 border-2 border-black"
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
           </div>
         </TabsContent>
       </Tabs>

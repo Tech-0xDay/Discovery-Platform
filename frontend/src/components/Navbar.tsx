@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { TrendingUp, Trophy, Search, Plus, LogOut, User, Settings, LayoutDashboard, Send, Menu, X } from 'lucide-react';
+import { TrendingUp, Trophy, Search, Plus, LogOut, User, Settings, LayoutDashboard, Send, Menu, X, MessageSquare, Building2, Sparkles } from 'lucide-react';
 import { ConnectWallet } from '@/components/ConnectWallet';
 import { useState } from 'react';
 
@@ -72,6 +72,12 @@ export function Navbar() {
                   <span className="hidden sm:inline">Intros</span>
                 </a>
 
+                {/* Messages */}
+                <a href="/messages" className="btn-secondary hidden sm:inline-flex gap-2 px-3 py-2 text-xs">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Messages</span>
+                </a>
+
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -109,6 +115,31 @@ export function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link to="/messages" className="cursor-pointer flex items-center gap-2 font-medium">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>Messages</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {user.is_investor ? (
+                      <DropdownMenuItem asChild>
+                        <Link to="/investor-plans" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-l-2 border-green-500">
+                          <Building2 className="h-4 w-4 text-green-600" />
+                          <span className="text-green-600 font-bold">Investor Account</span>
+                          <Sparkles className="h-3 w-3 text-green-600 ml-auto" />
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link to="/investor-plans" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-primary/10 to-accent/10 border-l-2 border-primary hover:from-primary/20 hover:to-accent/20 transition-all">
+                          <Building2 className="h-4 w-4 text-primary" />
+                          <span className="text-primary font-bold">Become an Investor</span>
+                          <Sparkles className="h-3 w-3 text-primary ml-auto animate-pulse" />
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
                       <Link to={`/u/${user.username}`} className="cursor-pointer flex items-center gap-2 font-medium">
                         <User className="h-4 w-4" />
                         <span>Public Profile</span>
@@ -130,10 +161,10 @@ export function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <a href="/login" className="btn-secondary px-4 py-2">
+                <a href="/login" className="btn-secondary px-3 py-2 text-xs">
                   Login
                 </a>
-                <a href="/register" className="btn-primary px-4 py-2">
+                <a href="/register" className="btn-primary px-3 py-2 text-xs">
                   Sign Up
                 </a>
               </div>

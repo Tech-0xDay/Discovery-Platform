@@ -18,6 +18,9 @@ def import_models():
     from models.badge import ValidationBadge
     from models.intro import Intro
     from models.event import Event, EventProject, EventSubscriber
+    from models.investor_request import InvestorRequest
+    from models.intro_request import IntroRequest
+    from models.direct_message import DirectMessage
     return True
 
 
@@ -36,7 +39,7 @@ def create_app(config_name=None):
     CORS(app,
          origins=app.config['CORS_ORIGINS'],
          supports_credentials=True,
-         allow_headers=['Content-Type', 'Authorization'],
+         allow_headers=['Content-Type', 'Authorization', 'X-Admin-Password'],
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
 
     # Register error handlers
@@ -85,6 +88,10 @@ def register_blueprints(app):
     from routes.users import users_bp
     from routes.uploads import uploads_bp
     from routes.events import events_bp
+    from routes.investor_requests import investor_requests_bp
+    from routes.intro_requests import intro_requests_bp
+    from routes.direct_messages import direct_messages_bp
+    from routes.search import search_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(projects_bp, url_prefix='/api/projects')
@@ -96,6 +103,13 @@ def register_blueprints(app):
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(uploads_bp, url_prefix='/api/upload')
     app.register_blueprint(events_bp, url_prefix='/api/events')
+    app.register_blueprint(search_bp, url_prefix='/api/search')
+    app.register_blueprint(investor_requests_bp)
+    app.register_blueprint(intro_requests_bp)
+    app.register_blueprint(direct_messages_bp)
+
+    from routes.admin_auth import admin_auth_bp
+    app.register_blueprint(admin_auth_bp)
 
 
 def register_error_handlers(app):

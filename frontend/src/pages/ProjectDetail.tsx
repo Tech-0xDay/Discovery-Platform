@@ -129,9 +129,6 @@ export default function ProjectDetail() {
                   >
                     {project.author?.username}
                   </Link>
-                  {project.author?.isVerified && (
-                    <span className="badge-primary ml-2 inline-block text-xs">✓ Verified</span>
-                  )}
                   {project.hackathonName && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                       <Calendar className="h-3 w-3" />
@@ -254,21 +251,10 @@ export default function ProjectDetail() {
                         href={`https://kairos.kaiascan.io/account/${project.author.full_wallet_address}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn-secondary text-xs inline-flex items-center justify-center gap-2 w-full"
+                        className="btn-primary text-xs inline-flex items-center justify-center gap-2 w-full"
                       >
                         <ExternalLink className="h-3 w-3" />
                         View Wallet
-                      </a>
-                    )}
-                    {project.author?.oxcert_token_id && project.author?.full_wallet_address && (
-                      <a
-                        href={`https://kairos.kaiascan.io/token/${import.meta.env.VITE_OXCERTS_CONTRACT_ADDRESS}?a=${project.author.oxcert_token_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary text-xs inline-flex items-center justify-center gap-2 w-full"
-                      >
-                        <Shield className="h-3 w-3" />
-                        View NFT
                       </a>
                     )}
                   </div>
@@ -279,38 +265,6 @@ export default function ProjectDetail() {
             {/* Validation Status Card */}
             <ValidationStatusCard badges={project.badges} />
           </div>
-
-          {/* Badges Section */}
-          {project.badges && project.badges.length > 0 && (
-            <div className="card-elevated p-6 mb-8">
-              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
-                <Award className="h-6 w-6 text-primary" />
-                Achievements
-              </h2>
-              <div className="space-y-3">
-                {project.badges.map((badge: any) => {
-                  const badgeIcons: Record<string, string> = {
-                    gold: '🥇',
-                    silver: '🥈',
-                    platinum: '💎',
-                  };
-                  return (
-                    <div key={badge.id} className="border-l-4 border-primary pl-4 py-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-2xl">{badgeIcons[badge.badge_type] || '⭐'}</span>
-                        <div>
-                          <h4 className="font-bold text-sm text-foreground">{badge.rationale}</h4>
-                          <p className="text-xs text-muted-foreground">
-                            Awarded by <span className="text-primary font-bold">{badge.awarded_by?.username}</span> • {new Date(badge.awarded_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* About Section */}
           <div className="card-elevated p-6 mb-8">

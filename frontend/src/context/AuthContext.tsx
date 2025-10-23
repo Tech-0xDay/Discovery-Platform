@@ -22,7 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Helper to transform backend user data
   const transformUser = (backendUser: any): User => {
-    return {
+    console.log('🔍 AuthContext transformUser - Backend user data:', backendUser);
+
+    const transformed = {
       id: backendUser.id,
       username: backendUser.username,
       email: backendUser.email,
@@ -35,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email_verified: backendUser.email_verified || false,
       isAdmin: backendUser.is_admin || false,
       is_admin: backendUser.is_admin || false,
+      is_investor: backendUser.is_investor || false,
       walletAddress: backendUser.wallet_address,
       wallet_address: backendUser.wallet_address,
       full_wallet_address: backendUser.full_wallet_address,
@@ -51,6 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updatedAt: backendUser.updated_at,
       updated_at: backendUser.updated_at,
     };
+
+    console.log('✅ AuthContext transformUser - Transformed user:', {
+      username: transformed.username,
+      is_investor: transformed.is_investor,
+      is_admin: transformed.is_admin
+    });
+
+    return transformed;
   };
 
   useEffect(() => {

@@ -37,6 +37,7 @@ class User(db.Model):
     # Status & Roles
     karma = db.Column(db.Integer, default=0)
     is_admin = db.Column(db.Boolean, default=False)
+    is_investor = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
 
     # Timestamps
@@ -76,6 +77,7 @@ class User(db.Model):
             'bio': self.bio,
             'karma': self.karma,
             'is_admin': self.is_admin,
+            'is_investor': self.is_investor,
             'email_verified': self.email_verified,
             'has_oxcert': self.has_oxcert,
             'oxcert_tx_hash': self.oxcert_tx_hash,
