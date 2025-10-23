@@ -60,7 +60,8 @@ export interface Project {
   badges: Badge[];
   voteCount: number;
   commentCount: number;
-  userVote?: number;
+  userVote?: 'up' | 'down' | null;
+  user_vote?: 'up' | 'down' | null; // Backend field
   isFeatured: boolean;
   createdAt: string;
   updatedAt: string;

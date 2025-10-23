@@ -101,9 +101,9 @@ export const projectsService = {
 
 // Voting
 export const votesService = {
-  upvote: (projectId: string) => api.post(`/projects/${projectId}/upvote`),
-  downvote: (projectId: string) => api.post(`/projects/${projectId}/downvote`),
-  removeVote: (projectId: string) => api.delete(`/projects/${projectId}/vote`),
+  vote: (projectId: string, voteType: 'up' | 'down') =>
+    api.post('/votes', { project_id: projectId, vote_type: voteType }),
+  getUserVotes: () => api.get('/votes/user'),
 };
 
 // Comments

@@ -99,7 +99,7 @@ export default function Feed() {
 
         {/* Projects grid */}
         {!isLoading && !error && (
-          <div className="grid gap-4">
+          <div className="grid gap-6 max-w-6xl mx-auto w-full">
             {!Array.isArray(data?.data) || data.data.length === 0 ? (
               <div className="card-elevated py-20 text-center p-8">
                 <div className="space-y-4">

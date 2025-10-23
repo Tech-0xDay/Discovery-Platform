@@ -61,9 +61,10 @@ function transformProject(backendProject: any) {
       quality: backendProject.quality_score || 0,
     },
     badges: [], // TODO: Transform badges if needed
-    voteCount: backendProject.upvotes || 0,
+    voteCount: (backendProject.upvotes || 0) - (backendProject.downvotes || 0),
     commentCount: backendProject.comment_count || 0,
-    userVote: undefined, // TODO: Add user vote if available
+    userVote: backendProject.user_vote || null,
+    user_vote: backendProject.user_vote || null,
     isFeatured: backendProject.is_featured || false,
     createdAt: backendProject.created_at,
     updatedAt: backendProject.updated_at,

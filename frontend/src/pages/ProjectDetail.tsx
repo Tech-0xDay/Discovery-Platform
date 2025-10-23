@@ -75,8 +75,22 @@ export default function ProjectDetail() {
               </div>
             </div>
 
+            {/* Vote Section */}
+            <div className="border-t-4 border-black pt-4 mb-4">
+              <div className="flex items-center gap-4">
+                <VoteButtons
+                  projectId={project.id}
+                  voteCount={project.voteCount}
+                  userVote={project.userVote as 'up' | 'down' | null}
+                />
+                <div className="text-sm text-muted-foreground">
+                  Vote to show your support for this project
+                </div>
+              </div>
+            </div>
+
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 border-t-4 border-black pt-4">
+            <div className="flex flex-wrap gap-3">
               {project.demoUrl && (
                 <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
                   <ExternalLink className="mr-2 h-5 w-5 inline" />
@@ -441,7 +455,7 @@ export default function ProjectDetail() {
           )}
 
           {/* Comments Section */}
-          <div className="card-elevated p-6">
+          <div id="comments" className="card-elevated p-6 scroll-mt-20">
             <h2 className="text-2xl font-black mb-6 text-foreground">Comments & Discussion</h2>
             <CommentSection projectId={project.id} />
           </div>

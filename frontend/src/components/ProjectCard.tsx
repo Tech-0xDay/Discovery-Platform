@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowUp, MessageSquare, Award, Star, TrendingUp, Github, ExternalLink, Shield } from 'lucide-react';
+import { VoteButtons } from '@/components/VoteButtons';
 
 interface ProjectCardProps {
   project: Project;
@@ -14,24 +15,60 @@ export function ProjectCard({ project }: ProjectCardProps) {
     ? Math.round((project.voteCount / (project.voteCount + Math.abs(project.commentCount - project.voteCount))) * 100)
     : 0;
 
+  // Truncate text to max words with ellipsis
+  const truncateText = (text: string, maxWords: number) => {
+    if (!text) return '';
+    const words = text.trim().split(/\s+/);
+    if (words.length <= maxWords) return text;
+    return words.slice(0, maxWords).join(' ') + '...';
+  };
+
   return (
-    <div className="group relative">
-      <Card className="card-interactive overflow-hidden relative">
+    <div className="group relative w-full max-w-full">
+      <Card className="card-interactive overflow-hidden relative w-full">
         <Link to={`/project/${project.id}`} className="block">
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 max-w-full overflow-hidden">
             {/* Header with title and badge */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-2">
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 flex-wrap">
                   {project.isFeatured && (
                     <Star className="h-5 w-5 fill-primary text-primary flex-shrink-0 mt-0.5" />
                   )}
-                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-smooth line-clamp-2">
-                    {project.title}
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-smooth break-words flex-1">
+                    {truncateText(project.title, 12)}
                   </h3>
+
+                  {/* CTA buttons beside title */}
+                  <div className="flex items-center gap-2">
+                    {project.demoUrl && (
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 rounded-md bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border"
+                        title="View Live Demo"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
+                    {project.githubUrl && (
+                      <a
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 rounded-md bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border"
+                        title="View on GitHub"
+                      >
+                        <Github className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                  {project.tagline}
+                <p className="text-sm text-muted-foreground leading-relaxed break-words">
+                  {truncateText(project.tagline, 15)}
                 </p>
               </div>
 
@@ -45,6 +82,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 </div>
               </div>
             </div>
+
+            {/* Description box - contained and truncated */}
+            {project.description && (
+              <div className="bg-secondary/30 rounded-lg p-3 border border-border/50 w-full overflow-hidden">
+                <p className="text-sm text-muted-foreground leading-relaxed" style={{ wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                  {truncateText(project.description, 25)}
+                </p>
+              </div>
+            )}
 
             {/* Creator info */}
             <div className="flex items-center gap-3 pt-2 border-t border-border/50">
@@ -104,9 +150,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 <p className="text-xs text-muted-foreground mb-2 font-semibold">Team</p>
                 <div className="flex flex-wrap gap-2">
                   {project.team_members.slice(0, 3).map((member, idx) => (
-                    <div key={idx} className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded border border-primary/30">
-                      <span className="font-medium">{member.name}</span>
-                      {member.role && <span className="text-muted-foreground">• {member.role}</span>}
+                    <div key={idx} className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded border border-primary/30 max-w-full">
+                      <span className="font-medium truncate">{truncateText(member.name, 3)}</span>
+                      {member.role && <span className="text-muted-foreground truncate">• {truncateText(member.role, 2)}</span>}
                     </div>
                   ))}
                   {project.team_members.length > 3 && (
@@ -144,14 +190,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
             {/* Stats footer */}
             <div className="flex items-center justify-between pt-4 border-t border-border/50">
               <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5 text-muted-foreground group-hover:text-foreground transition-smooth">
-                  <ArrowUp className="h-4 w-4" />
-                  <span className="font-medium">{project.voteCount}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground group-hover:text-foreground transition-smooth">
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="font-medium">{project.commentCount}</span>
-                </div>
                 {project.badges.length > 0 && (
                   <div className="flex items-center gap-1.5 text-muted-foreground group-hover:text-primary transition-smooth">
                     <Award className="h-4 w-4" />
@@ -163,32 +201,29 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
         </Link>
 
-        {/* CTA buttons - Outside Link to avoid nested <a> tags */}
-        <div className="absolute bottom-6 right-6 flex items-center gap-2">
-          {project.demoUrl && (
-            <a
-              href={project.demoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="p-2 rounded-md bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border"
-              title="View Live Demo"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          )}
-          {project.githubUrl && (
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="p-2 rounded-md bg-card hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border"
-              title="View on GitHub"
-            >
-              <Github className="h-4 w-4" />
-            </a>
-          )}
+        {/* Interactive section - Outside Link to prevent nested interactivity */}
+        <div className="px-6 pb-6 space-y-3">
+          {/* Vote buttons */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <VoteButtons
+              projectId={project.id}
+              voteCount={project.voteCount}
+              userVote={project.userVote as 'up' | 'down' | null}
+            />
+          </div>
+
+          {/* Comment button */}
+          <Link
+            to={`/project/${project.id}#comments`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-smooth"
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span className="font-medium">
+              {project.commentCount} {project.commentCount === 1 ? 'Comment' : 'Comments'}
+            </span>
+            <span className="ml-auto text-xs">View & Reply →</span>
+          </Link>
         </div>
       </Card>
     </div>

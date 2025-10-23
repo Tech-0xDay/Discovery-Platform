@@ -87,8 +87,13 @@ class Project(db.Model):
             return 0
         return (self.upvotes / total_votes) * 100
 
-    def to_dict(self, include_creator=False):
-        """Convert to dictionary"""
+    def to_dict(self, include_creator=False, user_id=None):
+        """Convert to dictionary
+
+        Args:
+            include_creator: Include creator/author information
+            user_id: If provided, includes user's vote on this project
+        """
         data = {
             'id': self.id,
             'title': self.title,
@@ -121,8 +126,18 @@ class Project(db.Model):
             'screenshots': [ss.to_dict() for ss in self.screenshots],
             'badge_count': self.badges.count(),
         }
+
         if include_creator:
             data['creator'] = self.creator.to_dict()
+
+        # Include user's vote if user_id is provided
+        if user_id:
+            from models.vote import Vote
+            vote = Vote.query.filter_by(user_id=user_id, project_id=self.id).first()
+            data['user_vote'] = vote.vote_type if vote else None
+        else:
+            data['user_vote'] = None
+
         return data
 
     def __repr__(self):

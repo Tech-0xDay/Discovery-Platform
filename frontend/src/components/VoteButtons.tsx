@@ -1,57 +1,101 @@
-import { useUpvote, useDownvote, useRemoveVote } from '@/hooks/useVotes';
+import { useVote } from '@/hooks/useVotes';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 
 interface VoteButtonsProps {
   projectId: string;
   voteCount: number;
-  userVote?: number;
+  userVote?: 'up' | 'down' | null;
   onVoteChange?: () => void;
 }
 
-export function VoteButtons({ projectId, voteCount, userVote = 0, onVoteChange }: VoteButtonsProps) {
+export function VoteButtons({ projectId, voteCount, userVote = null, onVoteChange }: VoteButtonsProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const upvoteMutation = useUpvote(projectId);
-  const downvoteMutation = useDownvote(projectId);
-  const removeVoteMutation = useRemoveVote(projectId);
+  const voteMutation = useVote(projectId);
+  const [currentVote, setCurrentVote] = useState<'up' | 'down' | null>(userVote);
+  const [currentCount, setCurrentCount] = useState(voteCount);
+  const isProcessing = useRef(false);
 
-  const handleUpvote = () => {
+  useEffect(() => {
+    setCurrentVote(userVote);
+    setCurrentCount(voteCount);
+  }, [userVote, voteCount]);
+
+  const handleVote = (voteType: 'up' | 'down') => {
     if (!user) {
       navigate('/login');
       return;
     }
-    if (userVote === 1) {
-      removeVoteMutation.mutate();
-    } else {
-      upvoteMutation.mutate();
-    }
-    onVoteChange?.();
-  };
 
-  const handleDownvote = () => {
-    if (!user) {
-      navigate('/login');
+    // Prevent double-clicks
+    if (isProcessing.current || voteMutation.isPending) {
       return;
     }
-    if (userVote === -1) {
-      removeVoteMutation.mutate();
+
+    isProcessing.current = true;
+    const wasVoted = currentVote === voteType;
+    const previousVote = currentVote;
+    const previousCount = currentCount;
+
+    // Optimistic update
+    if (wasVoted) {
+      // Remove vote (toggle off)
+      setCurrentVote(null);
+      setCurrentCount(prev => voteType === 'up' ? prev - 1 : prev + 1);
+    } else if (currentVote) {
+      // Change vote from opposite type
+      setCurrentVote(voteType);
+      setCurrentCount(prev => {
+        if (currentVote === 'up' && voteType === 'down') return prev - 2;
+        if (currentVote === 'down' && voteType === 'up') return prev + 2;
+        return prev;
+      });
     } else {
-      downvoteMutation.mutate();
+      // New vote
+      setCurrentVote(voteType);
+      setCurrentCount(prev => voteType === 'up' ? prev + 1 : prev - 1);
     }
-    onVoteChange?.();
+
+    // Make API call
+    voteMutation.mutate(voteType, {
+      onError: () => {
+        // Revert on error
+        setCurrentVote(previousVote);
+        setCurrentCount(previousCount);
+        isProcessing.current = false;
+      },
+      onSuccess: (response) => {
+        // Sync with backend response
+        const data = response?.data?.data;
+        if (data) {
+          const newCount = (data.upvotes || 0) - (data.downvotes || 0);
+          setCurrentCount(newCount);
+          setCurrentVote(data.user_vote || null);
+        } else {
+          // Vote was removed (backend returns null)
+          setCurrentVote(null);
+        }
+        isProcessing.current = false;
+        onVoteChange?.();
+      },
+      onSettled: () => {
+        isProcessing.current = false;
+      },
+    });
   };
 
-  const isLoading = upvoteMutation.isPending || downvoteMutation.isPending || removeVoteMutation.isPending;
+  const isLoading = voteMutation.isPending || isProcessing.current;
 
   return (
     <div className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 p-3">
       <Button
-        variant={userVote === 1 ? 'default' : 'ghost'}
+        variant={currentVote === 'up' ? 'default' : 'ghost'}
         size="sm"
-        onClick={handleUpvote}
+        onClick={() => handleVote('up')}
         disabled={isLoading}
         className="h-8 w-8 p-0"
       >
@@ -59,13 +103,13 @@ export function VoteButtons({ projectId, voteCount, userVote = 0, onVoteChange }
       </Button>
 
       <span className="min-w-[3rem] text-center font-semibold">
-        {voteCount}
+        {currentCount}
       </span>
 
       <Button
-        variant={userVote === -1 ? 'default' : 'ghost'}
+        variant={currentVote === 'down' ? 'default' : 'ghost'}
         size="sm"
-        onClick={handleDownvote}
+        onClick={() => handleVote('down')}
         disabled={isLoading}
         className="h-8 w-8 p-0"
       >

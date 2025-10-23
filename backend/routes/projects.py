@@ -114,7 +114,7 @@ def list_projects(user_id):
         total = query.count()
         projects = query.limit(per_page).offset((page - 1) * per_page).all()
 
-        data = [p.to_dict(include_creator=True) for p in projects]
+        data = [p.to_dict(include_creator=True, user_id=user_id) for p in projects]
 
         return paginated_response(data, total, page, per_page)
     except Exception as e:
@@ -134,7 +134,7 @@ def get_project(user_id, project_id):
         project.view_count += 1
         db.session.commit()
 
-        return success_response(project.to_dict(include_creator=True), 'Project retrieved', 200)
+        return success_response(project.to_dict(include_creator=True, user_id=user_id), 'Project retrieved', 200)
     except Exception as e:
         return error_response('Error', str(e), 500)
 
@@ -145,8 +145,17 @@ def create_project(user_id):
     """Create new project"""
     try:
         data = request.get_json()
+        print("=== RECEIVED PROJECT DATA ===")
+        print(f"github_url in request: {data.get('github_url')}")
+        print(f"Full request data: {data}")
+        print("============================")
+
         schema = ProjectCreateSchema()
         validated_data = schema.load(data)
+
+        print("=== VALIDATED DATA ===")
+        print(f"github_url after validation: {validated_data.get('github_url')}")
+        print("======================")
 
         # Create project
         project = Project(

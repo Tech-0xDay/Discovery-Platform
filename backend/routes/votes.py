@@ -78,7 +78,7 @@ def cast_vote(user_id):
         db.session.commit()
         CacheService.invalidate_project(project_id)
 
-        return success_response(project.to_dict(), 'Vote recorded', 200)
+        return success_response(project.to_dict(include_creator=False, user_id=user_id), 'Vote recorded', 200)
 
     except ValidationError as e:
         return error_response('Validation error', str(e.messages), 400)

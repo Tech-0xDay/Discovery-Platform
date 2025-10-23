@@ -137,32 +137,42 @@ export default function Publish() {
   };
 
   const validateGithubUrl = (url: string): boolean => {
-    if (!url || !url.trim()) return true; // Optional field
+    if (!url || !url.trim()) {
+      setGithubUrlWarning('');
+      return true; // Optional field
+    }
 
     try {
       const urlObj = new URL(url);
 
       // Check if it's a GitHub URL
       if (!urlObj.hostname.includes('github.com')) {
-        setGithubUrlWarning('This doesn\'t appear to be a GitHub URL');
+        setGithubUrlWarning('⚠️ Must be a valid GitHub URL (e.g., https://github.com/username/repo)');
+        return false;
+      }
+
+      // Check if URL has proper repo format
+      const pathParts = urlObj.pathname.split('/').filter(p => p);
+      if (pathParts.length < 2) {
+        setGithubUrlWarning('⚠️ GitHub URL should include username and repository (e.g., https://github.com/username/repo)');
         return false;
       }
 
       // If user has connected GitHub, validate username
       if (user?.github_connected && user?.github_username) {
         const username = user.github_username.toLowerCase();
-        const urlPath = urlObj.pathname.toLowerCase();
+        const urlUsername = pathParts[0].toLowerCase();
 
-        if (!urlPath.includes(`/${username}/`) && !urlPath.startsWith(`/${username}`)) {
-          setGithubUrlWarning(`GitHub URL should belong to your account (@${user.github_username})`);
+        if (urlUsername !== username) {
+          setGithubUrlWarning(`⚠️ GitHub URL should belong to your account (@${user.github_username}). Current URL belongs to @${pathParts[0]}`);
           return false;
         }
       }
 
-      setGithubUrlWarning('');
+      setGithubUrlWarning('✓ Valid GitHub URL');
       return true;
     } catch {
-      setGithubUrlWarning('Invalid URL format');
+      setGithubUrlWarning('⚠️ Invalid URL format. Please enter a complete URL starting with https://');
       return false;
     }
   };
@@ -209,6 +219,11 @@ export default function Publish() {
       if (teamMembers.length > 0) {
         payload.team_members = teamMembers;
       }
+
+      console.log('=== SUBMITTING PROJECT ===');
+      console.log('GitHub URL from form:', data.githubUrl);
+      console.log('Full payload being sent:', JSON.stringify(payload, null, 2));
+      console.log('========================');
 
       await createProjectMutation.mutateAsync(payload);
       toast.success('Project published successfully!');
@@ -358,6 +373,10 @@ export default function Publish() {
                       id="hackathonDate"
                       type="date"
                       {...register('hackathonDate')}
+                      style={{
+                        colorScheme: 'dark'
+                      }}
+                      className="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-100 [&::-webkit-calendar-picker-indicator]:opacity-100"
                     />
                     {errors.hackathonDate && (
                       <p className="text-sm text-destructive">{errors.hackathonDate.message}</p>
@@ -397,17 +416,28 @@ export default function Publish() {
                       id="githubUrl"
                       type="url"
                       placeholder="https://github.com/username/repo"
-                      {...register('githubUrl')}
-                      onBlur={(e) => validateGithubUrl(e.target.value)}
-                      onChange={(e) => validateGithubUrl(e.target.value)}
+                      {...register('githubUrl', {
+                        onChange: (e) => validateGithubUrl(e.target.value),
+                        onBlur: (e) => validateGithubUrl(e.target.value)
+                      })}
                     />
                     {errors.githubUrl && (
                       <p className="text-sm text-destructive">{errors.githubUrl.message}</p>
                     )}
                     {githubUrlWarning && (
-                      <div className="flex items-start gap-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md">
-                        <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-yellow-600 dark:text-yellow-500">{githubUrlWarning}</p>
+                      <div className={`flex items-start gap-2 p-2 rounded-md ${
+                        githubUrlWarning.startsWith('✓')
+                          ? 'bg-green-500/10 border border-green-500/20'
+                          : 'bg-yellow-500/10 border border-yellow-500/20'
+                      }`}>
+                        {githubUrlWarning.startsWith('⚠️') && (
+                          <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                        )}
+                        <p className={`text-xs font-medium ${
+                          githubUrlWarning.startsWith('✓')
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-yellow-600 dark:text-yellow-400'
+                        }`}>{githubUrlWarning}</p>
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
