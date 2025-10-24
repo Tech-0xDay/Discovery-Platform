@@ -10,6 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 
 const ADMIN_PASSWORD = 'Admin';
 
+// Helper function to get the backend URL
+const getBackendUrl = (): string => {
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+  return isDev ? 'http://localhost:5000' : 'https://discovery-platform.onrender.com';
+};
+
 interface Project {
   id: string;
   title: string;
@@ -83,7 +90,8 @@ export default function AdminValidator() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/admin/login', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +127,8 @@ export default function AdminValidator() {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/projects?sort=newest&per_page=100`);
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/projects?sort=newest&per_page=100`);
       const data = await response.json();
       console.log('API Response:', data);
 
@@ -145,7 +154,8 @@ export default function AdminValidator() {
 
   const fetchInvestorRequests = async () => {
     try {
-      const response = await fetch('/api/investor-requests/all', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/investor-requests/all`, {
         headers: {
           'X-Admin-Password': 'Admin',
         },
@@ -161,7 +171,8 @@ export default function AdminValidator() {
 
   const handleApproveInvestor = async (requestId: string) => {
     try {
-      const response = await fetch(`/api/investor-requests/${requestId}/approve`, {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/investor-requests/${requestId}/approve`, {
         method: 'POST',
         headers: {
           'X-Admin-Password': 'Admin',
@@ -192,7 +203,8 @@ export default function AdminValidator() {
 
   const handleRejectInvestor = async (requestId: string) => {
     try {
-      const response = await fetch(`/api/investor-requests/${requestId}/reject`, {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/investor-requests/${requestId}/reject`, {
         method: 'POST',
         headers: {
           'X-Admin-Password': 'Admin',
@@ -233,8 +245,9 @@ export default function AdminValidator() {
 
     setIsAwarding(true);
     try {
+      const backendUrl = getBackendUrl();
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/badges/award`, {
+      const response = await fetch(`${backendUrl}/api/badges/award`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

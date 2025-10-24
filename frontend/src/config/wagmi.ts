@@ -15,7 +15,7 @@ const kaiaTestnet = {
   },
 };
 
-const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '00000000000000000000000000000000';
+const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '00000000000000000000000000000000';
 
 export const wagmiConfig = createConfig({
   chains: [mainnet, sepolia, kaiaTestnet],

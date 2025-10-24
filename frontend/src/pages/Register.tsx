@@ -31,11 +31,19 @@ export default function Register() {
     setIsLoading(true);
 
     try {
+      console.log('🚀 Attempting registration with:', { email, username });
       await register(email, password, username);
+      console.log('✅ Registration successful');
       toast.success('Account created successfully!');
       navigate('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to create account');
+      console.error('❌ Registration error:', {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        data: error.response?.data,
+        errorMessage: error.message,
+      });
+      toast.error(error.response?.data?.message || error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
     }

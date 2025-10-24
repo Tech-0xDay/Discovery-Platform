@@ -2,8 +2,32 @@ import axios from 'axios';
 
 // Ensure API base always ends with /api
 const getApiBase = () => {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+  // Priority: Environment variable > URL detection > Fallback
+  let baseUrl = import.meta.env.VITE_API_URL;
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+
+  if (!baseUrl) {
+    if (isDev) {
+      // Development: use localhost
+      baseUrl = 'http://localhost:5000';
+    } else {
+      // Production: use Render backend (for Netlify and other production hosts)
+      baseUrl = 'https://discovery-platform.onrender.com';
+    }
+  }
+
+  console.log('🌐 API Base URL configured:', {
+    currentHost: currentHost,
+    isDevelopment: isDev,
+    baseUrl: baseUrl,
+    fromEnvVar: !!import.meta.env.VITE_API_URL,
+    viteApiUrl: import.meta.env.VITE_API_URL || 'not set'
+  });
+
+  const finalUrl = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+  console.log('🌐 Final API Base URL:', finalUrl);
+  return finalUrl;
 };
 
 const API_BASE = getApiBase();
