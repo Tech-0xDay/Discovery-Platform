@@ -83,8 +83,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    console.log('🔐 AuthContext.login - Starting login process');
     const response = await authService.login(email, password);
+    console.log('🔐 AuthContext.login - Response received:', {
+      status: response.status,
+      dataStructure: Object.keys(response.data),
+      fullData: response.data
+    });
+
     const { tokens, user: newUser } = response.data.data;
+    console.log('🔐 AuthContext.login - Extracted tokens and user:', {
+      hasTokens: !!tokens,
+      hasAccess: !!tokens?.access,
+      userName: newUser?.username
+    });
+
     localStorage.setItem('token', tokens.access);
     if (tokens.refresh) {
       localStorage.setItem('refreshToken', tokens.refresh);
@@ -92,11 +105,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
     setToken(tokens.access);
     setUser(transformUser(newUser));
+    console.log('✅ AuthContext.login - Login successful');
   };
 
   const register = async (email: string, password: string, username: string) => {
+    console.log('🔐 AuthContext.register - Starting registration process');
     const response = await authService.register(email, username, password);
+    console.log('🔐 AuthContext.register - Response received:', {
+      status: response.status,
+      dataStructure: Object.keys(response.data),
+      fullData: response.data
+    });
+
     const { tokens, user: newUser } = response.data.data;
+    console.log('🔐 AuthContext.register - Extracted tokens and user:', {
+      hasTokens: !!tokens,
+      hasAccess: !!tokens?.access,
+      userName: newUser?.username
+    });
+
     localStorage.setItem('token', tokens.access);
     if (tokens.refresh) {
       localStorage.setItem('refreshToken', tokens.refresh);
@@ -104,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
     setToken(tokens.access);
     setUser(transformUser(newUser));
+    console.log('✅ AuthContext.register - Registration successful');
   };
 
   const logout = () => {

@@ -18,11 +18,19 @@ export default function Login() {
     setIsLoading(true);
 
     try {
+      console.log('🚀 Attempting login with:', { email });
       await login(email, password);
+      console.log('✅ Login successful');
       toast.success('Welcome back!');
       navigate('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to login');
+      console.error('❌ Login error:', {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        data: error.response?.data,
+        errorMessage: error.message,
+      });
+      toast.error(error.response?.data?.message || error.message || 'Failed to login');
     } finally {
       setIsLoading(false);
     }
