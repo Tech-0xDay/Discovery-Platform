@@ -32,6 +32,7 @@ PyJWT==2.10.1
 # Utilities
 requests==2.31.0
 python-dateutil==2.8.2
+setuptools>=65.5.1
 
 # Email (Optional)
 Flask-Mail==0.9.1
