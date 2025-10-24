@@ -6,7 +6,7 @@ from datetime import datetime
 from extensions import db
 from models.investor_request import InvestorRequest
 from models.user import User
-from utils.decorators import token_required, admin_or_session_required
+from utils.decorators import token_required
 
 
 investor_requests_bp = Blueprint('investor_requests', __name__, url_prefix='/api/investor-requests')
@@ -14,13 +14,13 @@ investor_requests_bp = Blueprint('investor_requests', __name__, url_prefix='/api
 
 @investor_requests_bp.route('/apply', methods=['POST'])
 @token_required
-def apply_for_investor(current_user):
+def apply_for_investor(user_id):
     """Apply for investor account"""
     try:
         data = request.get_json()
 
         # Check if user already has a pending or approved request
-        existing_request = InvestorRequest.query.filter_by(user_id=current_user.id).first()
+        existing_request = InvestorRequest.query.filter_by(user_id=user_id).first()
         if existing_request:
             if existing_request.status == 'pending':
                 return jsonify({
@@ -35,7 +35,7 @@ def apply_for_investor(current_user):
 
         # Create new investor request
         investor_request = InvestorRequest(
-            user_id=current_user.id,
+            user_id=user_id,
             plan_type=data.get('plan_type', 'free'),
             company_name=data.get('company_name'),
             linkedin_url=data.get('linkedin_url'),
@@ -60,17 +60,9 @@ def apply_for_investor(current_user):
 
 
 @investor_requests_bp.route('/pending', methods=['GET'])
-@admin_or_session_required
-def get_pending_requests(current_user):
-    """Get all pending investor requests (admin only)"""
+def get_pending_requests():
+    """Get all pending investor requests"""
     try:
-        # Check if user is admin
-        if not current_user.is_admin:
-            return jsonify({
-                'status': 'error',
-                'message': 'Admin access required'
-            }), 403
-
         requests = InvestorRequest.query.filter_by(status='pending').order_by(
             InvestorRequest.created_at.desc()
         ).all()
@@ -88,17 +80,9 @@ def get_pending_requests(current_user):
 
 
 @investor_requests_bp.route('/all', methods=['GET'])
-@admin_or_session_required
-def get_all_requests(current_user):
-    """Get all investor requests (admin only)"""
+def get_all_requests():
+    """Get all investor requests"""
     try:
-        # Check if user is admin
-        if not current_user.is_admin:
-            return jsonify({
-                'status': 'error',
-                'message': 'Admin access required'
-            }), 403
-
         status_filter = request.args.get('status')  # pending, approved, rejected
         query = InvestorRequest.query
 
@@ -120,17 +104,9 @@ def get_all_requests(current_user):
 
 
 @investor_requests_bp.route('/<request_id>/approve', methods=['POST'])
-@admin_or_session_required
-def approve_request(current_user, request_id):
-    """Approve investor request (admin only)"""
+def approve_request(request_id):
+    """Approve investor request"""
     try:
-        # Check if user is admin
-        if not current_user.is_admin:
-            return jsonify({
-                'status': 'error',
-                'message': 'Admin access required'
-            }), 403
-
         investor_request = InvestorRequest.query.get(request_id)
         if not investor_request:
             return jsonify({
@@ -140,7 +116,7 @@ def approve_request(current_user, request_id):
 
         # Update request status
         investor_request.status = 'approved'
-        investor_request.reviewed_by = current_user.id if current_user.id != 'admin_session' else None
+        investor_request.reviewed_by = None
         investor_request.reviewed_at = datetime.utcnow()
 
         # Update user to investor
@@ -165,17 +141,9 @@ def approve_request(current_user, request_id):
 
 
 @investor_requests_bp.route('/<request_id>/reject', methods=['POST'])
-@admin_or_session_required
-def reject_request(current_user, request_id):
-    """Reject investor request (admin only)"""
+def reject_request(request_id):
+    """Reject investor request"""
     try:
-        # Check if user is admin
-        if not current_user.is_admin:
-            return jsonify({
-                'status': 'error',
-                'message': 'Admin access required'
-            }), 403
-
         investor_request = InvestorRequest.query.get(request_id)
         if not investor_request:
             return jsonify({
@@ -185,7 +153,7 @@ def reject_request(current_user, request_id):
 
         # Update request status
         investor_request.status = 'rejected'
-        investor_request.reviewed_by = current_user.id if current_user.id != 'admin_session' else None
+        investor_request.reviewed_by = None
         investor_request.reviewed_at = datetime.utcnow()
 
         db.session.commit()
@@ -206,10 +174,10 @@ def reject_request(current_user, request_id):
 
 @investor_requests_bp.route('/my-request', methods=['GET'])
 @token_required
-def get_my_request(current_user):
+def get_my_request(user_id):
     """Get current user's investor request status"""
     try:
-        investor_request = InvestorRequest.query.filter_by(user_id=current_user.id).first()
+        investor_request = InvestorRequest.query.filter_by(user_id=user_id).first()
 
         if not investor_request:
             return jsonify({

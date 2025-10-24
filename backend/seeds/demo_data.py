@@ -2,7 +2,8 @@
 Seed demo data for 0x.ship MVP
 """
 from datetime import datetime, timedelta
-from app import db, create_app
+from app import create_app
+from extensions import db
 from models.user import User
 from models.project import Project, ProjectScreenshot
 from models.vote import Vote

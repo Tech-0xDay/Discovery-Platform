@@ -2,7 +2,8 @@
 Initialize database - Create all tables
 Run this script to create all database tables
 """
-from app import create_app, db
+from app import create_app
+from extensions import db
 from models.user import User
 from models.project import Project, ProjectScreenshot
 from models.vote import Vote

@@ -5,7 +5,7 @@ from functools import wraps
 from flask import jsonify, session, request
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from models.user import User
-from app import db
+from extensions import db
 
 
 def token_required(f):
