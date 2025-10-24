@@ -1,73 +1,143 @@
-# Welcome to your Lovable project
+# 0x.ship - Proof-Weighted Hackathon Discovery Platform
 
-## Project info
+A Reddit-style platform for discovering hackathon projects with proof-based credibility verification on 0x.ship.
 
-**URL**: https://lovable.dev/projects/8ca1896a-9ca3-4385-95df-57a1cad501c9
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/8ca1896a-9ca3-4385-95df-57a1cad501c9) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Tech Stack
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Frontend Framework**: React 18.3
+- **Build Tool**: Vite 5.4
+- **Language**: TypeScript 5.8
+- **Styling**: Tailwind CSS 3.4
+- **UI Components**: shadcn-ui (Radix UI + Tailwind)
+- **Blockchain**: Wagmi 2.18 + Viem 2.38 + Reown AppKit
+- **Forms**: React Hook Form + Zod validation
+- **State Management**: Zustand 5.0
+- **Data Fetching**: TanStack React Query 5.83
+- **Charts**: Recharts 2.15
+- **Notifications**: Sonner 1.7
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/8ca1896a-9ca3-4385-95df-57a1cad501c9) and click on Share -> Publish.
+```
+frontend/
+├── src/
+│   ├── components/     # Reusable React components
+│   ├── pages/          # Page components
+│   ├── services/       # API and utility services
+│   ├── hooks/          # Custom React hooks
+│   ├── types/          # TypeScript type definitions
+│   ├── config/         # Configuration files
+│   └── main.tsx        # App entry point
+├── public/             # Static assets
+│   └── favicon.ico     # Favicon
+├── index.html          # HTML template
+├── vite.config.ts      # Vite configuration
+├── tailwind.config.js  # Tailwind CSS configuration
+└── tsconfig.json       # TypeScript configuration
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Getting Started
 
-Yes, you can!
+### Prerequisites
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Node.js (v16 or higher)
+- npm or yarn package manager
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Installation
+
+```bash
+# Clone the repository
+git clone <YOUR_GIT_URL>
+
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+```
+
+### Development
+
+Run the development server with hot module reloading:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+### Build
+
+Create an optimized production build:
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist/` directory.
+
+### Preview Production Build
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+### Linting
+
+Run ESLint to check code quality:
+
+```bash
+npm run lint
+```
+
+## Key Features
+
+- **Proof-Based Credibility**: Verify hackathon projects with on-chain proof
+- **Reddit-Style Discovery**: Upvote and discuss projects
+- **Web3 Integration**: Connect with Wagmi/Viem wallet support
+- **Responsive Design**: Mobile-first UI with Tailwind CSS
+- **Type-Safe**: Full TypeScript support for better developer experience
+
+## Configuration Files
+
+### Vite Configuration
+- **File**: `vite.config.ts`
+- Configures Vite build system and React Fast Refresh plugin
+
+### Tailwind CSS
+- **File**: `tailwind.config.js`
+- Custom design tokens and shadcn-ui component imports
+
+### TypeScript
+- **File**: `tsconfig.json`
+- Strict mode enabled for better type safety
+
+### ESLint
+- **File**: `eslint.config.js`
+- Code quality and style enforcement
+
+## Deployment
+
+The `dist/` folder can be deployed to any static hosting service:
+
+- Vercel
+- Netlify
+- AWS S3 + CloudFront
+- GitHub Pages
+- Any web server
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Test thoroughly
+4. Commit with clear messages
+5. Push and create a pull request
+
+## License
+
+Proprietary - 0x.ship
