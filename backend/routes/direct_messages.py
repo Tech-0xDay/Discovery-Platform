@@ -14,7 +14,7 @@ direct_messages_bp = Blueprint('direct_messages', __name__, url_prefix='/api/mes
 
 @direct_messages_bp.route('/send', methods=['POST'])
 @token_required
-def send_message(current_user):
+def send_message(user_id):
     """Send a direct message"""
     try:
         data = request.get_json()
@@ -37,7 +37,7 @@ def send_message(current_user):
 
         # Create message
         message = DirectMessage(
-            sender_id=current_user.id,
+            sender_id=user_id,
             recipient_id=recipient_id,
             message=message_text
         )
@@ -61,7 +61,7 @@ def send_message(current_user):
 
 @direct_messages_bp.route('/conversations', methods=['GET'])
 @token_required
-def get_conversations(current_user):
+def get_conversations(user_id):
     """Get all conversations for current user"""
     try:
         # Get all users current user has conversations with
@@ -70,17 +70,17 @@ def get_conversations(current_user):
             db.func.max(DirectMessage.created_at).label('last_message_time'),
             db.func.count(
                 db.case(
-                    (and_(DirectMessage.recipient_id == current_user.id, DirectMessage.is_read == False), 1)
+                    (and_(DirectMessage.recipient_id == user_id, DirectMessage.is_read == False), 1)
                 )
             ).label('unread_count')
         ).join(
             DirectMessage,
             or_(
-                and_(DirectMessage.sender_id == User.id, DirectMessage.recipient_id == current_user.id),
-                and_(DirectMessage.recipient_id == User.id, DirectMessage.sender_id == current_user.id)
+                and_(DirectMessage.sender_id == User.id, DirectMessage.recipient_id == user_id),
+                and_(DirectMessage.recipient_id == User.id, DirectMessage.sender_id == user_id)
             )
         ).filter(
-            User.id != current_user.id
+            User.id != user_id
         ).group_by(
             User.id
         ).order_by(
@@ -92,8 +92,8 @@ def get_conversations(current_user):
             # Get last message
             last_message = DirectMessage.query.filter(
                 or_(
-                    and_(DirectMessage.sender_id == current_user.id, DirectMessage.recipient_id == user.id),
-                    and_(DirectMessage.sender_id == user.id, DirectMessage.recipient_id == current_user.id)
+                    and_(DirectMessage.sender_id == user_id, DirectMessage.recipient_id == user.id),
+                    and_(DirectMessage.sender_id == user.id, DirectMessage.recipient_id == user_id)
                 )
             ).order_by(DirectMessage.created_at.desc()).first()
 
@@ -116,13 +116,13 @@ def get_conversations(current_user):
         }), 500
 
 
-@direct_messages_bp.route('/conversation/<user_id>', methods=['GET'])
+@direct_messages_bp.route('/conversation/<other_user_id>', methods=['GET'])
 @token_required
-def get_conversation_with_user(current_user, user_id):
+def get_conversation_with_user(user_id, other_user_id):
     """Get all messages in conversation with specific user"""
     try:
         # Check if user exists
-        user = User.query.get(user_id)
+        user = User.query.get(other_user_id)
         if not user:
             return jsonify({
                 'status': 'error',
@@ -132,15 +132,15 @@ def get_conversation_with_user(current_user, user_id):
         # Get all messages between current user and specified user
         messages = DirectMessage.query.filter(
             or_(
-                and_(DirectMessage.sender_id == current_user.id, DirectMessage.recipient_id == user_id),
-                and_(DirectMessage.sender_id == user_id, DirectMessage.recipient_id == current_user.id)
+                and_(DirectMessage.sender_id == user_id, DirectMessage.recipient_id == other_user_id),
+                and_(DirectMessage.sender_id == other_user_id, DirectMessage.recipient_id == user_id)
             )
         ).order_by(DirectMessage.created_at.asc()).all()
 
         # Mark messages as read
         unread_messages = DirectMessage.query.filter(
-            DirectMessage.sender_id == user_id,
-            DirectMessage.recipient_id == current_user.id,
+            DirectMessage.sender_id == other_user_id,
+            DirectMessage.recipient_id == user_id,
             DirectMessage.is_read == False
         ).all()
 
@@ -167,11 +167,11 @@ def get_conversation_with_user(current_user, user_id):
 
 @direct_messages_bp.route('/unread-count', methods=['GET'])
 @token_required
-def get_unread_count(current_user):
+def get_unread_count(user_id):
     """Get total unread message count"""
     try:
         count = DirectMessage.query.filter(
-            DirectMessage.recipient_id == current_user.id,
+            DirectMessage.recipient_id == user_id,
             DirectMessage.is_read == False
         ).count()
 
@@ -189,7 +189,7 @@ def get_unread_count(current_user):
 
 @direct_messages_bp.route('/<message_id>/mark-read', methods=['POST'])
 @token_required
-def mark_as_read(current_user, message_id):
+def mark_as_read(user_id, message_id):
     """Mark a message as read"""
     try:
         message = DirectMessage.query.get(message_id)
@@ -200,7 +200,7 @@ def mark_as_read(current_user, message_id):
             }), 404
 
         # Check if current user is the recipient
-        if message.recipient_id != current_user.id:
+        if message.recipient_id != user_id:
             return jsonify({
                 'status': 'error',
                 'message': 'Unauthorized'

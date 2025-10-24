@@ -14,6 +14,7 @@ class Config:
     # Flask
     DEBUG = False
     TESTING = False
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production-12345')
 
     # Database
     SQLALCHEMY_DATABASE_URI = os.getenv(

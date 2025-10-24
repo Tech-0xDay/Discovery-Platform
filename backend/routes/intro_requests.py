@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify
 from extensions import db
 from models.intro_request import IntroRequest
 from models.project import Project
+from models.user import User
 from models.direct_message import DirectMessage
 from utils.decorators import token_required
 
@@ -14,9 +15,17 @@ intro_requests_bp = Blueprint('intro_requests', __name__, url_prefix='/api/intro
 
 @intro_requests_bp.route('/send', methods=['POST'])
 @token_required
-def send_intro_request(current_user):
+def send_intro_request(user_id):
     """Send intro request from investor to project builder"""
     try:
+        # Get user object
+        current_user = User.query.get(user_id)
+        if not current_user:
+            return jsonify({
+                'status': 'error',
+                'message': 'User not found'
+            }), 404
+
         # Check if user is investor
         if not current_user.is_investor:
             return jsonify({
@@ -45,7 +54,7 @@ def send_intro_request(current_user):
         # Check if intro request already exists
         existing_request = IntroRequest.query.filter_by(
             project_id=project_id,
-            investor_id=current_user.id
+            investor_id=user_id
         ).first()
 
         if existing_request:
@@ -63,7 +72,7 @@ def send_intro_request(current_user):
         # Create intro request
         intro_request = IntroRequest(
             project_id=project_id,
-            investor_id=current_user.id,
+            investor_id=user_id,
             builder_id=project.user_id,
             message=message
         )
@@ -87,11 +96,11 @@ def send_intro_request(current_user):
 
 @intro_requests_bp.route('/received', methods=['GET'])
 @token_required
-def get_received_requests(current_user):
+def get_received_requests(user_id):
     """Get intro requests received by current user (as builder)"""
     try:
         status_filter = request.args.get('status')  # pending, accepted, declined
-        query = IntroRequest.query.filter_by(builder_id=current_user.id)
+        query = IntroRequest.query.filter_by(builder_id=user_id)
 
         if status_filter:
             query = query.filter_by(status=status_filter)
@@ -112,11 +121,11 @@ def get_received_requests(current_user):
 
 @intro_requests_bp.route('/sent', methods=['GET'])
 @token_required
-def get_sent_requests(current_user):
+def get_sent_requests(user_id):
     """Get intro requests sent by current user (as investor)"""
     try:
         status_filter = request.args.get('status')  # pending, accepted, declined
-        query = IntroRequest.query.filter_by(investor_id=current_user.id)
+        query = IntroRequest.query.filter_by(investor_id=user_id)
 
         if status_filter:
             query = query.filter_by(status=status_filter)
@@ -137,7 +146,7 @@ def get_sent_requests(current_user):
 
 @intro_requests_bp.route('/<request_id>/accept', methods=['POST'])
 @token_required
-def accept_request(current_user, request_id):
+def accept_request(user_id, request_id):
     """Accept intro request (builder only)"""
     try:
         intro_request = IntroRequest.query.get(request_id)
@@ -148,7 +157,7 @@ def accept_request(current_user, request_id):
             }), 404
 
         # Check if current user is the builder
-        if intro_request.builder_id != current_user.id:
+        if intro_request.builder_id != user_id:
             return jsonify({
                 'status': 'error',
                 'message': 'You are not authorized to accept this request'
@@ -160,7 +169,7 @@ def accept_request(current_user, request_id):
         # Create initial direct message to start the conversation
         # Send from builder to investor to initialize the conversation
         initial_message = DirectMessage(
-            sender_id=current_user.id,  # Builder
+            sender_id=user_id,  # Builder
             recipient_id=intro_request.investor_id,
             message=f"Hi! I accepted your intro request. Looking forward to connecting!"
         )
@@ -184,7 +193,7 @@ def accept_request(current_user, request_id):
 
 @intro_requests_bp.route('/<request_id>/decline', methods=['POST'])
 @token_required
-def decline_request(current_user, request_id):
+def decline_request(user_id, request_id):
     """Decline intro request (builder only)"""
     try:
         intro_request = IntroRequest.query.get(request_id)
@@ -195,7 +204,7 @@ def decline_request(current_user, request_id):
             }), 404
 
         # Check if current user is the builder
-        if intro_request.builder_id != current_user.id:
+        if intro_request.builder_id != user_id:
             return jsonify({
                 'status': 'error',
                 'message': 'You are not authorized to decline this request'
