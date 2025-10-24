@@ -2,7 +2,26 @@ import axios from 'axios';
 
 // Ensure API base always ends with /api
 const getApiBase = () => {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // Priority: Environment variable > Production URL > Development URL
+  let baseUrl = import.meta.env.VITE_API_URL;
+
+  if (!baseUrl) {
+    // If no env variable, use intelligent defaults based on environment
+    if (import.meta.env.PROD) {
+      // Production: use Render backend
+      baseUrl = 'https://discovery-platform.onrender.com';
+    } else {
+      // Development: use localhost
+      baseUrl = 'http://localhost:5000';
+    }
+  }
+
+  console.log('🌐 API Base URL configured:', {
+    env: import.meta.env.PROD ? 'production' : 'development',
+    baseUrl: baseUrl,
+    fromEnvVar: !!import.meta.env.VITE_API_URL
+  });
+
   return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 };
 
