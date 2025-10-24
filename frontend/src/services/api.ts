@@ -2,27 +2,34 @@ import axios from 'axios';
 
 // Ensure API base always ends with /api
 const getApiBase = () => {
-  // Priority: Environment variable > Production URL > Development URL
+  // Priority: Environment variable > URL detection > Fallback
   let baseUrl = import.meta.env.VITE_API_URL;
 
   if (!baseUrl) {
-    // If no env variable, use intelligent defaults based on environment
-    if (import.meta.env.PROD) {
-      // Production: use Render backend
-      baseUrl = 'https://discovery-platform.onrender.com';
-    } else {
+    // Detect environment by checking current window location
+    const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+
+    if (isDev) {
       // Development: use localhost
       baseUrl = 'http://localhost:5000';
+    } else {
+      // Production: use Render backend (for Netlify and other production hosts)
+      baseUrl = 'https://discovery-platform.onrender.com';
     }
   }
 
   console.log('🌐 API Base URL configured:', {
-    env: import.meta.env.PROD ? 'production' : 'development',
+    currentHost: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+    isDevelopment: currentHost?.includes('localhost') || currentHost?.includes('127.0.0.1'),
     baseUrl: baseUrl,
-    fromEnvVar: !!import.meta.env.VITE_API_URL
+    fromEnvVar: !!import.meta.env.VITE_API_URL,
+    viteApiUrl: import.meta.env.VITE_API_URL || 'not set'
   });
 
-  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+  const finalUrl = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+  console.log('🌐 Final API Base URL:', finalUrl);
+  return finalUrl;
 };
 
 const API_BASE = getApiBase();
