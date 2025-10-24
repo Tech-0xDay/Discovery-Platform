@@ -4,6 +4,13 @@ import { Check, X, ArrowRight, Building2, Sparkles, Zap } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
+// Helper function to get the backend URL
+const getBackendUrl = (): string => {
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+  return isDev ? 'http://localhost:5000' : 'https://discovery-platform.onrender.com';
+};
+
 const PLANS = [
   {
     id: 'free',
@@ -79,7 +86,8 @@ export default function InvestorPlans() {
 
     // Check if user already has a pending or approved request
     try {
-      const response = await fetch('/api/investor-requests/my-request', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/investor-requests/my-request`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -109,7 +117,8 @@ export default function InvestorPlans() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/investor-requests/apply', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/investor-requests/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
