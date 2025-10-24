@@ -4,6 +4,13 @@ import { Check, X, Loader2, Mail, Clock, CheckCircle, XCircle, Send, Sparkles } 
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
+// Helper function to get the backend URL
+const getBackendUrl = (): string => {
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+  return isDev ? 'http://localhost:5000' : 'https://discovery-platform.onrender.com';
+};
+
 interface IntroRequest {
   id: string;
   project_id: string;
@@ -48,7 +55,8 @@ export default function Intros() {
 
   const fetchReceivedRequests = async () => {
     try {
-      const response = await fetch('/api/intro-requests/received', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/intro-requests/received`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -66,7 +74,8 @@ export default function Intros() {
 
   const fetchSentRequests = async () => {
     try {
-      const response = await fetch('/api/intro-requests/sent', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/intro-requests/sent`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -82,7 +91,8 @@ export default function Intros() {
 
   const handleAccept = async (requestId: string) => {
     try {
-      const response = await fetch(`/api/intro-requests/${requestId}/accept`, {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/intro-requests/${requestId}/accept`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -102,7 +112,8 @@ export default function Intros() {
 
   const handleDecline = async (requestId: string) => {
     try {
-      const response = await fetch(`/api/intro-requests/${requestId}/decline`, {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/intro-requests/${requestId}/decline`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,

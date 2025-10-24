@@ -3,6 +3,13 @@ import { MessageSquare, Send, Loader2, ArrowLeft, Sparkles } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
+// Helper function to get the backend URL
+const getBackendUrl = (): string => {
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+  return isDev ? 'http://localhost:5000' : 'https://discovery-platform.onrender.com';
+};
+
 interface User {
   id: string;
   username: string;
@@ -49,7 +56,8 @@ export default function DirectMessages() {
   const fetchConversations = async () => {
     try {
       console.log('🔍 DirectMessages: Fetching conversations...');
-      const response = await fetch('/api/messages/conversations', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/messages/conversations`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -71,7 +79,8 @@ export default function DirectMessages() {
 
   const fetchMessagesWithUser = async (userId: string) => {
     try {
-      const response = await fetch(`/api/messages/conversation/${userId}`, {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/messages/conversation/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -90,7 +99,8 @@ export default function DirectMessages() {
 
     setSending(true);
     try {
-      const response = await fetch('/api/messages/send', {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
