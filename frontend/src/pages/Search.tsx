@@ -5,6 +5,13 @@ import { ProjectCard } from '@/components/ProjectCard';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+// Helper function to get the backend URL
+const getBackendUrl = (): string => {
+  const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDev = currentHost.includes('localhost') || currentHost.includes('127.0.0.1');
+  return isDev ? 'http://localhost:5000' : 'https://discovery-platform.onrender.com';
+};
+
 interface SearchResults {
   projects: any[];
   users: any[];
@@ -35,7 +42,8 @@ export default function Search() {
     const performSearch = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`, {
+        const backendUrl = getBackendUrl();
+        const response = await fetch(`${backendUrl}/api/search?q=${encodeURIComponent(debouncedQuery)}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
