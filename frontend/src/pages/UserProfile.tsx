@@ -47,9 +47,9 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-6 py-12">
-        <div className="mx-auto max-w-5xl">
+    <div className="bg-background min-h-screen overflow-hidden">
+      <div className="container mx-auto px-6 py-12 overflow-hidden">
+        <div className="mx-auto max-w-5xl w-full box-border">
           {/* Profile Header Card */}
           <div className="card-elevated p-8 mb-10">
             <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">

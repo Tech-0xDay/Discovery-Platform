@@ -10,9 +10,9 @@ export default function Dashboard() {
   const { data: stats, isLoading, error } = useDashboardStats();
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-6 py-12">
-        <div className="mx-auto max-w-6xl">
+    <div className="bg-background min-h-screen overflow-hidden">
+      <div className="container mx-auto px-6 py-12 overflow-hidden">
+        <div className="mx-auto max-w-6xl w-full box-border">
           {/* Header */}
           {isLoading ? (
             <DashboardHeaderSkeleton />
@@ -39,7 +39,7 @@ export default function Dashboard() {
 
           {/* Stats Grid */}
           {!isLoading && !error && stats && (
-            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full box-border overflow-hidden">
               {/* Total Projects */}
               <div className="card-elevated p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -104,7 +104,7 @@ export default function Dashboard() {
 
           {/* Main Content Grid */}
           {!isLoading && !error && stats && (
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-2 w-full box-border overflow-hidden">
               {/* Quick Actions */}
               <div className="card-elevated p-6">
                 <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">

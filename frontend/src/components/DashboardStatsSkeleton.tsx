@@ -3,9 +3,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function DashboardStatsSkeleton() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full box-border overflow-hidden">
       {/* Stats Grid skeleton */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full box-border overflow-hidden">
         {Array.from({ length: 4 }).map((_, idx) => (
           <div key={idx} className="card-elevated p-6">
             <div className="flex items-start justify-between mb-4">
@@ -21,7 +21,7 @@ export function DashboardStatsSkeleton() {
       </div>
 
       {/* Main Content Grid skeleton */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 w-full box-border overflow-hidden">
         {/* Quick Actions Card skeleton */}
         <div className="card-elevated p-6">
           <Skeleton className="h-7 w-40 rounded mb-3" />

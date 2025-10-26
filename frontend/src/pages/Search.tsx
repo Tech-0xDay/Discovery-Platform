@@ -140,9 +140,9 @@ export default function Search() {
   }, [debouncedQuery]);
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-6 py-12">
-        <div className="mx-auto max-w-5xl">
+    <div className="bg-background min-h-screen overflow-hidden">
+      <div className="container mx-auto px-6 py-12 overflow-hidden">
+        <div className="mx-auto max-w-5xl w-full box-border">
           {/* Header section */}
           <div className="mb-10 card-elevated p-8">
             <h1 className="text-3xl font-black text-foreground mb-2">Search Projects</h1>

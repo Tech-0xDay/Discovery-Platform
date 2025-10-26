@@ -42,9 +42,9 @@ export default function ProjectDetail() {
   console.log('Full project data:', project);
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-6 py-12">
-        <div className="mx-auto max-w-5xl">
+    <div className="bg-background min-h-screen overflow-hidden">
+      <div className="container mx-auto px-6 py-12 overflow-hidden">
+        <div className="mx-auto max-w-5xl w-full box-border">
           {/* Hero Header Section */}
           <div className="mb-8 card-elevated p-6">
             <div className="flex items-start justify-between gap-6 mb-4">

@@ -52,8 +52,8 @@ export default function Feed() {
   }, []); // Only run once on mount
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-6 py-12">
+    <div className="bg-background min-h-screen overflow-hidden">
+      <div className="container mx-auto px-6 py-12 overflow-hidden">
         {/* Header section */}
         <div className="mb-10 card-elevated p-8">
           <div className="flex items-start gap-4 mb-4">
@@ -128,7 +128,7 @@ export default function Feed() {
 
         {/* Projects grid */}
         {!isLoading && !error && (
-          <div className="grid gap-6 max-w-6xl mx-auto w-full">
+          <div className="grid gap-6 max-w-6xl mx-auto w-full box-border overflow-hidden">
             {!Array.isArray(data?.data) || data.data.length === 0 ? (
               <div className="card-elevated py-20 text-center p-8">
                 <div className="space-y-4">

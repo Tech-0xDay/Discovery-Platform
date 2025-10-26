@@ -3,8 +3,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function ProjectCardSkeleton() {
   return (
-    <div className="group relative w-full max-w-full">
-      <Card className="card-interactive overflow-hidden relative w-full">
+    <div className="group relative w-full max-w-full overflow-hidden">
+      <Card className="card-interactive overflow-hidden relative w-full box-border">
         <div className="p-6 space-y-4 max-w-full overflow-hidden">
           {/* Header with title and badge */}
           <div className="flex items-start justify-between gap-4">
@@ -87,7 +87,7 @@ export function ProjectCardSkeleton() {
 // Skeleton grid for multiple cards
 export function ProjectCardSkeletonGrid({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid gap-6 max-w-6xl mx-auto w-full">
+    <div className="grid gap-6 max-w-6xl mx-auto w-full box-border overflow-hidden">
       {Array.from({ length: count }).map((_, idx) => (
         <ProjectCardSkeleton key={idx} />
       ))}
