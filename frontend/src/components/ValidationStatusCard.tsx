@@ -25,7 +25,7 @@ const badgeIcons: Record<string, string> = {
 const badgeColors: Record<string, string> = {
   stone: 'bg-stone-400/20 border-stone-500/50',
   silver: 'bg-gray-400/20 border-gray-400/50',
-  gold: 'bg-yellow-400/20 border-yellow-500/50',
+  gold: 'bg-primary border-primary text-black font-semibold',
   platinum: 'bg-purple-400/20 border-purple-500/50',
   demerit: 'bg-red-400/20 border-red-500/50',
 };
@@ -75,7 +75,7 @@ export function ValidationStatusCard({ badges = [], className = '' }: Validation
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   ) : (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-4 w-4 text-primary" />
                   )}
                   <span className="text-sm font-black text-foreground uppercase">
                     {highestBadge.badge_type} {highestBadge.badge_type === 'demerit' ? 'Warning' : 'Badge'}
@@ -140,7 +140,7 @@ export function ValidationStatusCard({ badges = [], className = '' }: Validation
           <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border-2 border-primary/30">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-green-500"
+              className="h-5 w-5 text-primary"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -166,9 +166,9 @@ export function ValidationStatusCard({ badges = [], className = '' }: Validation
       ) : (
         // Pending Validation State
         <div className="space-y-3">
-          <div className="rounded-lg p-4 border-2 border-yellow-500/50 bg-yellow-50/5">
+          <div className="rounded-lg p-4 border-2 border-primary bg-primary/20">
             <div className="flex items-center gap-3">
-              <Clock className="h-6 w-6 text-yellow-500" />
+              <Clock className="h-6 w-6 text-primary animate-spin" />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-black text-foreground">Pending Validation</span>
@@ -198,8 +198,8 @@ export function ValidationStatusCard({ badges = [], className = '' }: Validation
                   className={`p-2 rounded-lg border ${badgeColors[type]} text-center`}
                 >
                   <div className="text-lg mb-1">{badgeIcons[type]}</div>
-                  <div className="text-xs font-bold uppercase">{type}</div>
-                  <div className="text-xs text-primary font-bold">+{badgeScores[type]}pts</div>
+                  <div className={`text-xs font-bold uppercase ${type === 'gold' ? 'text-black' : 'text-foreground'}`}>{type}</div>
+                  <div className={`text-xs font-bold ${type === 'gold' ? 'text-black' : 'text-primary'}`}>+{badgeScores[type]}pts</div>
                 </div>
               ))}
             </div>

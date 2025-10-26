@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, AlertTriangle, Loader2, Users, Info } from 'lucide-react';
+import { X, AlertTriangle, Loader2, Users, Info, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { WalletVerification } from '@/components/WalletVerification';
 import { useAuth } from '@/context/AuthContext';
@@ -452,19 +452,17 @@ export default function Publish() {
                       <p className="text-sm text-destructive">{errors.githubUrl.message}</p>
                     )}
                     {githubUrlWarning && (
-                      <div className={`flex items-start gap-2 p-2 rounded-md ${
+                      <div className={`flex items-start gap-2 p-2 rounded-md transition-all duration-200 ${
                         githubUrlWarning.startsWith('✓')
-                          ? 'bg-green-500/10 border border-green-500/20'
-                          : 'bg-yellow-500/10 border border-yellow-500/20'
+                          ? 'bg-primary border border-primary/80 hover:bg-primary/90 hover:border-primary'
+                          : 'bg-primary border border-primary/80 hover:bg-primary/90'
                       }`}>
-                        {githubUrlWarning.startsWith('⚠️') && (
-                          <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                        {githubUrlWarning.startsWith('✓') ? (
+                          <Check className="h-4 w-4 text-black mt-0.5 flex-shrink-0 font-bold stroke-2" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4 text-black mt-0.5 flex-shrink-0 font-bold stroke-2" />
                         )}
-                        <p className={`text-xs font-medium ${
-                          githubUrlWarning.startsWith('✓')
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-yellow-600 dark:text-yellow-400'
-                        }`}>{githubUrlWarning}</p>
+                        <p className={`text-xs font-semibold text-black`}>{githubUrlWarning}</p>
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">

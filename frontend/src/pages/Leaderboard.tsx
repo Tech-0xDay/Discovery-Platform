@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Trophy, Medal, Loader2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FeaturedProjectsGridSkeleton } from '@/components/FeaturedProjectsSkeleton';
 import { useProjectsLeaderboard, useBuildersLeaderboard } from '@/hooks/useLeaderboard';
 
 type LeaderboardTab = 'projects' | 'builders' | 'featured';
@@ -14,7 +15,7 @@ export default function Leaderboard() {
   const { data: buildersData, isLoading: buildersLoading, error: buildersError } = useBuildersLeaderboard();
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-400" />;
+    if (rank === 1) return <Trophy className="h-6 w-6 text-primary" />;
     if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />;
     if (rank === 3) return <Medal className="h-6 w-6 text-amber-600" />;
     return <span className="text-lg font-black text-muted-foreground">{rank}</span>;
@@ -38,19 +39,19 @@ export default function Leaderboard() {
               <TabsList className="inline-flex h-auto rounded-[15px] bg-secondary border-4 border-black p-1">
                 <TabsTrigger
                   value="projects"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
                 >
                   Projects
                 </TabsTrigger>
                 <TabsTrigger
                   value="builders"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
                 >
                   Builders
                 </TabsTrigger>
                 <TabsTrigger
                   value="featured"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
                 >
                   Featured
                 </TabsTrigger>
@@ -64,9 +65,7 @@ export default function Leaderboard() {
             {tab === 'projects' && (
               <>
                 {projectsLoading && (
-                  <div className="card-elevated p-20 text-center flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
+                  <FeaturedProjectsGridSkeleton count={6} />
                 )}
 
                 {projectsError && (
@@ -112,9 +111,7 @@ export default function Leaderboard() {
             {tab === 'builders' && (
               <>
                 {buildersLoading && (
-                  <div className="card-elevated p-20 text-center flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
+                  <FeaturedProjectsGridSkeleton count={6} />
                 )}
 
                 {buildersError && (

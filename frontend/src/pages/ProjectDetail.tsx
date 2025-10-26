@@ -6,6 +6,7 @@ import { CommentSection } from '@/components/CommentSection';
 import { BadgeAwarder } from '@/components/BadgeAwarder';
 import { IntroRequest } from '@/components/IntroRequest';
 import { ValidationStatusCard } from '@/components/ValidationStatusCard';
+import { ProjectDetailSkeleton } from '@/components/ProjectDetailSkeleton';
 import { useAuth } from '@/context/AuthContext';
 import { useProjectById } from '@/hooks/useProjects';
 
@@ -16,15 +17,7 @@ export default function ProjectDetail() {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="bg-background min-h-screen">
-        <div className="container mx-auto px-6 py-12">
-          <div className="mx-auto max-w-5xl card-elevated p-20 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        </div>
-      </div>
-    );
+    return <ProjectDetailSkeleton />;
   }
 
   // Error state
@@ -221,12 +214,12 @@ export default function ProjectDetail() {
                   </div>
 
                   {/* Verification Score */}
-                  <div className="flex items-center gap-2 p-2 bg-primary/10 rounded border border-primary/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex items-center gap-2 p-2 bg-primary rounded border border-primary hover:bg-primary/90 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black hover:scale-110 transition-transform duration-200 stroke-black" fill="none" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-sm text-foreground font-semibold">Verified</span>
-                    <span className="text-xs text-primary font-bold ml-auto">+10pts</span>
+                    <span className="text-sm text-black font-bold">Verified</span>
+                    <span className="text-xs text-black font-bold ml-auto">+10pts</span>
                   </div>
 
                   {/* Attributes */}

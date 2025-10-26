@@ -268,9 +268,9 @@ export default function InvestorPlans() {
 
               <div className="space-y-3 mb-8">
                 {plan.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-2.5 group/item">
-                    <div className="mt-0.5 h-5 w-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
-                      <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400 font-bold" />
+                  <div key={idx} className="flex items-start gap-2.5 group/item hover:bg-primary/10 rounded-md p-2 transition-all duration-200">
+                    <div className="mt-0.5 h-5 w-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary/90 transition-all duration-200">
+                      <Check className="h-3.5 w-3.5 text-black font-bold group-hover:scale-110 transition-transform duration-200" />
                     </div>
                     <span className="text-xs font-medium leading-relaxed flex-1">{feature}</span>
                   </div>

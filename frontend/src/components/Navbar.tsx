@@ -123,10 +123,10 @@ export function Navbar() {
                     <DropdownMenuSeparator />
                     {user.is_investor ? (
                       <DropdownMenuItem asChild>
-                        <Link to="/investor-plans" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-l-2 border-green-500">
-                          <Building2 className="h-4 w-4 text-green-600" />
-                          <span className="text-green-600 font-bold">Investor Account</span>
-                          <Sparkles className="h-3 w-3 text-green-600 ml-auto" />
+                        <Link to="/investor-plans" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-l-2 border-yellow-600 hover:from-yellow-500/20 hover:to-amber-500/20 hover:border-yellow-500 transition-all">
+                          <Building2 className="h-4 w-4 text-black group-hover:text-black" />
+                          <span className="text-black font-bold group-hover:text-black">Investor Account</span>
+                          <Sparkles className="h-3 w-3 text-black ml-auto group-hover:text-black" />
                         </Link>
                       </DropdownMenuItem>
                     ) : (

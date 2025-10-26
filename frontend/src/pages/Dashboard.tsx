@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Rocket, FileText, ThumbsUp, MessageSquare, Users, Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useDashboardStats } from '@/hooks/useStats';
+import { DashboardStatsSkeleton, DashboardHeaderSkeleton } from '@/components/DashboardStatsSkeleton';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Dashboard() {
@@ -13,19 +14,19 @@ export default function Dashboard() {
       <div className="container mx-auto px-6 py-12">
         <div className="mx-auto max-w-6xl">
           {/* Header */}
-          <div className="mb-10 card-elevated p-8">
-            <h1 className="text-4xl font-black text-foreground mb-2">Welcome back, {user?.username}!</h1>
-            <p className="text-base text-muted-foreground">
-              Here's what's happening with your projects
-            </p>
-          </div>
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="card-elevated p-20 text-center flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          {isLoading ? (
+            <DashboardHeaderSkeleton />
+          ) : (
+            <div className="mb-10 card-elevated p-8">
+              <h1 className="text-4xl font-black text-foreground mb-2">Welcome back, {user?.username}!</h1>
+              <p className="text-base text-muted-foreground">
+                Here's what's happening with your projects
+              </p>
             </div>
           )}
+
+          {/* Loading State */}
+          {isLoading && <DashboardStatsSkeleton />}
 
           {/* Error State */}
           {error && (

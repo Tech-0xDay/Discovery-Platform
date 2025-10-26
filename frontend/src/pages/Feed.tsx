@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectCard } from '@/components/ProjectCard';
+import { ProjectCardSkeletonGrid } from '@/components/ProjectCardSkeleton';
 import { SortType } from '@/types';
 import { Flame, Clock, TrendingUp, Zap, Loader2, Building2, ArrowRight } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
@@ -57,7 +58,7 @@ export default function Feed() {
         <div className="mb-10 card-elevated p-8">
           <div className="flex items-start gap-4 mb-4">
             <div className="badge-primary flex items-center justify-center h-12 w-12 flex-shrink-0 rounded-[15px]">
-              <Zap className="h-6 w-6 text-foreground" />
+              <Zap className="h-6 w-6 text-black font-bold" />
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-black text-foreground mb-2">
@@ -79,21 +80,21 @@ export default function Feed() {
             <TabsList className="inline-flex h-auto rounded-[15px] bg-secondary border-4 border-black p-1">
               <TabsTrigger
                 value="hot"
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
               >
                 <Flame className="h-4 w-4" />
                 <span className="hidden sm:inline">Hot</span>
               </TabsTrigger>
               <TabsTrigger
                 value="new"
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
               >
                 <Clock className="h-4 w-4" />
                 <span className="hidden sm:inline">New</span>
               </TabsTrigger>
               <TabsTrigger
                 value="top"
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">Top</span>
@@ -111,9 +112,7 @@ export default function Feed() {
 
         {/* Loading state */}
         {isLoading && (
-          <div className="card-elevated py-20 text-center p-8 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+          <ProjectCardSkeletonGrid count={6} />
         )}
 
         {/* Error state */}

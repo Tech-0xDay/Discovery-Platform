@@ -119,7 +119,7 @@ export function IntroRequest({ projectId, builderId }: IntroRequestProps) {
           <div className="space-y-3">
             <Label htmlFor="message" className="text-sm font-bold flex items-center justify-between">
               <span>Your Message</span>
-              <span className={`text-xs ${message.length >= 10 && message.length <= 1000 ? 'text-green-600' : 'text-muted-foreground'}`}>
+              <span className={`text-xs font-semibold transition-colors ${message.length >= 10 && message.length <= 1000 ? 'text-primary' : 'text-muted-foreground'}`}>
                 {message.length}/1000
               </span>
             </Label>

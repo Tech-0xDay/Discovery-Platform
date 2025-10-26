@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProjects, useDeleteProject } from '@/hooks/useProjects';
 import { ProjectCard } from '@/components/ProjectCard';
+import { ProjectCardSkeletonGrid } from '@/components/ProjectCardSkeleton';
 import { toast } from 'sonner';
 
 export default function MyProjects() {
@@ -32,9 +33,7 @@ export default function MyProjects() {
 
           {/* Loading state */}
           {isLoading && (
-            <div className="card-elevated p-20 text-center flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <ProjectCardSkeletonGrid count={4} />
           )}
 
           {/* Error state */}

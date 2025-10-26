@@ -18,9 +18,9 @@ All colors MUST be HSL.
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 98%;
 
-    /* Primary: Vibrant green accent */
-    --primary: 120 100% 50%; /* #00FF66 - Vibrant green */
-    --primary-foreground: 0 0% 0%;
+    /* Primary: Golden yellow accent */
+    --primary: 45 97% 70%; /* #F9D46A - Golden yellow */
+    --primary-foreground: 0 0% 0%; /* #000000 - Black for contrast */
 
     --secondary: 0 0% 25%; /* #404040 - Dark gray */
     --secondary-foreground: 0 0% 98%;
@@ -30,23 +30,23 @@ All colors MUST be HSL.
 
     /* Accent: Bold black/dark */
     --accent: 0 0% 15%; /* #262626 - Dark for contrast */
-    --accent-foreground: 120 100% 50%;
+    --accent-foreground: 45 97% 70%;
 
     --destructive: 0 100% 60%; /* #FF3333 - Bold red */
     --destructive-foreground: 0 0% 0%;
 
-    --success: 120 100% 50%; /* #00FF66 - Vibrant green */
+    --success: 45 97% 70%; /* #F9D46A - Golden yellow */
     --success-foreground: 0 0% 0%;
 
     --border: 0 0% 20%; /* #333333 - Dark borders */
     --input: 0 0% 18%;
-    --ring: 120 100% 50%;
+    --ring: 45 97% 70%;
 
     --radius: 0.938rem; /* 15px - Rounded but not too much */
 
     /* Gradients and effects */
-    --gradient-primary: linear-gradient(135deg, #00FF66 0%, #00CC00 100%);
-    --gradient-secondary: linear-gradient(135deg, #00FF66 0%, #00DD00 100%);
+    --gradient-primary: linear-gradient(135deg, #F9D46A 0%, #E8B74F 100%);
+    --gradient-secondary: linear-gradient(135deg, #F9D46A 0%, #D49A2A 100%);
     --border-thick: 4px solid #000000;
     --shadow-button: 4px 6px 0px rgba(0, 0, 0, 0.8);
     --shadow-button-hover: 2px 3px 0px rgba(0, 0, 0, 0.8);
@@ -153,7 +153,7 @@ All colors MUST be HSL.
     content: "";
     position: absolute;
     inset: 0;
-    background-color: #00CC00;
+    background-color: #E8B74F;
     transform: translateX(-100%);
     z-index: -1;
     transition: var(--transition-quick);
@@ -233,7 +233,7 @@ All colors MUST be HSL.
   .card-interactive:hover {
     transform: translate(2px, 2px);
     box-shadow: var(--shadow-card-hover);
-    border-color: #00FF66;
+    border-color: #F9D46A;
   }
 
   /* Badge styles - Bold */
@@ -317,7 +317,7 @@ All colors MUST be HSL.
     content: "";
     position: absolute;
     inset: 0;
-    background: #00FF66;
+    background: #F9D46A;
     opacity: 0.15;
     transform: translateX(-100%);
     transition: var(--transition-quick);

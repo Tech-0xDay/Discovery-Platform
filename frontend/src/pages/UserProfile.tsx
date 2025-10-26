@@ -6,6 +6,7 @@ import { Shield, Award, Loader2, AlertCircle, Github, ExternalLink } from 'lucid
 import { useUserByUsername } from '@/hooks/useUser';
 import { useUserProjects } from '@/hooks/useProjects';
 import { ProjectCard } from '@/components/ProjectCard';
+import { ProjectCardSkeletonGrid } from '@/components/ProjectCardSkeleton';
 
 export default function UserProfile() {
   const { username } = useParams();
@@ -112,13 +113,13 @@ export default function UserProfile() {
             <TabsList className="inline-flex h-auto rounded-[15px] bg-secondary border-4 border-black p-1 mb-8">
               <TabsTrigger
                 value="projects"
-                className="rounded-md px-4 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                className="rounded-md px-4 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
               >
                 Projects ({projectsData?.data?.length || 0})
               </TabsTrigger>
               <TabsTrigger
                 value="activity"
-                className="rounded-md px-4 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-foreground"
+                className="rounded-md px-4 py-2 text-sm font-bold transition-quick data-[state=active]:bg-primary data-[state=active]:text-black"
               >
                 Activity
               </TabsTrigger>
@@ -126,9 +127,7 @@ export default function UserProfile() {
 
             <TabsContent value="projects">
               {projectsLoading ? (
-                <div className="card-elevated p-20 text-center flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
+                <ProjectCardSkeletonGrid count={3} />
               ) : projectsData?.data && projectsData.data.length > 0 ? (
                 <div className="space-y-4">
                   {projectsData.data.map((project: any) => (

@@ -313,7 +313,7 @@ export default function AdminValidator() {
   const badgeColors: Record<string, string> = {
     stone: 'bg-stone-400/20 border-stone-500 text-stone-700',
     silver: 'bg-gray-400/20 border-gray-400 text-gray-700',
-    gold: 'bg-yellow-400/20 border-yellow-500 text-yellow-700',
+    gold: 'bg-primary border-primary text-black font-semibold',
     platinum: 'bg-purple-400/20 border-purple-500 text-purple-700',
     demerit: 'bg-red-400/20 border-red-500 text-red-700',
   };
@@ -405,7 +405,7 @@ export default function AdminValidator() {
                               </Badge>
                             )}
                             {validation.status === 'pending' && (
-                              <Badge variant="outline" className="border-2 border-yellow-500 text-yellow-700">
+                              <Badge variant="outline" className="border-2 border-primary bg-primary text-black font-semibold">
                                 ⏳ Pending
                               </Badge>
                             )}
@@ -479,9 +479,9 @@ export default function AdminValidator() {
                         )}
 
                         {validation.status === 'validated' ? (
-                          <div className="border-2 border-green-500 rounded-lg p-3 bg-green-50/10">
-                            <div className="flex items-center gap-2 text-sm text-green-600">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="border-2 border-primary rounded-lg p-3 bg-primary hover:bg-primary/90 transition-all duration-200">
+                            <div className="flex items-center gap-2 text-sm text-black font-semibold hover:text-black/80 transition-colors duration-200">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black stroke-black" fill="none" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                               <span className="font-bold">Already Validated</span>
@@ -607,7 +607,7 @@ export default function AdminValidator() {
                         <CardTitle className="text-xl font-black">{project.title}</CardTitle>
                         <CardDescription>{project.tagline}</CardDescription>
                       </div>
-                      <Badge variant="outline" className="border-2 border-yellow-500 text-yellow-700">
+                      <Badge variant="outline" className="border-2 border-primary bg-primary text-black font-semibold">
                         ⏳ Pending
                       </Badge>
                     </div>

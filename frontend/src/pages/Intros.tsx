@@ -136,7 +136,7 @@ export default function Intros() {
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-600" />;
       case 'accepted':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-primary" />;
       case 'declined':
         return <XCircle className="h-4 w-4 text-red-600" />;
       default:
@@ -147,13 +147,13 @@ export default function Intros() {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-400/20 border-yellow-500 text-yellow-700';
+        return 'bg-primary border-primary text-black font-semibold hover:bg-primary/90 transition-colors';
       case 'accepted':
-        return 'bg-green-400/20 border-green-500 text-green-700';
+        return 'bg-primary border-primary text-black font-semibold hover:bg-primary/90 transition-colors';
       case 'declined':
-        return 'bg-red-400/20 border-red-500 text-red-700';
+        return 'bg-red-400/20 border-red-500 text-red-700 hover:bg-red-400/30 hover:border-red-600 transition-colors';
       default:
-        return 'bg-secondary border-border';
+        return 'bg-secondary border-border hover:border-primary/50 transition-colors';
     }
   };
 
@@ -370,9 +370,9 @@ export default function Intros() {
                   )}
 
                   {intro.status === 'pending' && (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/10 border-2 border-yellow-400 rounded-[12px] p-4 flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-yellow-600 animate-pulse" />
-                      <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    <div className="bg-primary border-2 border-primary rounded-[12px] p-4 flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-black animate-spin" />
+                      <p className="text-sm font-semibold text-black">
                         Waiting for builder to respond
                       </p>
                     </div>

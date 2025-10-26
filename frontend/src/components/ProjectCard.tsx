@@ -77,9 +77,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <div className="flex-shrink-0">
                 <div className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 px-4 py-3 min-w-[80px]">
                   <span className="text-2xl font-bold text-primary">
-                    {project.proofScore?.total || 0}
+                    {project.proofScore?.total && project.proofScore.total > 0
+                      ? project.proofScore.total
+                      : Math.max(project.voteCount || 0, 0)}
                   </span>
-                  <span className="text-xs text-muted-foreground font-medium">Score</span>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {project.proofScore?.total && project.proofScore.total > 0 ? 'Score' : 'Votes'}
+                  </span>
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
 import { ProjectCard } from '@/components/ProjectCard';
+import { ProjectCardSkeletonGrid } from '@/components/ProjectCardSkeleton';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
@@ -165,11 +166,8 @@ export default function Search() {
           </div>
 
           {/* Loading State */}
-          {loading && (
-            <div className="card-elevated p-12 text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-              <p className="text-sm text-muted-foreground">Searching...</p>
-            </div>
+          {loading && query && (
+            <ProjectCardSkeletonGrid count={3} />
           )}
 
           {/* Results or Empty State */}

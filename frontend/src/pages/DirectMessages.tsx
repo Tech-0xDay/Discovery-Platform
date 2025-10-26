@@ -141,7 +141,7 @@ export default function DirectMessages() {
         {/* Header */}
         <div className="mb-8 flex items-start gap-4">
           <div className="badge-primary flex items-center justify-center h-12 w-12 flex-shrink-0 rounded-[15px]">
-            <MessageSquare className="h-6 w-6 text-foreground" />
+            <MessageSquare className="h-6 w-6 text-black font-bold" />
           </div>
           <div className="flex-1">
             <h1 className="text-3xl font-black mb-2">Direct Messages</h1>
@@ -168,14 +168,14 @@ export default function DirectMessages() {
                     selectedUser?.id === conv.user.id ? 'bg-gradient-to-r from-primary/20 to-primary/10 border-l-4 border-l-primary' : ''
                   }`}
                 >
-                  <div className={`h-14 w-14 rounded-[15px] bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center flex-shrink-0 font-black text-primary text-lg border-2 border-primary/50 ${selectedUser?.id === conv.user.id ? 'scale-110' : 'group-hover:scale-105'} transition-transform`}>
+                  <div className={`h-14 w-14 rounded-[15px] bg-primary flex items-center justify-center flex-shrink-0 font-black text-black text-lg border-2 border-primary ${selectedUser?.id === conv.user.id ? 'scale-110' : 'group-hover:scale-105'} transition-transform`}>
                     {conv.user.username[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <p className="font-bold text-base truncate">{conv.user.display_name || conv.user.username}</p>
                       {conv.unread_count > 0 && (
-                        <span className="px-2.5 py-1 bg-primary text-foreground text-xs font-black rounded-full shadow-sm animate-pulse">
+                        <span className="px-2.5 py-1 bg-primary text-black text-xs font-black rounded-full shadow-sm animate-pulse">
                           {conv.unread_count}
                         </span>
                       )}
@@ -211,7 +211,7 @@ export default function DirectMessages() {
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </button>
-                  <div className="h-12 w-12 rounded-[15px] bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center font-black text-primary text-lg border-2 border-primary/50">
+                  <div className="h-12 w-12 rounded-[15px] bg-primary flex items-center justify-center font-black text-black text-lg border-2 border-primary">
                     {selectedUser.username[0].toUpperCase()}
                   </div>
                   <div>
@@ -239,12 +239,12 @@ export default function DirectMessages() {
                           <div
                             className={`max-w-[75%] p-4 rounded-[15px] border-2 shadow-sm ${
                               isOwn
-                                ? 'bg-primary text-foreground border-primary/50'
+                                ? 'bg-primary text-black border-primary'
                                 : 'bg-card border-border'
                             }`}
                           >
-                            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
-                            <p className={`text-xs mt-2 font-medium ${isOwn ? 'text-foreground/70' : 'text-muted-foreground'}`}>
+                            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed font-medium">{msg.message}</p>
+                            <p className={`text-xs mt-2 font-medium ${isOwn ? 'text-black/70' : 'text-muted-foreground'}`}>
                               {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
