@@ -29,9 +29,10 @@ export function Navbar() {
       <div className="container mx-auto px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center transition-quick hover:opacity-80 flex-shrink-0">
-            <span className="text-xl font-black text-primary">
-              0x.ship
+          <Link to="/" className="flex items-center gap-2 transition-quick hover:opacity-80 flex-shrink-0">
+            <img src="/logo.png" alt="ZERO" className="h-8 w-8" />
+            <span className="text-xl font-black text-primary" style={{ fontFamily: '"Comic Relief", system-ui', fontWeight: 700 }}>
+              ZER0
             </span>
           </Link>
 
@@ -124,9 +125,9 @@ export function Navbar() {
                     {user.is_investor ? (
                       <DropdownMenuItem asChild>
                         <Link to="/investor-plans" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-l-2 border-yellow-600 hover:from-yellow-500/20 hover:to-amber-500/20 hover:border-yellow-500 transition-all">
-                          <Building2 className="h-4 w-4 text-black group-hover:text-black" />
-                          <span className="text-black font-bold group-hover:text-black">Investor Account</span>
-                          <Sparkles className="h-3 w-3 text-black ml-auto group-hover:text-black" />
+                          <Building2 className="h-4 w-4 text-white group-hover:text-white" />
+                          <span className="text-white font-bold group-hover:text-white">Investor Account</span>
+                          <Sparkles className="h-3 w-3 text-white ml-auto group-hover:text-white" />
                         </Link>
                       </DropdownMenuItem>
                     ) : (

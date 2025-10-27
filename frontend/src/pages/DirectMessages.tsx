@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MessageSquare, Send, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 // Helper function to get the backend URL
 const getBackendUrl = (): string => {
@@ -257,13 +258,13 @@ export default function DirectMessages() {
                 {/* Input */}
                 <div className="p-5 border-t-4 border-black bg-secondary/20">
                   <div className="flex gap-3">
-                    <input
+                    <Input
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                       placeholder="Type your message..."
-                      className="input-primary flex-1 py-3 px-4 text-sm border-2 focus:border-primary"
+                      className="flex-1 py-3 px-4 text-sm"
                       disabled={sending}
                     />
                     <button

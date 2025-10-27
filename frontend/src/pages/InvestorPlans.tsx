@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X, ArrowRight, Building2, Sparkles, Zap } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 // Helper function to get the backend URL
 const getBackendUrl = (): string => {
@@ -171,11 +172,11 @@ export default function InvestorPlans() {
                 <label className="block text-sm font-bold mb-2">
                   Company/Fund Name <span className="text-muted-foreground">(optional)</span>
                 </label>
-                <input
+                <Input
                   type="text"
                   value={formData.company_name}
                   onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                  className="input-primary w-full"
+                  className="w-full"
                   placeholder="e.g., Acme Ventures"
                 />
               </div>
@@ -184,11 +185,11 @@ export default function InvestorPlans() {
                 <label className="block text-sm font-bold mb-2">
                   LinkedIn Profile <span className="text-muted-foreground">(optional)</span>
                 </label>
-                <input
+                <Input
                   type="url"
                   value={formData.linkedin_url}
                   onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                  className="input-primary w-full"
+                  className="w-full"
                   placeholder="https://linkedin.com/in/..."
                 />
               </div>

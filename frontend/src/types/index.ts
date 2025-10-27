@@ -40,6 +40,9 @@ export interface User {
 export interface TeamMember {
   name: string;
   role?: string;
+  avatar?: string;
+  avatar_url?: string;
+  image?: string;
 }
 
 export interface Project {

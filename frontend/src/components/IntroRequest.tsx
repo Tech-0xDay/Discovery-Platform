@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCreateIntro } from '@/hooks/useIntros';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -82,12 +83,12 @@ export function IntroRequest({ projectId, builderId }: IntroRequestProps) {
       if (data.status === 'success') {
         setMessage('');
         setIsOpen(false);
-        alert('Intro request sent successfully!');
+        toast.success('Intro request sent successfully!');
       } else {
-        alert(data.message || 'Failed to send intro request');
+        toast.error(data.message || 'Failed to send intro request');
       }
     } catch (error) {
-      alert('Failed to send intro request');
+      toast.error('Failed to send intro request');
     } finally {
       setLoading(false);
     }

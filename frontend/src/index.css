@@ -89,6 +89,7 @@ All colors MUST be HSL.
   /* Typography improvements - Bold and expressive */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
+    font-family: "Comic Relief", system-ui;
   }
 
   h1 {
@@ -228,12 +229,27 @@ All colors MUST be HSL.
     position: relative;
     overflow: hidden;
     transition: var(--transition-quick);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
   }
 
   .card-interactive:hover {
-    transform: translate(2px, 2px);
-    box-shadow: var(--shadow-card-hover);
-    border-color: #F9D46A;
+    outline: 2px solid #F9D46A;
+    outline-offset: 2px;
+  }
+
+  /* Skeleton card - no hover effects */
+  .card-skeleton {
+    @apply bg-card rounded-[15px];
+    border: var(--border-thick);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-quick);
+  }
+
+  .card-skeleton:hover {
+    /* No hover effect for skeletons */
   }
 
   /* Badge styles - Bold */
@@ -344,4 +360,157 @@ All colors MUST be HSL.
     margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
     margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
   }
+
+  /* Cinema/Glass effect styles for Netflix-like carousels */
+  .glass-effect {
+    @apply backdrop-blur-sm;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(249, 212, 106, 0.05));
+    border: 1px solid rgba(249, 212, 106, 0.1);
+  }
+
+  .glass-effect-hover {
+    @apply backdrop-blur-md transition-all duration-300;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(249, 212, 106, 0.1));
+    border: 1px solid rgba(249, 212, 106, 0.3);
+  }
+
+  /* Card depth effect - subtle 3D perspective */
+  .card-depth {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    transition: var(--transition-quick);
+  }
+
+  .card-depth:hover {
+    transform: translateZ(20px) translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Carousel container cinematic feel */
+  .carousel-cinema {
+    @apply relative overflow-visible;
+    background: transparent;
+  }
+
+  /* Smooth carousel scroll snap */
+  .carousel-smooth {
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+  }
+
+  .carousel-smooth > * {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Hover preview reveal effect */
+  .card-preview-reveal {
+    @apply relative overflow-hidden;
+  }
+
+  .card-preview-reveal::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-t from-black/80 to-transparent;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 5;
+  }
+
+  .card-preview-reveal:hover::before {
+    transform: translateY(0);
+  }
+
+  /* Cinematic title effect */
+  .title-cinematic {
+    background: linear-gradient(135deg, #F9D46A 0%, #E8B74F 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: var(--transition-quick);
+  }
+
+  .title-cinematic:hover {
+    text-shadow: 0 0 20px rgba(249, 212, 106, 0.5);
+    -webkit-text-fill-color: #F9D46A;
+  }
+
+  /* Smooth fade transitions for carousel items */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in-up {
+    animation: fade-in-up 0.5s ease-out forwards;
+  }
+
+
+  /* Responsive carousel adjustments */
+  @media (max-width: 640px) {
+    .carousel-cinema {
+      background: linear-gradient(90deg,
+        rgba(20, 20, 20, 0.9) 0%,
+        rgba(20, 20, 20, 0) 10%,
+        rgba(20, 20, 20, 0) 90%,
+        rgba(20, 20, 20, 0.9) 100%);
+    }
+  }
+
+  /* Fixed-height card styling for carousels */
+  .carousel-card {
+    @apply flex flex-col h-full overflow-hidden;
+  }
+
+  .carousel-card:hover {
+    @apply shadow-lg;
+  }
+
+  /* Content scrolling within card */
+  .carousel-card-content {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  /* Bottom action area */
+  .carousel-card-actions {
+    @apply flex-shrink-0 border-t border-border/40;
+  }
+
+  /* Smooth lines for card separation */
+  .carousel-divider {
+    @apply h-px bg-gradient-to-r from-transparent via-border to-transparent;
+  }
+
+  /* Equal width card sizing for 3-column layout */
+  @media (min-width: 768px) {
+    .carousel-item-3col {
+      width: calc((100% - 1.5rem) / 3);
+    }
+  }
+
+  /* Comic Relief Font Classes */
+  .comic-relief-regular {
+    font-family: "Comic Relief", system-ui;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .comic-relief-bold {
+    font-family: "Comic Relief", system-ui;
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  .comic-relief-heading {
+    font-family: "Comic Relief", system-ui;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.02em;
+  }
 }
+

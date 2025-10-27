@@ -29,6 +29,7 @@ import Admin from "./pages/Admin";
 import AdminValidator from "./pages/AdminValidator";
 import InvestorPlans from "./pages/InvestorPlans";
 import DirectMessages from "./pages/DirectMessages";
+import GalleryView from "./pages/GalleryView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,8 @@ const App = () => (
               <Route element={<MainLayout />}>
               {/* Public Routes */}
               <Route path="/" element={<Feed />} />
+              <Route path="/feed" element={<Feed />} />
+              <Route path="/gallery/:category" element={<GalleryView />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/project/:id" element={<ProjectDetail />} />
