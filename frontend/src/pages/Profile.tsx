@@ -132,7 +132,7 @@ export default function Profile() {
                 <div className="flex items-center gap-6">
                   <Avatar className="h-24 w-24 border-4 border-primary">
                     <AvatarImage src={avatarPreview} alt={user?.username} />
-                    <AvatarFallback className="text-2xl font-black bg-primary text-foreground">
+                    <AvatarFallback className="text-2xl font-black bg-primary text-black">
                       {user?.username?.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>

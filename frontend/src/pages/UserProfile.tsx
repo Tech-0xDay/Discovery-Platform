@@ -55,7 +55,7 @@ export default function UserProfile() {
             <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
               <Avatar className="h-32 w-32 border-4 border-primary flex-shrink-0">
                 <AvatarImage src={user.avatar} alt={username} />
-                <AvatarFallback className="text-4xl font-black bg-primary text-foreground">
+                <AvatarFallback className="text-4xl font-black bg-primary text-black">
                   {user.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ProjectCarousel } from '@/components/ProjectCarousel';
 import { TopRatedCarousel } from '@/components/TopRatedCarousel';
-import { ProjectCardSkeletonGrid } from '@/components/ProjectCardSkeleton';
+import { ProjectCardSkeletonGrid, TopRatedCarouselSkeleton } from '@/components/ProjectCardSkeleton';
 import { Flame, Clock, TrendingUp, Zap, Sparkles, MessageCircle } from 'lucide-react';
 import { useProjects } from '@/hooks/useProjects';
 import { useAuth } from '@/context/AuthContext';
@@ -74,7 +74,7 @@ export default function Feed() {
   }
 
   return (
-    <div className="bg-background min-h-screen overflow-hidden">
+    <div className="min-h-screen overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 overflow-hidden max-w-7xl">
         {/* Hero Header */}
         <div className="mb-12 sm:mb-16">
@@ -98,6 +98,13 @@ export default function Feed() {
         {/* Carousels Section */}
         {isLoading ? (
           <div className="space-y-16">
+            {/* Top Rated Carousel Skeleton */}
+            <div className="flex justify-center">
+              <div className="w-full sm:w-[600px] h-[320px]">
+                <TopRatedCarouselSkeleton />
+              </div>
+            </div>
+            {/* Other carousel skeletons */}
             <ProjectCardSkeletonGrid count={5} />
             <ProjectCardSkeletonGrid count={5} />
             <ProjectCardSkeletonGrid count={5} />

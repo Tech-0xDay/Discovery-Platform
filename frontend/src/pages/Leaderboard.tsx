@@ -131,7 +131,7 @@ export default function Leaderboard() {
                         </div>
                         <Avatar className="h-12 w-12 border-3 border-primary flex-shrink-0">
                           <AvatarImage src={item.avatar} alt={item.username} />
-                          <AvatarFallback className="bg-primary text-foreground font-bold text-sm">
+                          <AvatarFallback className="bg-primary text-black font-bold text-sm">
                             {item.username.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>

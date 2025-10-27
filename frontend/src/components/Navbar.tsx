@@ -85,7 +85,7 @@ export function Navbar() {
                     <button className="flex items-center gap-2 rounded-full transition-quick hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary">
                       <Avatar className="h-8 w-8 border-3 border-primary">
                         <AvatarImage src={user.avatar} alt={user.username} />
-                        <AvatarFallback className="bg-primary text-foreground font-bold text-xs">
+                        <AvatarFallback className="bg-primary text-black font-bold text-xs">
                           {user.username.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>

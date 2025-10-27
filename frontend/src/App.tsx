@@ -7,6 +7,7 @@ import { WagmiProvider } from "wagmi";
 import { AuthProvider } from "./context/AuthContext";
 import { MainLayout } from "./layouts/MainLayout";
 import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
+import { PageScrollBackground } from "./components/PageScrollBackground";
 import { wagmiConfig } from "./config/wagmi";
 
 // Pages
@@ -38,6 +39,7 @@ const App = () => (
   <WagmiProvider config={wagmiConfig}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <PageScrollBackground />
         <TooltipProvider>
           <Toaster />
           <Sonner />

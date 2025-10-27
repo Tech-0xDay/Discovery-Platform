@@ -59,9 +59,15 @@ export function ProjectCarousel({
 
   const css = `
     .carousel-coverflow {
-      padding-bottom: 20px !important;
+      padding-bottom: 0 !important;
       padding-top: 10px !important;
       overflow: visible !important;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .carousel-coverflow::-webkit-scrollbar {
+      display: none;
     }
 
     .carousel-coverflow .swiper-wrapper {

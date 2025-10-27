@@ -111,7 +111,7 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-3 mb-4">
                 <Avatar className="h-12 w-12 border-3 border-primary">
                   <AvatarImage src={project.author?.avatar} alt={project.author?.username} />
-                  <AvatarFallback className="bg-primary text-foreground font-bold text-sm">
+                  <AvatarFallback className="bg-primary text-black font-bold text-sm">
                     {project.author?.username?.slice(0, 2).toUpperCase() || 'NA'}
                   </AvatarFallback>
                 </Avatar>

@@ -192,7 +192,7 @@ export default function Intros() {
               onClick={() => setTab('received')}
               className={`px-6 py-2.5 font-bold rounded-[12px] transition-all flex items-center gap-2 ${
                 tab === 'received'
-                  ? 'bg-primary text-foreground shadow-lg scale-105'
+                  ? 'bg-primary text-black shadow-lg scale-105'
                   : 'hover:bg-secondary/50'
               }`}
             >
@@ -208,7 +208,7 @@ export default function Intros() {
               onClick={() => setTab('sent')}
               className={`px-6 py-2.5 font-bold rounded-[12px] transition-all flex items-center gap-2 ${
                 tab === 'sent'
-                  ? 'bg-primary text-foreground shadow-lg scale-105'
+                  ? 'bg-primary text-black shadow-lg scale-105'
                   : 'hover:bg-secondary/50'
               }`}
             >

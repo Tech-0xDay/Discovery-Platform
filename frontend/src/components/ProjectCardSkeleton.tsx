@@ -81,7 +81,8 @@ export function ProjectCardSkeleton() {
 export function ProjectCardSkeletonGrid({ count = 5 }: { count?: number }) {
   return (
     <div className="relative w-full px-4 md:px-8">
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <style>{'.flex::-webkit-scrollbar { display: none; }'}</style>
         {Array.from({ length: count }).map((_, idx) => (
           <div key={idx} className="flex-shrink-0 w-full sm:w-96 h-[520px]">
             <ProjectCardSkeleton />
@@ -92,12 +93,65 @@ export function ProjectCardSkeletonGrid({ count = 5 }: { count?: number }) {
   );
 }
 
+// Skeleton for top rated carousel view
+export function TopRatedCarouselSkeleton() {
+  return (
+    <div className="group relative w-full h-full">
+      <Card className="card-skeleton overflow-hidden relative w-full h-full box-border flex flex-col transition-all duration-300">
+        {/* Top Section - Title and Ranking */}
+        <div className="flex-shrink-0 border-b border-border/30 px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-r from-slate-900/40 to-transparent">
+          <div className="flex items-start gap-2 justify-between">
+            <div className="min-w-0 flex-1">
+              <Skeleton className="h-6 w-32 rounded mb-1" />
+              <Skeleton className="h-5 w-24 rounded" />
+            </div>
+            <div className="flex-shrink-0">
+              <Skeleton className="h-8 w-12 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Section - Content */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 space-y-3">
+          {/* User info */}
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-7 rounded-full flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <Skeleton className="h-3 w-24 rounded" />
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <Skeleton className="h-3 w-full rounded mb-1.5" />
+            <Skeleton className="h-3 w-5/6 rounded mb-1.5" />
+            <Skeleton className="h-3 w-4/6 rounded" />
+          </div>
+
+          {/* Tech stack */}
+          <div className="flex flex-wrap gap-1">
+            <Skeleton className="h-5 w-12 rounded-full" />
+            <Skeleton className="h-5 w-14 rounded-full" />
+            <Skeleton className="h-5 w-10 rounded-full" />
+          </div>
+        </div>
+
+        {/* Action Bar - Vote and Comments */}
+        <div className="flex-shrink-0 border-t border-border/40 px-4 sm:px-5 py-2.5 flex items-center gap-2 bg-card/60 backdrop-blur-sm">
+          <Skeleton className="flex-1 h-9 rounded-lg" />
+          <Skeleton className="h-9 w-16 rounded-lg" />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 // Skeleton grid for gallery view
 export function GallerySkeletonGrid({ count = 12 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
       {Array.from({ length: count }).map((_, idx) => (
-        <div key={idx} className="h-[600px]">
+        <div key={idx} className="h-[600px] min-w-0">
           <ProjectCardSkeleton />
         </div>
       ))}

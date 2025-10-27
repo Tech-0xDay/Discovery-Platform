@@ -214,7 +214,7 @@ export default function Search() {
                       >
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={user.avatar_url} alt={user.username} />
-                          <AvatarFallback className="bg-primary text-foreground font-bold">
+                          <AvatarFallback className="bg-primary text-black font-bold">
                             {user.username.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
