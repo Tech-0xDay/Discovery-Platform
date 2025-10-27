@@ -2,14 +2,16 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon, ArrowRight, Star, Award, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronLeftIcon, ChevronRightIcon, ArrowRight, Star, Award, Users, MessageSquare } from 'lucide-react';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css/navigation';
 import 'swiper/css';
 
 import { Project } from '@/types';
+import { VoteButtons } from '@/components/VoteButtons';
+import { InteractiveScrollBackground } from '@/components/InteractiveScrollBackground';
 
 interface TopRatedCarouselProps {
   projects: Project[];
@@ -21,22 +23,19 @@ export function TopRatedCarousel({
   categoryName = 'top-rated',
 }: TopRatedCarouselProps) {
   const navigate = useNavigate();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   // Daily rotation logic - changes every 24 hours
   const dailyRotatedProjects = useMemo(() => {
     if (projects.length === 0) return [];
 
-    // Get today's date as seed for consistent rotation across all users
     const today = new Date();
     const dayOfYear = Math.floor(
       (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
     );
 
-    // Fisher-Yates shuffle with seed
     const shuffled = [...projects];
-    let seed = dayOfYear * 12345; // Seed changes daily
+    let seed = dayOfYear * 12345;
 
     for (let i = shuffled.length - 1; i > 0; i--) {
       seed = (seed * 9301 + 49297) % 233280;
@@ -102,8 +101,11 @@ export function TopRatedCarousel({
     return project.author?.avatar || project.author?.avatar_url;
   };
 
-  const handleCardClick = (projectId: string) => {
-    setExpandedId(expandedId === projectId ? null : projectId);
+  const handleCardClick = () => {
+    const project = dailyRotatedProjects[activeIndex];
+    if (project) {
+      navigate(`/project/${project.id}`);
+    }
   };
 
   return (
@@ -149,7 +151,7 @@ export function TopRatedCarousel({
             spaceBetween={30}
             autoplay={{
               delay: 5000,
-              disableOnInteraction: false,
+              disableOnInteraction: true,
             }}
             grabCursor={true}
             centeredSlides={true}
@@ -157,7 +159,6 @@ export function TopRatedCarousel({
             slidesPerView="auto"
             onSlideChange={(swiper) => {
               setActiveIndex(swiper.realIndex);
-              setExpandedId(null); // Close expanded card when sliding
             }}
             navigation={{
               nextEl: '.top-rated-button-next',
@@ -168,311 +169,155 @@ export function TopRatedCarousel({
           >
             {dailyRotatedProjects.map((project, index) => {
               const isActive = index === activeIndex;
-              const isExpanded = expandedId === project.id;
 
               return (
                 <SwiperSlide
                   key={project.id}
-                  className="!w-full sm:!w-auto flex items-center justify-center"
+                  className={`!w-full sm:!w-auto flex items-center justify-center`}
                 >
-                  <motion.div
-                    className="w-full sm:w-[600px]"
-                    animate={{
-                      height: isExpanded ? 'auto' : isActive ? 'auto' : 'auto',
-                    }}
-                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                  >
-                    <motion.div
-                      onClick={() => {
-                        if (isActive) {
-                          handleCardClick(project.id);
-                        }
-                      }}
-                      className={`relative flex overflow-hidden rounded-2xl bg-card border transition-all duration-300 ${
-                        isActive
-                          ? 'border-primary/50 cursor-pointer'
-                          : 'border-border/50 opacity-60'
-                      } ${isExpanded ? 'shadow-lg' : 'shadow-sm'}`}
-                      animate={{
-                        height: isExpanded ? 'auto' : '320px',
-                      }}
-                      transition={{ duration: 0.4, ease: 'easeInOut' }}
+                  <div className="w-full sm:w-[600px]">
+                    {/* Main Card - Fixed Height */}
+                    <div
+                      onClick={isActive ? handleCardClick : undefined}
+                      className={`relative flex flex-col overflow-hidden card-interactive transition-all duration-300 h-[320px] ${
+                        !isActive ? 'opacity-60' : ''
+                      } ${isActive ? 'cursor-pointer hover:shadow-lg' : ''}`}
                     >
-                      {/* Main Layout */}
-                      <div className="flex flex-col w-full h-full">
-                        {/* Collapsed/Collapsed-Expanded View - Horizontal Layout */}
-                        <div className="flex flex-1 overflow-hidden">
-                          {/* Left Panel - User Info */}
-                          <div className="relative flex-shrink-0 w-[200px] bg-gradient-to-b from-slate-900/80 to-slate-800/50 p-4 sm:p-6 flex flex-col justify-between border-r border-border/30">
-                            {/* Ranking Badge */}
-                            <div className="absolute top-4 right-4 bg-primary text-black px-2.5 py-1.5 rounded-full text-xs font-bold">
-                              #{index + 1}
-                            </div>
-
-                            {/* User Profile */}
-                            <div className="pt-8 flex flex-col gap-3">
-                              <div className="flex items-start gap-3">
-                                {getAvatarUrl(project) ? (
-                                  <img
-                                    src={getAvatarUrl(project)}
-                                    alt={getDisplayName(project)}
-                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                                  />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-full bg-primary/30 flex items-center justify-center flex-shrink-0 text-xs font-bold">
-                                    {getDisplayName(project)[0].toUpperCase()}
-                                  </div>
-                                )}
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-bold text-foreground truncate">
-                                    {getDisplayName(project)}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {getCrewInfo(project)}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Click hint - only show if active */}
-                            <AnimatePresence>
-                              {isActive && !isExpanded && (
-                                <motion.p
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  className="text-xs text-muted-foreground text-center"
-                                >
-                                  Click to expand
-                                </motion.p>
-                              )}
-                            </AnimatePresence>
-                          </div>
-
-                          {/* Right Panel - Project Details */}
-                          <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between overflow-hidden">
+                      <InteractiveScrollBackground className="text-primary/20" />
+                      {/* Collapsed View - Full Card with Better Structure */}
+                      <div className="flex flex-col h-full overflow-hidden relative z-10">
+                        {/* Top Section - Title and Ranking */}
+                        <div className="flex-shrink-0 border-b border-border/30 px-4 sm:px-5 py-3 sm:py-4 bg-gradient-to-r from-slate-900/40 to-transparent">
+                          <div className="flex items-start gap-2 justify-between">
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 mb-2">
+                              <h3 className="text-lg sm:text-xl font-black text-foreground line-clamp-2 leading-tight">
                                 {project.title}
                               </h3>
-                              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                                {project.description}
-                              </p>
                             </div>
-
-                            {/* Project Meta */}
-                            <div className="flex flex-wrap gap-1.5">
-                              {project.techStack && project.techStack.slice(0, 3).map((tech) => (
-                                <span
-                                  key={tech}
-                                  className="text-xs px-2 py-1 rounded-full bg-primary/15 text-primary font-medium"
-                                >
-                                  {tech}
-                                </span>
-                              ))}
-                              {project.techStack && project.techStack.length > 3 && (
-                                <span className="text-xs px-2 py-1 text-muted-foreground">
-                                  +{project.techStack.length - 3}
-                                </span>
-                              )}
+                            <div className="flex-shrink-0 bg-primary text-black px-2.5 py-1 rounded-full text-xs font-bold">
+                              #{index + 1}
                             </div>
                           </div>
                         </div>
 
-                        {/* Expanded Details Section */}
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.3 }}
-                              className="border-t border-border/30 p-4 sm:p-6 bg-secondary/10 overflow-y-auto max-h-[400px]"
-                            >
-                              {/* Score Display */}
-                              <div className="flex gap-3 mb-6 text-sm flex-wrap">
-                                <div className="flex items-center gap-2">
-                                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                  <span className="font-semibold text-foreground">
-                                    {project.proofScore?.total?.toFixed(1) || '0'}
-                                  </span>
+                        {/* Middle Section - User, Crew, Description */}
+                        <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-3 space-y-3">
+                          {/* User and Crew Info */}
+                          <div className="space-y-2">
+                            {/* Builder */}
+                            <div className="flex items-center gap-2">
+                              {getAvatarUrl(project) ? (
+                                <img
+                                  src={getAvatarUrl(project)}
+                                  alt={getDisplayName(project)}
+                                  className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-7 h-7 rounded-full bg-primary/30 flex items-center justify-center flex-shrink-0 text-xs font-bold">
+                                  {getDisplayName(project)[0].toUpperCase()}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <Award className="w-4 h-4 text-primary" />
-                                  <span className="text-muted-foreground">
-                                    {project.voteCount || 0} votes
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Users className="w-4 h-4 text-blue-400" />
-                                  <span className="text-muted-foreground">
-                                    {project.commentCount || 0} comments
-                                  </span>
-                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-foreground">
+                                  {getDisplayName(project)}
+                                </p>
                               </div>
+                            </div>
 
-                              {/* Score Breakdown */}
-                              {project.proofScore && (
-                                <div className="bg-secondary/30 rounded-lg p-3 mb-4">
-                                  <h4 className="text-xs font-bold text-foreground mb-2">
-                                    Score Breakdown
-                                  </h4>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Verification</p>
-                                      <p className="text-sm font-semibold text-primary">
-                                        {project.proofScore.verification?.toFixed(1) || '0'}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Community</p>
-                                      <p className="text-sm font-semibold text-primary">
-                                        {project.proofScore.community?.toFixed(1) || '0'}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Validation</p>
-                                      <p className="text-sm font-semibold text-primary">
-                                        {project.proofScore.validation?.toFixed(1) || '0'}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Quality</p>
-                                      <p className="text-sm font-semibold text-primary">
-                                        {project.proofScore.quality?.toFixed(1) || '0'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Team Members */}
-                              {(project.teamMembers || project.team_members)?.length > 0 && (
-                                <div className="mb-4">
-                                  <h4 className="text-xs font-bold text-foreground mb-2">
-                                    Team
-                                  </h4>
-                                  <div className="flex flex-wrap gap-2">
-                                    {(project.teamMembers || project.team_members)?.map((member, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-secondary/30"
-                                      >
-                                        {member.avatar || member.avatar_url || member.image ? (
-                                          <img
-                                            src={
-                                              member.avatar ||
-                                              member.avatar_url ||
-                                              member.image
-                                            }
-                                            alt={member.name}
-                                            className="w-5 h-5 rounded-full object-cover"
-                                          />
-                                        ) : (
-                                          <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center text-xs font-bold">
-                                            {member.name[0]?.toUpperCase()}
-                                          </div>
-                                        )}
-                                        <span className="text-xs font-medium">
-                                          {member.name}
-                                        </span>
-                                        {member.role && (
-                                          <span className="text-xs text-muted-foreground">
-                                            ({member.role})
-                                          </span>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Tech Stack */}
-                              {project.techStack?.length > 0 && (
-                                <div className="mb-4">
-                                  <h4 className="text-xs font-bold text-foreground mb-2">
-                                    Tech Stack
-                                  </h4>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {project.techStack.map((tech) => (
-                                      <span
-                                        key={tech}
-                                        className="text-xs px-2 py-1 rounded-full bg-primary/15 text-primary font-medium"
-                                      >
-                                        {tech}
+                            {/* Crew Members */}
+                            {(project.teamMembers || project.team_members)?.length > 0 && (
+                              <div className="pl-1">
+                                <p className="text-[10px] text-muted-foreground font-medium mb-1.5">
+                                  Crew ({(project.teamMembers || project.team_members)!.length}):
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {(project.teamMembers || project.team_members)!.slice(0, 5).map((member, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary/40 border border-border/30 text-[10px] font-medium text-foreground"
+                                    >
+                                      {member.avatar || member.avatar_url || member.image ? (
+                                        <img
+                                          src={member.avatar || member.avatar_url || member.image}
+                                          alt={member.name}
+                                          className="w-3.5 h-3.5 rounded-full object-cover flex-shrink-0"
+                                        />
+                                      ) : (
+                                        <div className="w-3.5 h-3.5 rounded-full bg-accent/30 flex items-center justify-center text-[8px] font-bold flex-shrink-0">
+                                          {member.name[0]?.toUpperCase()}
+                                        </div>
+                                      )}
+                                      <span className="truncate">
+                                        {member.name}
                                       </span>
-                                    ))}
-                                  </div>
+                                    </div>
+                                  ))}
+                                  {(project.teamMembers || project.team_members)!.length > 5 && (
+                                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary/40 border border-border/30 text-[10px] font-medium text-muted-foreground">
+                                      +{(project.teamMembers || project.team_members)!.length - 5} more
+                                    </div>
+                                  )}
                                 </div>
-                              )}
+                              </div>
+                            )}
+                          </div>
 
-                              {/* Badges */}
-                              {project.badges?.length > 0 && (
-                                <div className="mb-4">
-                                  <h4 className="text-xs font-bold text-foreground mb-2">
-                                    Badges
-                                  </h4>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {project.badges.map((badge) => (
-                                      <div
-                                        key={badge.id}
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                          badge.type === 'platinum'
-                                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                            : badge.type === 'gold'
-                                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                            : 'bg-slate-500/20 text-slate-300 border border-slate-500/30'
-                                        }`}
-                                        title={badge.description}
-                                      >
-                                        {badge.name}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
+                          {/* Description */}
+                          <div>
+                            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                              {project.description}
+                            </p>
+                          </div>
 
-                              {/* Links */}
-                              <div className="flex gap-2 pt-2 border-t border-border/20">
-                                {project.demoUrl && (
-                                  <a
-                                    href={project.demoUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 px-3 py-1.5 rounded-lg bg-primary text-black font-semibold text-center hover:bg-primary/90 transition-colors text-xs"
+                          {/* Tech Stack */}
+                          {project.techStack && project.techStack.length > 0 && (
+                            <div>
+                              <p className="text-[10px] text-muted-foreground font-medium mb-1.5">
+                                Tech:
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {project.techStack.slice(0, 4).map((tech) => (
+                                  <span
+                                    key={tech}
+                                    className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-semibold"
                                   >
-                                    Demo
-                                  </a>
-                                )}
-                                {project.githubUrl && (
-                                  <a
-                                    href={project.githubUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 font-semibold text-center transition-colors text-xs"
-                                  >
-                                    GitHub
-                                  </a>
+                                    {tech}
+                                  </span>
+                                ))}
+                                {project.techStack.length > 4 && (
+                                  <span className="text-[10px] px-2 py-0.5 text-muted-foreground font-medium">
+                                    +{project.techStack.length - 4}
+                                  </span>
                                 )}
                               </div>
-
-                              {/* Close hint */}
-                              <p className="text-xs text-muted-foreground text-center mt-3">
-                                Click to collapse
-                              </p>
-                            </motion.div>
+                            </div>
                           )}
-                        </AnimatePresence>
+
+                        </div>
+
+                        {/* Action Bar - Vote and Comments */}
+                        <div className="flex-shrink-0 border-t border-border/40 px-4 sm:px-5 py-2.5 flex items-center gap-2 bg-card/60 backdrop-blur-sm">
+                          <div className="flex-1">
+                            <VoteButtons
+                              projectId={project.id}
+                              voteCount={project.voteCount}
+                              userVote={project.userVote as 'up' | 'down' | null}
+                            />
+                          </div>
+                          <button className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground transition-smooth border border-border text-xs font-medium">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            <span>{project.commentCount || 0}</span>
+                          </button>
+                        </div>
                       </div>
-                    </motion.div>
-                  </motion.div>
+
+                    </div>
+                  </div>
                 </SwiperSlide>
               );
             })}
 
-            {/* Navigation Buttons - Same style as other carousels */}
+            {/* Navigation Buttons */}
             <>
               <div className="top-rated-button-prev absolute left-0 top-1/2 -translate-y-1/2 z-20 cursor-pointer">
                 <ChevronLeftIcon className="h-6 w-6 text-foreground" />

@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowUp, MessageSquare, Award, Star, TrendingUp, Github, ExternalLink, Shield } from 'lucide-react';
 import { VoteButtons } from '@/components/VoteButtons';
 import { IntroRequest } from '@/components/IntroRequest';
+import { InteractiveScrollBackground } from '@/components/InteractiveScrollBackground';
 
 interface ProjectCardProps {
   project: Project;
@@ -32,7 +33,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <div className="group relative w-full h-full z-0">
       <Card className="card-interactive overflow-hidden relative w-full h-full box-border flex flex-col transition-all duration-300 group-hover:z-10">
-        <Link to={`/project/${project.id}`} className="flex flex-col h-full">
+        <InteractiveScrollBackground className="text-primary/20" />
+        <Link to={`/project/${project.id}`} className="flex flex-col h-full relative z-10">
           {/* Main content container - scrollable */}
           <div className="flex-1 overflow-y-auto p-5 space-y-3">
             {/* Header with title and proof score badge */}
@@ -154,7 +156,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </Link>
 
         {/* Interactive action buttons - sticky at bottom */}
-        <div className="px-4 py-3 space-y-1.5 border-t border-border/40 bg-card/60 backdrop-blur-sm flex-shrink-0">
+        <div className="px-4 py-3 space-y-1.5 border-t border-border/40 bg-card/60 backdrop-blur-sm flex-shrink-0 relative z-10">
           {/* CTA Links */}
           <div className="flex items-center gap-2 justify-center">
             {project.demoUrl && (
