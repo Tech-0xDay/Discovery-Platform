@@ -24,6 +24,15 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
 
+    # Database Connection Pooling (Critical for NeonDB performance)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 10,           # Number of connections to maintain in the pool
+        'max_overflow': 20,        # Additional connections when pool is full
+        'pool_timeout': 30,        # Timeout in seconds for getting a connection
+        'pool_recycle': 1800,      # Recycle connections after 30 minutes (NeonDB disconnects idle connections)
+        'pool_pre_ping': True,     # Test connections before using them
+    }
+
     # JWT
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=30)

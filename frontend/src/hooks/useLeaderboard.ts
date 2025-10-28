@@ -40,6 +40,8 @@ export function useProjectsLeaderboard(limit: number = 50) {
       const response = await leaderboardService.getProjects(limit);
       return response.data.data?.map(transformProject) || [];
     },
+    staleTime: 1000 * 60 * 15, // 15 min - leaderboards don't change often
+    gcTime: 1000 * 60 * 60,    // 1 hour in cache
   });
 }
 
@@ -50,5 +52,7 @@ export function useBuildersLeaderboard(limit: number = 50) {
       const response = await leaderboardService.getBuilders(limit);
       return response.data.data?.map(transformBuilder) || [];
     },
+    staleTime: 1000 * 60 * 15, // 15 min - leaderboards don't change often
+    gcTime: 1000 * 60 * 60,    // 1 hour in cache
   });
 }

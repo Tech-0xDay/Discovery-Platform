@@ -83,8 +83,8 @@ export function useProjects(sort: string = 'hot', page: number = 1) {
         data: response.data.data?.map(transformProject) || [],
       };
     },
-    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
-    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes (formerly cacheTime)
+    staleTime: 1000 * 60 * 15, // Consider data fresh for 15 minutes (matches backend Redis cache TTL)
+    gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
   });
 }
 

@@ -33,7 +33,17 @@ import DirectMessages from "./pages/DirectMessages";
 import GalleryView from "./pages/GalleryView";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,      // Data fresh for 5 min (matches backend cache)
+      gcTime: 1000 * 60 * 30,         // Keep in cache for 30 min
+      refetchOnWindowFocus: false,    // Don't refetch when tab regains focus (prevents unnecessary requests)
+      refetchOnReconnect: true,       // Refetch when internet reconnects
+      retry: 1,                       // Retry failed requests once
+    },
+  },
+});
 
 const App = () => (
   <WagmiProvider config={wagmiConfig}>

@@ -38,6 +38,17 @@ def list_projects(user_id):
         featured_only = request.args.get('featured', type=lambda v: v.lower() == 'true') if request.args.get('featured') else None
         badge_type = request.args.get('badge', '').strip()
 
+        # Check cache ONLY if no filters (pure feed requests)
+        has_filters = any([search, tech_stack, hackathon, min_score is not None,
+                          has_demo is not None, has_github is not None,
+                          featured_only, badge_type])
+
+        if not has_filters:
+            cached = CacheService.get_cached_feed(page, sort)
+            if cached:
+                from flask import jsonify
+                return jsonify(cached), 200
+
         # Build query
         query = Project.query.filter_by(is_deleted=False)
 
@@ -118,7 +129,26 @@ def list_projects(user_id):
 
         data = [p.to_dict(include_creator=True, user_id=user_id) for p in projects]
 
-        return paginated_response(data, total, page, per_page)
+        # Build response data
+        total_pages = (total + per_page - 1) // per_page
+        response_data = {
+            'status': 'success',
+            'message': 'Success',
+            'data': data,
+            'pagination': {
+                'total': total,
+                'page': page,
+                'per_page': per_page,
+                'total_pages': total_pages,
+            }
+        }
+
+        # Cache response if no filters (15 minutes TTL)
+        if not has_filters:
+            CacheService.cache_feed(page, sort, response_data, ttl=900)
+
+        from flask import jsonify
+        return jsonify(response_data), 200
     except Exception as e:
         return error_response('Error', str(e), 500)
 
@@ -128,7 +158,21 @@ def list_projects(user_id):
 def get_project(user_id, project_id):
     """Get project details"""
     try:
-        project = Project.query.get(project_id)
+        # Check cache first (5 min TTL)
+        cached = CacheService.get_cached_project(project_id)
+        if cached:
+            # Still increment view count in background
+            try:
+                project = Project.query.get(project_id)
+                if project:
+                    project.view_count += 1
+                    db.session.commit()
+            except:
+                pass  # Don't fail if view increment fails
+            from flask import jsonify
+            return jsonify(cached), 200
+
+        project = Project.query.options(joinedload(Project.creator)).get(project_id)
         if not project or project.is_deleted:
             return error_response('Not found', 'Project not found', 404)
 
@@ -136,7 +180,18 @@ def get_project(user_id, project_id):
         project.view_count += 1
         db.session.commit()
 
-        return success_response(project.to_dict(include_creator=True, user_id=user_id), 'Project retrieved', 200)
+        # Build response data
+        response_data = {
+            'status': 'success',
+            'message': 'Project retrieved',
+            'data': project.to_dict(include_creator=True, user_id=user_id)
+        }
+
+        # Cache for 5 minutes
+        CacheService.cache_project(project_id, response_data, ttl=300)
+
+        from flask import jsonify
+        return jsonify(response_data), 200
     except Exception as e:
         return error_response('Error', str(e), 500)
 
@@ -401,6 +456,13 @@ def get_leaderboard(user_id):
         limit = request.args.get('limit', 10, type=int)
         limit = min(limit, 50)  # Cap at 50
 
+        # Check cache (5 min TTL)
+        cache_key = f"leaderboard:{timeframe}:{limit}"
+        cached = CacheService.get(cache_key)
+        if cached:
+            from flask import jsonify
+            return jsonify(cached), 200
+
         # Calculate date filter
         if timeframe == 'week':
             since = datetime.utcnow() - timedelta(days=7)
@@ -445,20 +507,31 @@ def get_leaderboard(user_id):
             is_featured=True
         ).order_by(Project.featured_at.desc()).limit(limit).all()
 
-        return success_response({
-            'top_projects': [p.to_dict(include_creator=True) for p in top_projects],
-            'top_builders': [{
-                'id': str(b.id),
-                'username': b.username,
-                'display_name': b.display_name,
-                'avatar_url': b.avatar_url,
-                'total_score': int(b.total_score or 0),
-                'project_count': b.project_count
-            } for b in top_builders],
-            'featured': [p.to_dict(include_creator=True) for p in featured],
-            'timeframe': timeframe,
-            'limit': limit
-        }, 'Leaderboard retrieved', 200)
+        # Build response data
+        response_data = {
+            'status': 'success',
+            'message': 'Leaderboard retrieved',
+            'data': {
+                'top_projects': [p.to_dict(include_creator=True) for p in top_projects],
+                'top_builders': [{
+                    'id': str(b.id),
+                    'username': b.username,
+                    'display_name': b.display_name,
+                    'avatar_url': b.avatar_url,
+                    'total_score': int(b.total_score or 0),
+                    'project_count': b.project_count
+                } for b in top_builders],
+                'featured': [p.to_dict(include_creator=True) for p in featured],
+                'timeframe': timeframe,
+                'limit': limit
+            }
+        }
+
+        # Cache for 5 minutes
+        CacheService.set(cache_key, response_data, ttl=300)
+
+        from flask import jsonify
+        return jsonify(response_data), 200
 
     except Exception as e:
         return error_response('Error', str(e), 500)
