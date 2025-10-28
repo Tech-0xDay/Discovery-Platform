@@ -145,7 +145,7 @@ def list_projects(user_id):
 
         # Cache response if no filters (15 minutes TTL)
         if not has_filters:
-            CacheService.cache_feed(page, sort, response_data, ttl=900)
+            CacheService.cache_feed(page, sort, response_data, ttl=3600)  # 1 hour cache (auto-invalidates on changes)
 
         from flask import jsonify
         return jsonify(response_data), 200
@@ -188,7 +188,7 @@ def get_project(user_id, project_id):
         }
 
         # Cache for 5 minutes
-        CacheService.cache_project(project_id, response_data, ttl=300)
+        CacheService.cache_project(project_id, response_data, ttl=3600)  # 1 hour cache (auto-invalidates on changes)
 
         from flask import jsonify
         return jsonify(response_data), 200
@@ -243,8 +243,15 @@ def create_project(user_id):
         db.session.commit()
 
         CacheService.invalidate_project_feed()
+        CacheService.invalidate_leaderboard()  # Leaderboard rankings change
 
-        return success_response(project.to_dict(include_creator=True), 'Project created', 201)
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        project_data = project.to_dict(include_creator=True)
+        SocketService.emit_project_created(project_data)
+        SocketService.emit_leaderboard_updated()
+
+        return success_response(project_data, 'Project created', 201)
     except ValidationError as e:
         return error_response('Validation error', str(e.messages), 400)
     except Exception as e:
@@ -278,8 +285,14 @@ def update_project(user_id, project_id):
 
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_project_feed()  # Updated project affects feed
 
-        return success_response(project.to_dict(include_creator=True), 'Project updated', 200)
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        project_data = project.to_dict(include_creator=True)
+        SocketService.emit_project_updated(project_id, project_data)
+
+        return success_response(project_data, 'Project updated', 200)
     except ValidationError as e:
         return error_response('Validation error', str(e.messages), 400)
     except Exception as e:
@@ -302,6 +315,12 @@ def delete_project(user_id, project_id):
         project.is_deleted = True
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()  # Leaderboard rankings change
+
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        SocketService.emit_project_deleted(project_id)
+        SocketService.emit_leaderboard_updated()
 
         return success_response(None, 'Project deleted', 200)
     except Exception as e:
@@ -325,6 +344,11 @@ def feature_project(user_id, project_id):
 
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_project_feed()  # Featured status affects feed
+
+        # Emit Socket.IO event for real-time feature notification
+        from services.socket_service import SocketService
+        SocketService.emit_project_featured(project_id)
 
         return success_response(project.to_dict(include_creator=True), 'Project featured', 200)
     except Exception as e:
@@ -366,6 +390,12 @@ def upvote_project(user_id, project_id):
         ProofScoreCalculator.update_project_scores(project)
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()  # Vote affects leaderboard
+
+        # Emit Socket.IO event for real-time vote updates
+        from services.socket_service import SocketService
+        SocketService.emit_vote_cast(project_id, 'up')
+        SocketService.emit_leaderboard_updated()
 
         return success_response(project.to_dict(include_creator=True), 'Project upvoted', 200)
     except Exception as e:
@@ -407,6 +437,12 @@ def downvote_project(user_id, project_id):
         ProofScoreCalculator.update_project_scores(project)
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()  # Vote affects leaderboard
+
+        # Emit Socket.IO event for real-time vote updates
+        from services.socket_service import SocketService
+        SocketService.emit_vote_cast(project_id, 'down')
+        SocketService.emit_leaderboard_updated()
 
         return success_response(project.to_dict(include_creator=True), 'Project downvoted', 200)
     except Exception as e:
@@ -440,6 +476,12 @@ def remove_vote(user_id, project_id):
         ProofScoreCalculator.update_project_scores(project)
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()  # Vote removal affects leaderboard
+
+        # Emit Socket.IO event for real-time vote updates
+        from services.socket_service import SocketService
+        SocketService.emit_vote_removed(project_id)
+        SocketService.emit_leaderboard_updated()
 
         return success_response(None, 'Vote removed', 200)
     except Exception as e:

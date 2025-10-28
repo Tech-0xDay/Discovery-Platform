@@ -9,6 +9,8 @@ import { MainLayout } from "./layouts/MainLayout";
 import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
 import { PageScrollBackground } from "./components/PageScrollBackground";
 import { wagmiConfig } from "./config/wagmi";
+import { usePrefetch } from "./hooks/usePrefetch";
+import { useRealTimeUpdates } from "./hooks/useRealTimeUpdates";
 
 // Pages
 import Feed from "./pages/Feed";
@@ -38,24 +40,32 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5,      // Data fresh for 5 min (matches backend cache)
       gcTime: 1000 * 60 * 30,         // Keep in cache for 30 min
-      refetchOnWindowFocus: false,    // Don't refetch when tab regains focus (prevents unnecessary requests)
+      refetchOnWindowFocus: true,     // Refetch when tab regains focus (fresh data when user returns)
       refetchOnReconnect: true,       // Refetch when internet reconnects
       retry: 1,                       // Retry failed requests once
     },
   },
 });
 
+// Component to run prefetch and real-time updates on mount
+function PrefetchWrapper({ children }: { children: React.ReactNode }) {
+  usePrefetch(); // Prefetch all critical data in background
+  useRealTimeUpdates(); // Connect to Socket.IO for real-time updates
+  return <>{children}</>;
+}
+
 const App = () => (
   <WagmiProvider config={wagmiConfig}>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <PageScrollBackground />
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route element={<MainLayout />}>
+      <PrefetchWrapper>
+        <AuthProvider>
+          <PageScrollBackground />
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route element={<MainLayout />}>
               {/* Public Routes */}
               <Route path="/" element={<Feed />} />
               <Route path="/feed" element={<Feed />} />
@@ -88,10 +98,11 @@ const App = () => (
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Route>
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
+      </PrefetchWrapper>
     </QueryClientProvider>
   </WagmiProvider>
 );

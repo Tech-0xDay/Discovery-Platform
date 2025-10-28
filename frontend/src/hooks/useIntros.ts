@@ -6,6 +6,12 @@ export function useReceivedIntros() {
   return useQuery({
     queryKey: ['intros', 'received'],
     queryFn: () => introsService.getReceived(),
+    staleTime: 1000 * 60 * 2, // Fresh for 2 minutes (intros update frequently)
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }
 
@@ -13,6 +19,12 @@ export function useSentIntros() {
   return useQuery({
     queryKey: ['intros', 'sent'],
     queryFn: () => introsService.getSent(),
+    staleTime: 1000 * 60 * 2, // Fresh for 2 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }
 

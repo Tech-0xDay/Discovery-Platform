@@ -450,6 +450,79 @@ All colors MUST be HSL.
     animation: fade-in-up 0.5s ease-out forwards;
   }
 
+  /* Real-time update animations (Instagram-style) */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-down {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(249, 212, 106, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(249, 212, 106, 0);
+    }
+  }
+
+  /* Animation classes for real-time updates */
+  .fade-in {
+    animation: fade-in 0.4s ease-out forwards;
+  }
+
+  .slide-in-down {
+    animation: slide-in-down 0.5s ease-out forwards;
+  }
+
+  .scale-in {
+    animation: scale-in 0.3s ease-out forwards;
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out;
+  }
+
+  /* Smooth transition for content replacement (placeholderData) */
+  .content-transition {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  }
+
+  .content-transition-out {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+
+  .content-transition-in {
+    opacity: 1;
+    transform: scale(1);
+  }
+
 
   /* Responsive carousel adjustments */
   @media (max-width: 640px) {

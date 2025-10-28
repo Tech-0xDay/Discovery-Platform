@@ -25,6 +25,12 @@ export function useUserVotes() {
       const response = await votesService.getUserVotes();
       return response.data?.data || [];
     },
+    staleTime: 1000 * 60 * 2, // User votes fresh for 2 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }
 

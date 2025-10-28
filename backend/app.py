@@ -7,7 +7,7 @@ from flask_cors import CORS
 from flask_compress import Compress
 
 from config import config
-from extensions import db, jwt, migrate
+from extensions import db, jwt, migrate, socketio
 
 
 def import_models():
@@ -37,6 +37,7 @@ def create_app(config_name=None):
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
+    socketio.init_app(app, cors_allowed_origins=app.config['CORS_ORIGINS'])
 
     # Enable compression for all responses
     Compress(app)
@@ -144,7 +145,8 @@ def register_error_handlers(app):
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use socketio.run() instead of app.run() for WebSocket support
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
 
 
 # Create app instance for gunicorn

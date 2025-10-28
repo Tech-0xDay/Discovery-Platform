@@ -8,6 +8,10 @@ export function useSearch(query: string, type?: string) {
     enabled: !!query,
     staleTime: 1000 * 60 * 5, // Search results stay fresh for 5 minutes
     gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
+    refetchInterval: 1000 * 60 * 2, // Auto-refresh every 2 minutes
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }
 

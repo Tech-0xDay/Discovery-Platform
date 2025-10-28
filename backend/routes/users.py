@@ -74,6 +74,10 @@ def update_profile(user_id):
         CacheService.delete(f"user_profile:{user.username}")
         CacheService.invalidate_user(user_id)
 
+        # Emit Socket.IO event for real-time profile updates
+        from services.socket_service import SocketService
+        SocketService.emit_profile_updated(user_id, user.to_dict())
+
         return success_response(user.to_dict(include_email=True), 'Profile updated', 200)
 
     except ValidationError as e:
@@ -188,7 +192,7 @@ def get_projects_leaderboard(user_id):
         }
 
         # Cache for 15 minutes (leaderboards don't change often)
-        CacheService.set(cache_key, response_data, ttl=900)
+        CacheService.set(cache_key, response_data, ttl=3600)  # 1 hour cache (auto-invalidates on changes)
 
         from flask import jsonify
         return jsonify(response_data), 200
@@ -228,7 +232,7 @@ def get_builders_leaderboard(user_id):
         }
 
         # Cache for 15 minutes (leaderboards don't change often)
-        CacheService.set(cache_key, response_data, ttl=900)
+        CacheService.set(cache_key, response_data, ttl=3600)  # 1 hour cache (auto-invalidates on changes)
 
         from flask import jsonify
         return jsonify(response_data), 200

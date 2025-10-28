@@ -134,3 +134,8 @@ class CacheService:
     def invalidate_user(user_id: str):
         """Invalidate user cache"""
         CacheService.delete(f"user:{user_id}")
+
+    @staticmethod
+    def invalidate_leaderboard():
+        """Invalidate all leaderboard caches when rankings change"""
+        CacheService.clear_pattern("leaderboard_*")

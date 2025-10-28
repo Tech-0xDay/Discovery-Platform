@@ -85,6 +85,14 @@ export function useProjects(sort: string = 'hot', page: number = 1) {
     },
     staleTime: 1000 * 60 * 15, // Consider data fresh for 15 minutes (matches backend Redis cache TTL)
     gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+
+    // Background refetch configuration (Instagram-style)
+    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    refetchOnWindowFocus: true, // Refresh when user returns to tab
+    refetchOnReconnect: true,   // Refresh after internet reconnects
+
+    // Keep old data visible during background refetch (NO loading spinners!)
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -103,6 +111,12 @@ export function useProjectById(id: string) {
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes (project details change less often)
     gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
+
+    // Background refetch for project details
+    refetchInterval: 1000 * 60 * 2, // Refresh every 2 minutes (votes/comments change)
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -121,6 +135,12 @@ export function useUserProjects(userId: string) {
     enabled: !!userId,
     staleTime: 1000 * 60 * 3, // Consider data fresh for 3 minutes
     gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+
+    // Background refetch for user projects
+    refetchInterval: 1000 * 60 * 2, // Refresh every 2 minutes
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 

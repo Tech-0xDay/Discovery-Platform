@@ -46,6 +46,12 @@ def award_badge(user_id):
 
         db.session.commit()
         CacheService.invalidate_project(validated_data['project_id'])
+        CacheService.invalidate_leaderboard()  # Badges affect leaderboard
+
+        # Emit Socket.IO event for real-time badge notifications
+        from services.socket_service import SocketService
+        SocketService.emit_badge_awarded(validated_data['project_id'], badge.to_dict(include_validator=True))
+        SocketService.emit_leaderboard_updated()  # Badges affect leaderboard
 
         return success_response(badge.to_dict(include_validator=True), 'Badge awarded', 201)
 

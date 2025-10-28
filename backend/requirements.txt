@@ -21,6 +21,10 @@ eth-keys==0.5.1
 # Caching
 redis==5.0.1
 
+# WebSockets (Real-time updates)
+flask-socketio==5.3.6
+python-socketio==5.11.0
+
 # File Upload
 Werkzeug==3.0.1
 boto3==1.34.7

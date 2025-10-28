@@ -45,6 +45,15 @@ def send_message(user_id):
         db.session.add(message)
         db.session.commit()
 
+        # Invalidate message cache for both users
+        from utils.cache import CacheService
+        CacheService.invalidate_user(user_id)  # Sender
+        CacheService.invalidate_user(recipient_id)  # Recipient
+
+        # Emit Socket.IO event for real-time message delivery
+        from services.socket_service import SocketService
+        SocketService.emit_message_received(recipient_id, message.to_dict(include_users=True))
+
         return jsonify({
             'status': 'success',
             'message': 'Message sent successfully',
@@ -149,6 +158,16 @@ def get_conversation_with_user(user_id, other_user_id):
 
         db.session.commit()
 
+        # Invalidate cache for both users (read status changed)
+        if unread_messages:
+            from utils.cache import CacheService
+            CacheService.invalidate_user(user_id)  # Recipient who just read
+            CacheService.invalidate_user(other_user_id)  # Sender (to update read status)
+
+            # Emit Socket.IO event to notify sender that messages were read
+            from services.socket_service import SocketService
+            SocketService.emit_messages_read(other_user_id, user_id, len(unread_messages))
+
         return jsonify({
             'status': 'success',
             'data': {
@@ -208,6 +227,15 @@ def mark_as_read(user_id, message_id):
 
         message.is_read = True
         db.session.commit()
+
+        # Invalidate cache for both users
+        from utils.cache import CacheService
+        CacheService.invalidate_user(user_id)  # Recipient
+        CacheService.invalidate_user(message.sender_id)  # Sender
+
+        # Emit Socket.IO event to notify sender
+        from services.socket_service import SocketService
+        SocketService.emit_message_read(message.sender_id, message.id)
 
         return jsonify({
             'status': 'success',

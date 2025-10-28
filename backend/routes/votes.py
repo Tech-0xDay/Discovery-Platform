@@ -46,6 +46,12 @@ def cast_vote(user_id):
                 db.session.delete(existing_vote)
                 db.session.commit()
                 CacheService.invalidate_project(project_id)
+                CacheService.invalidate_leaderboard()  # Vote removal affects leaderboard
+
+                # Emit Socket.IO event for real-time vote removal
+                from services.socket_service import SocketService
+                SocketService.emit_vote_removed(project_id)
+                SocketService.emit_leaderboard_updated()
 
                 return success_response(None, 'Vote removed', 200)
             else:
@@ -77,6 +83,13 @@ def cast_vote(user_id):
 
         db.session.commit()
         CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()  # Vote affects leaderboard
+
+        # Emit Socket.IO event for real-time vote updates
+        from services.socket_service import SocketService
+        new_score = project.upvotes - project.downvotes
+        SocketService.emit_vote_cast(project_id, vote_type, new_score)
+        SocketService.emit_leaderboard_updated()
 
         return success_response(project.to_dict(include_creator=False, user_id=user_id), 'Vote recorded', 200)
 

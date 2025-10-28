@@ -8,6 +8,12 @@ export function useUserStats() {
       const response = await api.get('/users/stats');
       return response.data;
     },
+    staleTime: 1000 * 60 * 2, // Stats fresh for 2 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }
 
@@ -51,5 +57,11 @@ export function useDashboardStats() {
       };
     },
     enabled: !!userStats?.data?.user_id && !statsLoading,
+    staleTime: 1000 * 60 * 2, // Dashboard stats fresh for 2 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }

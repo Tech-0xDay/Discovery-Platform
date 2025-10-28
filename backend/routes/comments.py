@@ -67,6 +67,14 @@ def create_comment(user_id):
         db.session.add(comment)
         db.session.commit()
 
+        # Invalidate project cache (comment count changed)
+        from utils.cache import CacheService
+        CacheService.invalidate_project(validated_data['project_id'])
+
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        SocketService.emit_comment_added(validated_data['project_id'], comment.to_dict(include_author=True))
+
         return success_response(comment.to_dict(include_author=True), 'Comment created', 201)
 
     except ValidationError as e:
@@ -97,6 +105,14 @@ def update_comment(user_id, comment_id):
 
         db.session.commit()
 
+        # Invalidate project cache
+        from utils.cache import CacheService
+        CacheService.invalidate_project(comment.project_id)
+
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        SocketService.emit_comment_updated(comment.project_id, comment.to_dict(include_author=True))
+
         return success_response(comment.to_dict(include_author=True), 'Comment updated', 200)
 
     except ValidationError as e:
@@ -120,6 +136,14 @@ def delete_comment(user_id, comment_id):
 
         comment.is_deleted = True
         db.session.commit()
+
+        # Invalidate project cache
+        from utils.cache import CacheService
+        CacheService.invalidate_project(comment.project_id)
+
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        SocketService.emit_comment_deleted(comment.project_id, comment_id)
 
         return success_response(None, 'Comment deleted', 200)
     except Exception as e:
@@ -147,6 +171,14 @@ def vote_comment(user_id, comment_id):
             return error_response('Bad request', 'Invalid vote_type. Use "up" or "down"', 400)
 
         db.session.commit()
+
+        # Invalidate project cache (comment votes changed)
+        from utils.cache import CacheService
+        CacheService.invalidate_project(comment.project_id)
+
+        # Emit Socket.IO event for real-time updates
+        from services.socket_service import SocketService
+        SocketService.emit_comment_voted(comment.project_id, comment.id, vote_type)
 
         return success_response(comment.to_dict(include_author=True), f'Comment {vote_type}voted', 200)
     except Exception as e:

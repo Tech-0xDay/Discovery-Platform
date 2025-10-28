@@ -45,6 +45,15 @@ def request_intro(user_id):
         db.session.add(intro)
         db.session.commit()
 
+        # Invalidate intro cache for both users
+        from utils.cache import CacheService
+        CacheService.invalidate_user(user_id)  # Requester's sent intros
+        CacheService.invalidate_user(validated_data['recipient_id'])  # Recipient's received intros
+
+        # Emit Socket.IO event for real-time notification
+        from services.socket_service import SocketService
+        SocketService.emit_intro_received(validated_data['recipient_id'], intro.to_dict(include_users=True))
+
         return success_response(intro.to_dict(include_users=True), 'Intro requested', 201)
 
     except ValidationError as e:
@@ -71,6 +80,15 @@ def accept_intro(user_id, intro_id):
 
         db.session.commit()
 
+        # Invalidate intro cache for both users
+        from utils.cache import CacheService
+        CacheService.invalidate_user(user_id)  # Recipient (acceptor)
+        CacheService.invalidate_user(intro.requester_id)  # Requester
+
+        # Emit Socket.IO event to notify requester
+        from services.socket_service import SocketService
+        SocketService.emit_intro_accepted(intro.requester_id, intro.to_dict(include_users=True))
+
         return success_response(intro.to_dict(include_users=True), 'Intro accepted', 200)
 
     except Exception as e:
@@ -94,6 +112,15 @@ def decline_intro(user_id, intro_id):
         intro.declined_at = datetime.utcnow()
 
         db.session.commit()
+
+        # Invalidate intro cache for both users
+        from utils.cache import CacheService
+        CacheService.invalidate_user(user_id)  # Recipient (decliner)
+        CacheService.invalidate_user(intro.requester_id)  # Requester
+
+        # Emit Socket.IO event to notify requester
+        from services.socket_service import SocketService
+        SocketService.emit_intro_declined(intro.requester_id, intro.to_dict(include_users=True))
 
         return success_response(intro.to_dict(include_users=True), 'Intro declined', 200)
 
