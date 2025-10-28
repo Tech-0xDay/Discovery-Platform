@@ -58,6 +58,8 @@ class User(db.Model):
                                         foreign_keys='Event.organizer_id')
     event_subscriptions = db.relationship('EventSubscriber', backref='subscriber', lazy='dynamic',
                                           foreign_keys='EventSubscriber.user_id', cascade='all, delete-orphan')
+    saved_projects = db.relationship('SavedProject', backref='user', lazy='dynamic',
+                                     foreign_keys='SavedProject.user_id', cascade='all, delete-orphan')
 
     def set_password(self, password: str):
         """Hash and set password"""

@@ -139,3 +139,9 @@ class CacheService:
     def invalidate_leaderboard():
         """Invalidate all leaderboard caches when rankings change"""
         CacheService.clear_pattern("leaderboard_*")
+        CacheService.clear_pattern("leaderboard:*")  # Also clear projects.py leaderboard pattern
+
+    @staticmethod
+    def invalidate_user_projects(user_id: str):
+        """Invalidate user's projects list cache"""
+        CacheService.clear_pattern(f"user_projects:{user_id}:*")

@@ -38,7 +38,8 @@ export function useProjectsLeaderboard(limit: number = 50) {
     queryKey: ['leaderboard', 'projects', limit],
     queryFn: async () => {
       const response = await leaderboardService.getProjects(limit);
-      return response.data.data?.map(transformProject) || [];
+      const transformed = response.data.data?.map(transformProject) || [];
+      return transformed;
     },
     staleTime: 1000 * 60 * 15, // 15 min - leaderboards don't change often
     gcTime: 1000 * 60 * 60,    // 1 hour in cache
@@ -47,7 +48,7 @@ export function useProjectsLeaderboard(limit: number = 50) {
     refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData,
+    // Don't use placeholderData to avoid showing empty data on navigation
   });
 }
 
@@ -56,7 +57,8 @@ export function useBuildersLeaderboard(limit: number = 50) {
     queryKey: ['leaderboard', 'builders', limit],
     queryFn: async () => {
       const response = await leaderboardService.getBuilders(limit);
-      return response.data.data?.map(transformBuilder) || [];
+      const transformed = response.data.data?.map(transformBuilder) || [];
+      return transformed;
     },
     staleTime: 1000 * 60 * 15, // 15 min - leaderboards don't change often
     gcTime: 1000 * 60 * 60,    // 1 hour in cache
@@ -65,6 +67,6 @@ export function useBuildersLeaderboard(limit: number = 50) {
     refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData,
+    // Don't use placeholderData to avoid showing empty data on navigation
   });
 }

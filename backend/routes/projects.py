@@ -244,6 +244,7 @@ def create_project(user_id):
 
         CacheService.invalidate_project_feed()
         CacheService.invalidate_leaderboard()  # Leaderboard rankings change
+        CacheService.invalidate_user_projects(user_id)  # User's project list changed
 
         # Emit Socket.IO event for real-time updates
         from services.socket_service import SocketService
@@ -286,6 +287,7 @@ def update_project(user_id, project_id):
         db.session.commit()
         CacheService.invalidate_project(project_id)
         CacheService.invalidate_project_feed()  # Updated project affects feed
+        CacheService.invalidate_user_projects(user_id)  # User's project list changed
 
         # Emit Socket.IO event for real-time updates
         from services.socket_service import SocketService
@@ -316,6 +318,7 @@ def delete_project(user_id, project_id):
         db.session.commit()
         CacheService.invalidate_project(project_id)
         CacheService.invalidate_leaderboard()  # Leaderboard rankings change
+        CacheService.invalidate_user_projects(user_id)  # User's project list changed
 
         # Emit Socket.IO event for real-time updates
         from services.socket_service import SocketService

@@ -116,7 +116,7 @@ export function useProjectById(id: string) {
     refetchInterval: 1000 * 60 * 2, // Refresh every 2 minutes (votes/comments change)
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData,
+    // Don't use placeholderData for project details to avoid showing stale data when navigating between projects
   });
 }
 

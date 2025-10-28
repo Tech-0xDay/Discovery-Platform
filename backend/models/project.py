@@ -129,7 +129,9 @@ class Project(db.Model):
         }
 
         if include_creator:
-            data['creator'] = self.creator.to_dict()
+            creator_data = self.creator.to_dict() if self.creator else None
+            data['creator'] = creator_data
+            data['author'] = creator_data  # Alias for frontend compatibility
 
         # Include user's vote if user_id is provided
         if user_id:

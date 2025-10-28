@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowUp, ArrowDown, Github, ExternalLink, Award, Calendar, Code, Loader2, AlertCircle, Shield, Image as ImageIcon, Users } from 'lucide-react';
+import { ArrowUp, ArrowDown, Github, ExternalLink, Award, Calendar, Code, Loader2, AlertCircle, Shield, Image as ImageIcon, Users, Share2, Bookmark } from 'lucide-react';
+import { toast } from 'sonner';
+import { useCheckIfSaved, useSaveProject, useUnsaveProject } from '@/hooks/useSavedProjects';
 import { VoteButtons } from '@/components/VoteButtons';
 import { CommentSection } from '@/components/CommentSection';
 import { BadgeAwarder } from '@/components/BadgeAwarder';
@@ -14,6 +16,34 @@ export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { data, isLoading, error } = useProjectById(id || '');
+  const { data: isSaved, isLoading: checkingIfSaved } = useCheckIfSaved(id || '');
+  const saveMutation = useSaveProject();
+  const unsaveMutation = useUnsaveProject();
+
+  const handleShare = async () => {
+    try {
+      const url = `${window.location.origin}/project/${id}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard!');
+    } catch (error) {
+      toast.error('Failed to copy link');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error('Please login to save projects');
+      return;
+    }
+
+    if (!id) return;
+
+    if (isSaved) {
+      unsaveMutation.mutate(id);
+    } else {
+      saveMutation.mutate(id);
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -36,10 +66,6 @@ export default function ProjectDetail() {
   }
 
   const project = data.data;
-
-  // Debug: Log team members
-  console.log('Project team_members:', project.team_members);
-  console.log('Full project data:', project);
 
   return (
     <div className="bg-background min-h-screen overflow-hidden">
@@ -98,6 +124,20 @@ export default function ProjectDetail() {
                 </a>
               )}
               <BadgeAwarder projectId={project.id} />
+
+              {/* Share and Save buttons */}
+              <button onClick={handleShare} className="btn-secondary">
+                <Share2 className="mr-2 h-4 w-4 inline" />
+                Share
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={checkingIfSaved || saveMutation.isPending || unsaveMutation.isPending}
+                className={`btn-secondary disabled:opacity-50 ${isSaved ? 'bg-primary text-black hover:bg-primary/90' : ''}`}
+              >
+                <Bookmark className={`mr-2 h-4 w-4 inline ${isSaved ? 'fill-current' : ''}`} />
+                {isSaved ? 'Saved' : 'Save'}
+              </button>
               {user?.id !== project.authorId && (
                 <IntroRequest projectId={project.id} builderId={project.authorId} />
               )}

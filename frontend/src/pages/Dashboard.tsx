@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Rocket, FileText, ThumbsUp, MessageSquare, Users, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { Rocket, FileText, ThumbsUp, MessageSquare, Users, Plus, Loader2, AlertCircle, Bookmark } from 'lucide-react';
 import { useDashboardStats } from '@/hooks/useStats';
 import { DashboardStatsSkeleton, DashboardHeaderSkeleton } from '@/components/DashboardStatsSkeleton';
+import { useSavedProjects } from '@/hooks/useSavedProjects';
+import { ProjectCard } from '@/components/ProjectCard';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading, error } = useDashboardStats();
+  const { data: savedProjectsData, isLoading: savedLoading } = useSavedProjects(1, 10);
 
   return (
     <div className="bg-background min-h-screen overflow-hidden">
@@ -39,7 +42,7 @@ export default function Dashboard() {
 
           {/* Stats Grid */}
           {!isLoading && !error && stats && (
-            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full box-border overflow-hidden">
+            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5 w-full box-border overflow-hidden">
               {/* Total Projects */}
               <div className="card-elevated p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -99,6 +102,24 @@ export default function Dashboard() {
                   {stats.pendingIntros} pending →
                 </Link>
               </div>
+
+              {/* Saved Projects */}
+              <div className="card-elevated p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-1">Saved Projects</p>
+                    <p className="text-3xl font-black text-foreground">
+                      {savedProjectsData?.pagination?.total || 0}
+                    </p>
+                  </div>
+                  <div className="badge-primary flex items-center justify-center h-10 w-10 rounded-[10px]">
+                    <Bookmark className="h-5 w-5 text-foreground" />
+                  </div>
+                </div>
+                <Link to="/dashboard#saved" className="text-xs text-primary hover:underline font-bold">
+                  View saved projects →
+                </Link>
+              </div>
             </div>
           )}
 
@@ -125,6 +146,10 @@ export default function Dashboard() {
                     <Users className="h-5 w-5" />
                     <span>View My Profile</span>
                   </Link>
+                  <a href="#saved" className="btn-secondary w-full inline-flex items-center justify-start gap-3 px-4 py-3">
+                    <Bookmark className="h-5 w-5" />
+                    <span>View Saved Projects</span>
+                  </a>
                 </div>
               </div>
 
@@ -172,6 +197,39 @@ export default function Dashboard() {
                       <Plus className="h-4 w-4" />
                       Publish Your First Project
                     </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Saved Projects Section */}
+          {!isLoading && !error && (
+            <div id="saved" className="mt-8 w-full box-border">
+              <div className="card-elevated p-6">
+                <h2 className="text-2xl font-black mb-4 text-foreground border-b-4 border-primary pb-3">
+                  <Bookmark className="inline h-6 w-6 mr-2 mb-1" />
+                  Saved Projects
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">Projects you've bookmarked for later</p>
+
+                {savedLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : savedProjectsData?.data && savedProjectsData.data.length > 0 ? (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {savedProjectsData.data.map((project: any) => (
+                      <ProjectCard key={project.id} project={project} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Bookmark className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-sm text-muted-foreground mb-2">No saved projects yet</p>
+                    <p className="text-xs text-muted-foreground">
+                      Click the bookmark icon on any project card to save it here
+                    </p>
                   </div>
                 )}
               </div>

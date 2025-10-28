@@ -206,4 +206,13 @@ export const leaderboardService = {
   getFeatured: () => api.get('/users/leaderboard/featured'),
 };
 
+// Saved Projects
+export const savedProjectsService = {
+  saveProject: (projectId: string) => api.post(`/saved/save/${projectId}`),
+  unsaveProject: (projectId: string) => api.delete(`/saved/unsave/${projectId}`),
+  getMySavedProjects: (page: number = 1, perPage: number = 20) =>
+    api.get(`/saved/my-saved?page=${page}&per_page=${perPage}`),
+  checkIfSaved: (projectId: string) => api.get(`/saved/check/${projectId}`),
+};
+
 export default api;

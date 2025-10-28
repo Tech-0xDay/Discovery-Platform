@@ -35,28 +35,15 @@ export function IntroRequest({ projectId, builderId }: IntroRequestProps) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // DEBUG: Log user and investor status
-  console.log('🔍 IntroRequest Debug:', {
-    user,
-    is_investor: user?.is_investor,
-    projectId,
-    builderId,
-    isOwnProject: user?.id === builderId
-  });
-
   // Only show for investors
   if (!user?.is_investor) {
-    console.log('❌ IntroRequest: Not showing - user is not investor');
     return null;
   }
 
   // Don't show for own projects
   if (user.id === builderId) {
-    console.log('❌ IntroRequest: Not showing - own project');
     return null;
   }
-
-  console.log('✅ IntroRequest: Showing button for investor');
 
   const handleSendIntro = async () => {
     if (!user) {

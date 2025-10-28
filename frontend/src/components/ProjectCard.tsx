@@ -3,7 +3,10 @@ import { Project } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowUp, MessageSquare, Award, Star, TrendingUp, Github, ExternalLink, Shield } from 'lucide-react';
+import { ArrowUp, MessageSquare, Award, Star, TrendingUp, Github, ExternalLink, Shield, Share2, Bookmark } from 'lucide-react';
+import { toast } from 'sonner';
+import { useCheckIfSaved, useSaveProject, useUnsaveProject } from '@/hooks/useSavedProjects';
+import { useAuth } from '@/context/AuthContext';
 import { VoteButtons } from '@/components/VoteButtons';
 import { IntroRequest } from '@/components/IntroRequest';
 import { InteractiveScrollBackground } from '@/components/InteractiveScrollBackground';
@@ -13,14 +16,43 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const { user } = useAuth();
+  const { data: isSaved, isLoading: checkingIfSaved } = useCheckIfSaved(project.id);
+  const saveMutation = useSaveProject();
+  const unsaveMutation = useUnsaveProject();
+
   const upvoteRatio = project.voteCount > 0
     ? Math.round((project.voteCount / (project.voteCount + Math.abs(project.commentCount - project.voteCount))) * 100)
     : 0;
 
-  // Debug: Log crew members
-  if ((project.teamMembers || project.team_members)?.length) {
-    console.log(`Project "${project.title}" has ${(project.teamMembers || project.team_members)?.length} crew members:`, project.teamMembers || project.team_members);
-  }
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const url = `${window.location.origin}/project/${project.id}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard!');
+    } catch (error) {
+      toast.error('Failed to copy link');
+    }
+  };
+
+  const handleSave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast.error('Please login to save projects');
+      return;
+    }
+
+    if (isSaved) {
+      unsaveMutation.mutate(project.id);
+    } else {
+      saveMutation.mutate(project.id);
+    }
+  };
+
 
   // Truncate text to max words with ellipsis
   const truncateText = (text: string, maxWords: number) => {
@@ -54,7 +86,30 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </div>
 
               {/* Proof score badge - top right */}
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 flex flex-col gap-2 items-end">
+                {/* Share and Save buttons */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={handleShare}
+                    className="p-1.5 rounded-lg bg-secondary/50 hover:bg-primary hover:text-black text-muted-foreground transition-smooth border border-border/40"
+                    title="Share project"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={checkingIfSaved || saveMutation.isPending || unsaveMutation.isPending}
+                    className={`p-1.5 rounded-lg transition-smooth border border-border/40 disabled:opacity-50 ${
+                      isSaved
+                        ? 'bg-primary text-black'
+                        : 'bg-secondary/50 hover:bg-primary hover:text-black text-muted-foreground'
+                    }`}
+                    title={isSaved ? 'Unsave project' : 'Save project'}
+                  >
+                    <Bookmark className={`h-3.5 w-3.5 ${isSaved ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
+
                 <div className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 px-3 py-2 min-w-[70px]">
                   <span className="text-xl font-bold text-primary">
                     {project.proofScore?.total && project.proofScore.total > 0

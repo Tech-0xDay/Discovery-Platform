@@ -172,8 +172,10 @@ def get_projects_leaderboard(user_id):
             from flask import jsonify
             return jsonify(cached), 200
 
-        # Get top projects by upvotes
+        # Get top projects by upvotes (eager load creator to avoid N+1 queries)
+        from sqlalchemy.orm import joinedload
         projects = Project.query.filter_by(is_deleted=False)\
+            .options(joinedload(Project.creator))\
             .order_by(Project.upvotes.desc())\
             .limit(limit)\
             .all()
@@ -215,6 +217,7 @@ def get_builders_leaderboard(user_id):
             return jsonify(cached), 200
 
         # Get top users by karma
+        from sqlalchemy.orm import joinedload
         users = User.query.order_by(User.karma.desc()).limit(limit).all()
 
         data = []

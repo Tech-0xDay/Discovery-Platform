@@ -186,26 +186,60 @@ export function useRealTimeUpdates() {
       queryClient.invalidateQueries({ queryKey: ['intros', 'sent'] });
     });
 
-    // Message received event
+    // Message received event - Enhanced for instant delivery
     socket.on('message:received', (data) => {
       console.log('[Socket.IO] Message received:', data);
 
-      toast('New message received!');
-      queryClient.invalidateQueries({ queryKey: ['messages', 'conversations'] });
+      // Extract message data
+      const message = data.data;
+      const senderId = message?.sender_id || data.sender_id;
+      const senderName = message?.sender?.username || data.sender_name || 'Someone';
+
+      // Show toast notification with sender name
+      toast(`New message from ${senderName}`, {
+        description: message?.message?.substring(0, 50) || 'View message',
+        duration: 4000,
+      });
+
+      // Invalidate specific conversation for instant update
+      if (senderId) {
+        queryClient.invalidateQueries({
+          queryKey: ['messages', 'conversation', senderId]
+        });
+      }
+
+      // Invalidate conversations list to update last message and unread count
+      queryClient.invalidateQueries({
+        queryKey: ['messages', 'conversations']
+      });
     });
 
-    // Message read event
+    // Message read event - Update message status to read
     socket.on('message:read', (data) => {
       console.log('[Socket.IO] Message read:', data);
 
-      queryClient.invalidateQueries({ queryKey: ['messages', 'conversations'] });
+      // Invalidate all message queries to update read status
+      // (Backend sends sender_id which is the person who was notified)
+      queryClient.invalidateQueries({
+        queryKey: ['messages']
+      });
     });
 
-    // Messages read event (multiple messages)
+    // Messages read event (multiple messages) - Batch update
     socket.on('messages:read', (data) => {
       console.log('[Socket.IO] Messages read:', data);
 
-      queryClient.invalidateQueries({ queryKey: ['messages', 'conversations'] });
+      // Invalidate specific conversation
+      if (data.sender_id) {
+        queryClient.invalidateQueries({
+          queryKey: ['messages', 'conversation', data.sender_id]
+        });
+      }
+
+      // Update conversations list
+      queryClient.invalidateQueries({
+        queryKey: ['messages', 'conversations']
+      });
     });
 
     // Cleanup on unmount

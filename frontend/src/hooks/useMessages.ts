@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tantml:react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/services/api';
 import { toast } from 'sonner';
 
@@ -26,9 +26,9 @@ export function useConversations() {
       }
       throw new Error(data.message || 'Failed to fetch conversations');
     },
-    staleTime: 1000 * 30, // Fresh for 30 seconds (messages change frequently)
-    gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
-    refetchInterval: 1000 * 30, // Auto-refresh every 30 seconds
+    staleTime: 1000 * 60 * 5, // Fresh for 5 minutes (Socket.IO handles real-time updates)
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    // No refetchInterval - rely on Socket.IO for real-time updates
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     placeholderData: (previousData) => previousData, // Keep old data visible
@@ -53,9 +53,9 @@ export function useMessagesWithUser(userId: string) {
       throw new Error(data.message || 'Failed to fetch messages');
     },
     enabled: !!userId,
-    staleTime: 1000 * 30, // Fresh for 30 seconds
-    gcTime: 1000 * 60 * 5, // Keep in cache for 5 minutes
-    refetchInterval: 1000 * 30, // Auto-refresh every 30 seconds
+    staleTime: 1000 * 60 * 5, // Fresh for 5 minutes (Socket.IO handles real-time updates)
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    // No refetchInterval - rely on Socket.IO for real-time updates
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     placeholderData: (previousData) => previousData, // Keep old data visible

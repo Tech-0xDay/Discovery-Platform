@@ -22,6 +22,7 @@ def import_models():
     from models.investor_request import InvestorRequest
     from models.intro_request import IntroRequest
     from models.direct_message import DirectMessage
+    from models.saved_project import SavedProject
     return True
 
 
@@ -98,6 +99,7 @@ def register_blueprints(app):
     from routes.intro_requests import intro_requests_bp
     from routes.direct_messages import direct_messages_bp
     from routes.search import search_bp
+    from routes.saved_projects import saved_projects_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(projects_bp, url_prefix='/api/projects')
@@ -110,6 +112,7 @@ def register_blueprints(app):
     app.register_blueprint(uploads_bp, url_prefix='/api/upload')
     app.register_blueprint(events_bp, url_prefix='/api/events')
     app.register_blueprint(search_bp, url_prefix='/api/search')
+    app.register_blueprint(saved_projects_bp)
     app.register_blueprint(investor_requests_bp)
     app.register_blueprint(intro_requests_bp)
     app.register_blueprint(direct_messages_bp)
