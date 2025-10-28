@@ -23,6 +23,7 @@ def import_models():
     from models.intro_request import IntroRequest
     from models.direct_message import DirectMessage
     from models.saved_project import SavedProject
+    from models.project_view import ProjectView
     return True
 
 

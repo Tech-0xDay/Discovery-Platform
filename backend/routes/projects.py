@@ -220,6 +220,11 @@ def create_project(user_id):
             title=validated_data['title'],
             tagline=validated_data.get('tagline'),
             description=validated_data['description'],
+            project_story=validated_data.get('project_story'),
+            inspiration=validated_data.get('inspiration'),
+            pitch_deck_url=validated_data.get('pitch_deck_url'),
+            market_comparison=validated_data.get('market_comparison'),
+            novelty_factor=validated_data.get('novelty_factor'),
             demo_url=validated_data.get('demo_url'),
             github_url=validated_data.get('github_url'),
             hackathon_name=validated_data.get('hackathon_name'),
@@ -579,4 +584,69 @@ def get_leaderboard(user_id):
         return jsonify(response_data), 200
 
     except Exception as e:
+        return error_response('Error', str(e), 500)
+
+
+@projects_bp.route('/<project_id>/view', methods=['POST'])
+@optional_auth
+def track_view(user_id, project_id):
+    """Track unique project view - counts each unique user/session once"""
+    try:
+        from models.project_view import ProjectView
+
+        project = Project.query.get(project_id)
+        if not project or project.is_deleted:
+            return error_response('Not found', 'Project not found', 404)
+
+        data = request.get_json() or {}
+        session_id = data.get('session_id')
+
+        # Get IP and user agent
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        user_agent = request.headers.get('User-Agent', '')[:500]
+
+        # Check if this user/session has already viewed this project
+        existing_view = None
+        if user_id:
+            # Logged-in user: check by user_id
+            existing_view = ProjectView.query.filter_by(
+                project_id=project_id,
+                user_id=user_id
+            ).first()
+        elif session_id:
+            # Anonymous user: check by session_id
+            existing_view = ProjectView.query.filter_by(
+                project_id=project_id,
+                session_id=session_id
+            ).first()
+
+        # Only count as new view if not already viewed
+        if not existing_view:
+            # Create new view record
+            new_view = ProjectView(
+                project_id=project_id,
+                user_id=user_id,
+                session_id=session_id,
+                ip_address=ip_address,
+                user_agent=user_agent
+            )
+            db.session.add(new_view)
+
+            # Increment unique view count
+            project.view_count += 1
+            db.session.commit()
+
+            return success_response({
+                'view_count': project.view_count,
+                'is_new_view': True
+            }, 'View tracked', 200)
+        else:
+            # Already viewed - don't increment
+            return success_response({
+                'view_count': project.view_count,
+                'is_new_view': False
+            }, 'Already viewed', 200)
+
+    except Exception as e:
+        db.session.rollback()
         return error_response('Error', str(e), 500)

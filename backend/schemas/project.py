@@ -56,6 +56,11 @@ class ProjectCreateSchema(Schema):
     title = fields.Str(required=True, validate=validate.Length(min=5, max=200))
     tagline = fields.Str(validate=validate.Length(max=300))
     description = fields.Str(required=True, validate=validate.Length(min=50))
+    project_story = fields.Str()  # Journey, how it started
+    inspiration = fields.Str()  # What inspired the project
+    pitch_deck_url = fields.Url()  # IPFS URL to pitch deck PDF
+    market_comparison = fields.Str()  # Similar products and how this differs
+    novelty_factor = fields.Str()  # What makes this unique
     demo_url = fields.Url()
     github_url = fields.Url()
     hackathon_name = fields.Str(validate=validate.Length(max=200))
@@ -66,8 +71,9 @@ class ProjectCreateSchema(Schema):
 
     class Meta:
         fields = (
-            'title', 'tagline', 'description', 'demo_url',
-            'github_url', 'hackathon_name', 'hackathon_date',
+            'title', 'tagline', 'description', 'project_story', 'inspiration',
+            'pitch_deck_url', 'market_comparison', 'novelty_factor',
+            'demo_url', 'github_url', 'hackathon_name', 'hackathon_date',
             'tech_stack', 'screenshot_urls', 'team_members'
         )
 
@@ -77,6 +83,11 @@ class ProjectUpdateSchema(Schema):
     title = fields.Str(validate=validate.Length(min=5, max=200))
     tagline = fields.Str(validate=validate.Length(max=300))
     description = fields.Str(validate=validate.Length(min=50))
+    project_story = fields.Str()
+    inspiration = fields.Str()
+    pitch_deck_url = fields.Url()
+    market_comparison = fields.Str()
+    novelty_factor = fields.Str()
     demo_url = fields.Url()
     github_url = fields.Url()
     hackathon_name = fields.Str(validate=validate.Length(max=200))

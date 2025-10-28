@@ -20,6 +20,13 @@ class Project(db.Model):
     tagline = db.Column(db.String(300))
     description = db.Column(db.Text, nullable=False)
 
+    # NEW: Extended Project Information
+    project_story = db.Column(db.Text)  # Journey, how it started
+    inspiration = db.Column(db.Text)  # What inspired this project
+    pitch_deck_url = db.Column(db.Text)  # PDF pitch deck on IPFS
+    market_comparison = db.Column(db.Text)  # Similar products and differences
+    novelty_factor = db.Column(db.Text)  # What makes this unique/novel
+
     # Links
     demo_url = db.Column(db.Text)
     github_url = db.Column(db.Text)
@@ -99,6 +106,11 @@ class Project(db.Model):
             'title': self.title,
             'tagline': self.tagline,
             'description': self.description,
+            'project_story': self.project_story,
+            'inspiration': self.inspiration,
+            'pitch_deck_url': self.pitch_deck_url,
+            'market_comparison': self.market_comparison,
+            'novelty_factor': self.novelty_factor,
             'demo_url': self.demo_url,
             'github_url': self.github_url,
             'hackathon_name': self.hackathon_name,

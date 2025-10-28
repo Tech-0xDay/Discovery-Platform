@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowUp, ArrowDown, Github, ExternalLink, Award, Calendar, Code, Loader2, AlertCircle, Shield, Image as ImageIcon, Users, Share2, Bookmark } from 'lucide-react';
+import { ArrowUp, ArrowDown, Github, ExternalLink, Award, Calendar, Code, Loader2, AlertCircle, Shield, Image as ImageIcon, Users, Share2, Bookmark, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCheckIfSaved, useSaveProject, useUnsaveProject } from '@/hooks/useSavedProjects';
 import { VoteButtons } from '@/components/VoteButtons';
@@ -44,6 +45,33 @@ export default function ProjectDetail() {
       saveMutation.mutate(id);
     }
   };
+
+  // Track unique project view on page load
+  useEffect(() => {
+    if (id && !isLoading && !error) {
+      // Get or create anonymous session ID for unique tracking
+      let sessionId = localStorage.getItem('viewer_session_id');
+      if (!sessionId) {
+        // Generate unique session ID for anonymous users
+        sessionId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('viewer_session_id', sessionId);
+      }
+
+      // Track view (fire and forget)
+      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/projects/${id}/view`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') && {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          })
+        },
+        body: JSON.stringify({ session_id: sessionId })
+      }).catch(() => {
+        // Silently fail - view tracking is not critical
+      });
+    }
+  }, [id, isLoading, error]);
 
   // Loading state
   if (isLoading) {
@@ -141,6 +169,16 @@ export default function ProjectDetail() {
               {user?.id !== project.authorId && (
                 <IntroRequest projectId={project.id} builderId={project.authorId} />
               )}
+            </div>
+
+            {/* View Count - Subtle display in corner */}
+            <div className="mt-4 pt-4 border-t border-border/30 flex justify-end">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/40 rounded-lg border border-border/50">
+                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {project.viewCount?.toLocaleString() || 0} {project.viewCount === 1 ? 'view' : 'views'}
+                </span>
+              </div>
             </div>
           </div>
 

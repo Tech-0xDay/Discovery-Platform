@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, AlertTriangle, Loader2, Users, Info, Check } from 'lucide-react';
+import { X, AlertTriangle, Loader2, Users, Info, Check, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { WalletVerification } from '@/components/WalletVerification';
 import { useAuth } from '@/context/AuthContext';
@@ -28,6 +28,15 @@ export default function Publish() {
   const [memberName, setMemberName] = useState('');
   const [memberRole, setMemberRole] = useState('');
   const [showProofScoreInfo, setShowProofScoreInfo] = useState(false);
+
+  // NEW: Extended project information
+  const [pitchDeckUrl, setPitchDeckUrl] = useState<string>('');
+  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
+  const [uploadingPitchDeck, setUploadingPitchDeck] = useState(false);
+  const [projectStory, setProjectStory] = useState('');
+  const [inspiration, setInspiration] = useState('');
+  const [marketComparison, setMarketComparison] = useState('');
+  const [noveltyFactor, setNoveltyFactor] = useState('');
 
   const createProjectMutation = useCreateProject();
 
@@ -137,6 +146,61 @@ export default function Publish() {
     setScreenshotFiles(screenshotFiles.filter((_, i) => i !== index));
   };
 
+  const handlePitchDeckUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast.error('Only PDF files are allowed for pitch decks');
+      return;
+    }
+
+    // Validate file size (25MB max)
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('File size must be less than 25MB');
+      return;
+    }
+
+    setUploadingPitchDeck(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/pitch-deck`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      const ipfsUrl = data.data.url;
+
+      setPitchDeckUrl(ipfsUrl);
+      setPitchDeckFile(file);
+      toast.success('Pitch deck uploaded successfully!');
+    } catch (error: any) {
+      console.error('Pitch deck upload error:', error);
+      toast.error('Failed to upload pitch deck');
+    } finally {
+      setUploadingPitchDeck(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemovePitchDeck = () => {
+    setPitchDeckUrl('');
+    setPitchDeckFile(null);
+  };
+
   const validateGithubUrl = (url: string): boolean => {
     if (!url || !url.trim()) {
       setGithubUrlWarning('');
@@ -220,6 +284,22 @@ export default function Publish() {
       if (teamMembers.length > 0) {
         payload.team_members = teamMembers;
       }
+      // NEW: Add extended project information
+      if (projectStory && projectStory.trim()) {
+        payload.project_story = projectStory;
+      }
+      if (inspiration && inspiration.trim()) {
+        payload.inspiration = inspiration;
+      }
+      if (pitchDeckUrl && pitchDeckUrl.trim()) {
+        payload.pitch_deck_url = pitchDeckUrl;
+      }
+      if (marketComparison && marketComparison.trim()) {
+        payload.market_comparison = marketComparison;
+      }
+      if (noveltyFactor && noveltyFactor.trim()) {
+        payload.novelty_factor = noveltyFactor;
+      }
 
       console.log('=== SUBMITTING PROJECT ===');
       console.log('GitHub URL from form:', data.githubUrl);
@@ -232,6 +312,13 @@ export default function Publish() {
       setTechStack([]);
       setScreenshotUrls([]);
       setTeamMembers([]);
+      // NEW: Reset extended fields
+      setProjectStory('');
+      setInspiration('');
+      setPitchDeckUrl('');
+      setPitchDeckFile(null);
+      setMarketComparison('');
+      setNoveltyFactor('');
       navigate('/my-projects');
     } catch (error: any) {
       console.error('Error publishing project:', error);
@@ -374,6 +461,161 @@ export default function Publish() {
                     )}
                     <p className="text-xs text-muted-foreground">Minimum 200 characters recommended for +5 quality score</p>
                   </div>
+                </div>
+              </div>
+
+              {/* NEW: Project Story & Vision Section */}
+              <div className="card-elevated p-8 bg-gradient-to-br from-card to-primary/5">
+                <h2 className="text-2xl font-black mb-2 text-foreground border-b-4 border-primary pb-3">
+                  📖 Project Story & Vision
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">Share the journey behind your project - what inspired you and how it came to life</p>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="projectStory" className="text-base font-bold flex items-center gap-2">
+                      <span>🚀 The Journey</span>
+                      <span className="text-xs badge-secondary">Optional</span>
+                    </Label>
+                    <Textarea
+                      id="projectStory"
+                      placeholder="Tell us your project's story... How did this idea come to life? What challenges did you face? What were those breakthrough moments?"
+                      rows={5}
+                      className="text-base resize-none"
+                      value={projectStory}
+                      onChange={(e) => setProjectStory(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">Help others understand the path you took to build this project</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="inspiration" className="text-base font-bold flex items-center gap-2">
+                      <span>💡 The Spark</span>
+                      <span className="text-xs badge-secondary">Optional</span>
+                    </Label>
+                    <Textarea
+                      id="inspiration"
+                      placeholder="What inspired you to build this? Was it a personal experience, a problem you noticed, or a vision for the future?"
+                      rows={4}
+                      className="text-base resize-none"
+                      value={inspiration}
+                      onChange={(e) => setInspiration(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">Share the 'why' behind your project</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* NEW: Market & Innovation Section */}
+              <div className="card-elevated p-8 bg-gradient-to-br from-card to-accent/5">
+                <h2 className="text-2xl font-black mb-2 text-foreground border-b-4 border-primary pb-3">
+                  🎯 Market & Innovation
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">Show what makes your project stand out in the ecosystem</p>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="marketComparison" className="text-base font-bold flex items-center gap-2">
+                      <span>🔍 Competitive Landscape</span>
+                      <span className="text-xs badge-secondary">Optional</span>
+                    </Label>
+                    <Textarea
+                      id="marketComparison"
+                      placeholder="What other projects or products exist in this space? How does yours differ or improve upon them? What unique approach are you taking?"
+                      rows={5}
+                      className="text-base resize-none"
+                      value={marketComparison}
+                      onChange={(e) => setMarketComparison(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">Help others see how your project fits in the market</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="noveltyFactor" className="text-base font-bold flex items-center gap-2">
+                      <span>✨ What Makes This Special</span>
+                      <span className="text-xs badge-secondary">Optional</span>
+                    </Label>
+                    <Textarea
+                      id="noveltyFactor"
+                      placeholder="What's the novel or unique aspect of your project? Is it a new technology, an innovative approach, or a fresh perspective on an old problem?"
+                      rows={4}
+                      className="text-base resize-none"
+                      value={noveltyFactor}
+                      onChange={(e) => setNoveltyFactor(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">Highlight your project's innovation factor</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* NEW: Pitch Deck Section */}
+              <div className="card-elevated p-8 bg-gradient-to-br from-card to-secondary/10">
+                <h2 className="text-2xl font-black mb-2 text-foreground border-b-4 border-primary pb-3">
+                  📊 Pitch Deck
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">Upload your pitch deck to give investors and collaborators a complete view</p>
+
+                <div className="space-y-4">
+                  {!pitchDeckUrl ? (
+                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center bg-secondary/20 hover:bg-secondary/30 transition-smooth">
+                      <input
+                        type="file"
+                        id="pitchDeck"
+                        accept=".pdf"
+                        onChange={handlePitchDeckUpload}
+                        className="hidden"
+                        disabled={uploadingPitchDeck}
+                      />
+                      <label
+                        htmlFor="pitchDeck"
+                        className="cursor-pointer flex flex-col items-center gap-3"
+                      >
+                        {uploadingPitchDeck ? (
+                          <>
+                            <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                            <p className="text-sm font-bold text-foreground">Uploading to IPFS...</p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="p-4 bg-primary/20 rounded-full">
+                              <FileText className="h-8 w-8 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-base font-bold text-foreground mb-1">Upload Pitch Deck (PDF)</p>
+                              <p className="text-xs text-muted-foreground">Max 25MB • Stored on IPFS</p>
+                            </div>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-primary rounded-lg p-6 bg-primary/10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-primary rounded-lg">
+                            <FileText className="h-6 w-6 text-black" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-foreground">{pitchDeckFile?.name || 'Pitch Deck'}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {pitchDeckFile ? `${(pitchDeckFile.size / 1024 / 1024).toFixed(2)} MB` : 'Uploaded'}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemovePitchDeck}
+                          className="p-2 hover:bg-destructive/20 rounded-lg transition-smooth"
+                          title="Remove pitch deck"
+                        >
+                          <X className="h-5 w-5 text-destructive" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    💡 A good pitch deck can significantly increase investor interest and collaboration opportunities
+                  </p>
                 </div>
               </div>
 
