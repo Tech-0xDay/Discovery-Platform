@@ -4,9 +4,11 @@ Authentication routes
 from flask import Blueprint, request, jsonify, redirect, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from marshmallow import ValidationError
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import secrets
+import random
+import os
 
 from extensions import db
 from models.user import User
@@ -14,8 +16,12 @@ from schemas.user import UserRegisterSchema, UserLoginSchema
 from utils.validators import validate_email, validate_username, validate_password
 from utils.helpers import success_response, error_response
 from utils.decorators import token_required
+from utils.init_admins import check_and_promote_admin
 
 auth_bp = Blueprint('auth', __name__)
+
+# In-memory OTP storage (use Redis in production)
+otp_storage = {}
 
 
 @auth_bp.route('/register', methods=['POST'])
@@ -45,7 +51,11 @@ def register():
             display_name=validated_data.get('display_name', validated_data['username']),
             email_verified=True  # Auto-verify for MVP (no email service yet)
         )
-        user.set_password(validated_data['password']) 
+        user.set_password(validated_data['password'])
+
+        # Check if email should be auto-promoted to admin
+        if check_and_promote_admin(validated_data['email']):
+            user.is_admin = True 
 
         db.session.add(user)
         db.session.commit()
@@ -292,4 +302,113 @@ def github_disconnect():
 
     except Exception as e:
         db.session.rollback()
+        return error_response('Error', str(e), 500)
+
+
+# OTP Authentication Routes (for admin/validator login)
+@auth_bp.route('/otp/request', methods=['POST'])
+def request_otp():
+    """Request OTP for email login"""
+    try:
+        data = request.get_json()
+        email = data.get('email', '').strip().lower()
+
+        if not email:
+            return error_response('Validation error', 'Email is required', 400)
+
+        # Check if user exists
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return error_response('User not found', 'No account found with this email', 404)
+
+        # Check if user is admin or validator
+        if not (user.is_admin or user.is_validator):
+            return error_response('Access denied', 'OTP login is only available for admins and validators', 403)
+
+        # Generate OTP
+        is_dev_mode = os.getenv('FLASK_ENV', 'development') == 'development'
+
+        if is_dev_mode:
+            # Development mode: use default OTP
+            otp = '1234'
+        else:
+            # Production mode: generate random 6-digit OTP
+            otp = str(random.randint(100000, 999999))
+
+        # Store OTP with expiration (5 minutes)
+        otp_storage[email] = {
+            'otp': otp,
+            'expires_at': datetime.utcnow() + timedelta(minutes=5),
+            'user_id': user.id
+        }
+
+        # In production, send OTP via email (Zoho ZeptoMail)
+        # TODO: Implement email sending
+        # send_otp_email(email, otp)
+
+        if is_dev_mode:
+            # In dev mode, return OTP in response for testing
+            return success_response({
+                'message': 'OTP sent successfully',
+                'dev_otp': otp,  # Only in dev mode!
+                'email': email
+            }, 'OTP sent successfully (DEV MODE)', 200)
+        else:
+            return success_response({
+                'message': 'OTP sent to your email',
+                'email': email
+            }, 'OTP sent successfully', 200)
+
+    except Exception as e:
+        return error_response('Error', str(e), 500)
+
+
+@auth_bp.route('/otp/verify', methods=['POST'])
+def verify_otp():
+    """Verify OTP and login"""
+    try:
+        data = request.get_json()
+        email = data.get('email', '').strip().lower()
+        otp = data.get('otp', '').strip()
+
+        if not email or not otp:
+            return error_response('Validation error', 'Email and OTP are required', 400)
+
+        # Check if OTP exists
+        if email not in otp_storage:
+            return error_response('Invalid OTP', 'OTP not found or expired', 401)
+
+        stored_data = otp_storage[email]
+
+        # Check if OTP expired
+        if datetime.utcnow() > stored_data['expires_at']:
+            del otp_storage[email]
+            return error_response('Expired OTP', 'OTP has expired. Please request a new one.', 401)
+
+        # Verify OTP
+        if otp != stored_data['otp']:
+            return error_response('Invalid OTP', 'Incorrect OTP', 401)
+
+        # OTP is valid - get user
+        user = User.query.get(stored_data['user_id'])
+        if not user or not user.is_active:
+            del otp_storage[email]
+            return error_response('User not found', 'User account not found or inactive', 404)
+
+        # Clear OTP
+        del otp_storage[email]
+
+        # Generate tokens
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+
+        return success_response({
+            'user': user.to_dict(include_email=True),
+            'tokens': {
+                'access': access_token,
+                'refresh': refresh_token
+            }
+        }, 'Login successful', 200)
+
+    except Exception as e:
         return error_response('Error', str(e), 500)

@@ -15,9 +15,13 @@ class ValidationBadge(db.Model):
     project_id = db.Column(db.String(36), db.ForeignKey('projects.id', ondelete='CASCADE'), nullable=False)
     validator_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
 
-    badge_type = db.Column(db.String(20), nullable=False)  # 'stone', 'silver', 'gold', 'platinum', 'demerit'
+    badge_type = db.Column(db.String(20), nullable=False)  # 'stone', 'silver', 'gold', 'platinum', 'demerit', 'custom'
     rationale = db.Column(db.Text)
     points = db.Column(db.Integer, nullable=False)  # -10, 5, 10, 15, or 20
+
+    # Custom badge fields (for admin-created badges)
+    custom_badge_name = db.Column(db.String(100), nullable=True)
+    custom_badge_image_url = db.Column(db.Text, nullable=True)
 
     is_featured = db.Column(db.Boolean, default=False)  # Featured badge flag
 
@@ -25,7 +29,7 @@ class ValidationBadge(db.Model):
 
     # Badge type validation
     __table_args__ = (
-        db.CheckConstraint("badge_type IN ('stone', 'silver', 'gold', 'platinum', 'demerit')"),
+        db.CheckConstraint("badge_type IN ('stone', 'silver', 'gold', 'platinum', 'demerit', 'custom')"),
     )
 
     BADGE_POINTS = {
@@ -45,6 +49,8 @@ class ValidationBadge(db.Model):
             'points': self.points,
             'rationale': self.rationale,
             'is_featured': self.is_featured,
+            'custom_badge_name': self.custom_badge_name,
+            'custom_badge_image_url': self.custom_badge_image_url,
             'created_at': self.created_at.isoformat(),
             'awarded_at': self.created_at.isoformat(),  # Alias for frontend compatibility
         }

@@ -171,6 +171,8 @@ export const authService = {
   refreshToken: () => api.post('/auth/refresh'),
   githubConnect: () => api.get('/auth/github/connect'),
   githubDisconnect: () => api.post('/auth/github/disconnect'),
+  requestOTP: (email: string) => api.post('/auth/otp/request', { email }),
+  verifyOTP: (email: string, otp: string) => api.post('/auth/otp/verify', { email, otp }),
 };
 
 // File Upload

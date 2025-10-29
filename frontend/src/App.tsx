@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WagmiProvider } from "wagmi";
 import { AuthProvider } from "./context/AuthContext";
 import { MainLayout } from "./layouts/MainLayout";
-import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute, AdminRoute, ValidatorRoute } from "./components/ProtectedRoute";
 import { PageScrollBackground } from "./components/PageScrollBackground";
 import { wagmiConfig } from "./config/wagmi";
 import { usePrefetch } from "./hooks/usePrefetch";
@@ -30,6 +30,7 @@ import EditProject from "./pages/EditProject";
 import Intros from "./pages/Intros";
 import Admin from "./pages/Admin";
 import AdminValidator from "./pages/AdminValidator";
+import Validator from "./pages/Validator";
 import InvestorPlans from "./pages/InvestorPlans";
 import DirectMessages from "./pages/DirectMessages";
 import GalleryView from "./pages/GalleryView";
@@ -92,7 +93,10 @@ const App = () => (
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
 
-              {/* Admin+Validator Route (Password Protected) */}
+              {/* Validator Route (JWT Protected) */}
+              <Route path="/validator" element={<ValidatorRoute><Validator /></ValidatorRoute>} />
+
+              {/* Legacy Admin+Validator Route (Deprecated - will be removed) */}
               <Route path="/admin+validator" element={<AdminValidator />} />
 
               {/* 404 */}

@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { TrendingUp, Trophy, Search, Plus, LogOut, User, Settings, LayoutDashboard, Send, Menu, X, MessageSquare, Building2, Sparkles } from 'lucide-react';
+import { TrendingUp, Trophy, Search, Plus, LogOut, User, Settings, LayoutDashboard, Send, Menu, X, MessageSquare, Building2, Sparkles, Shield } from 'lucide-react';
 import { ConnectWallet } from '@/components/ConnectWallet';
 import { useState } from 'react';
 
@@ -103,6 +103,22 @@ export function Navbar() {
                         <span>Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
+                    {user.is_admin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-l-2 border-purple-600 hover:from-purple-500/20 hover:to-pink-500/20 hover:border-purple-500 transition-all">
+                          <Shield className="h-4 w-4 text-purple-600" />
+                          <span className="text-purple-600 font-bold">Admin Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {user.is_validator && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/validator" className="cursor-pointer flex items-center gap-2 font-medium bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-l-2 border-blue-600 hover:from-blue-500/20 hover:to-cyan-500/20 hover:border-blue-500 transition-all">
+                          <Shield className="h-4 w-4 text-blue-600" />
+                          <span className="text-blue-600 font-bold">Validator Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link to="/my-projects" className="cursor-pointer flex items-center gap-2 font-medium">
                         <Plus className="h-4 w-4" />

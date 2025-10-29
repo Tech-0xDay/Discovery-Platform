@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: backendUser.is_admin || false,
       is_admin: backendUser.is_admin || false,
       is_investor: backendUser.is_investor || false,
+      is_validator: backendUser.is_validator || false,
       walletAddress: backendUser.wallet_address,
       wallet_address: backendUser.wallet_address,
       full_wallet_address: backendUser.full_wallet_address,
@@ -58,7 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('✅ AuthContext transformUser - Transformed user:', {
       username: transformed.username,
       is_investor: transformed.is_investor,
-      is_admin: transformed.is_admin
+      is_admin: transformed.is_admin,
+      is_validator: transformed.is_validator
     });
 
     return transformed;

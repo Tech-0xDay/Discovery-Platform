@@ -24,6 +24,7 @@ def import_models():
     from models.direct_message import DirectMessage
     from models.saved_project import SavedProject
     from models.project_view import ProjectView
+    from models.validator_permissions import ValidatorPermissions
     return True
 
 
@@ -73,6 +74,10 @@ def create_app(config_name=None):
             print("⚠️  WARNING: No database tables found after db.create_all()")
             print("   Check that models are properly defined and imported.")
 
+        # Initialize default admins
+        from utils.init_admins import init_default_admins
+        init_default_admins()
+
     # Health check
     @app.route('/health', methods=['GET'])
     def health_check():
@@ -101,6 +106,8 @@ def register_blueprints(app):
     from routes.direct_messages import direct_messages_bp
     from routes.search import search_bp
     from routes.saved_projects import saved_projects_bp
+    from routes.admin import admin_bp
+    from routes.validator import validator_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(projects_bp, url_prefix='/api/projects')
@@ -117,6 +124,8 @@ def register_blueprints(app):
     app.register_blueprint(investor_requests_bp)
     app.register_blueprint(intro_requests_bp)
     app.register_blueprint(direct_messages_bp)
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
+    app.register_blueprint(validator_bp, url_prefix='/api/validator')
 
     from routes.admin_auth import admin_auth_bp
     app.register_blueprint(admin_auth_bp)

@@ -12,6 +12,7 @@ export interface User {
   isAdmin?: boolean;
   is_admin?: boolean; // Backend field
   is_investor?: boolean; // Backend field
+  is_validator?: boolean; // Backend field
   walletAddress?: string;
   wallet_address?: string; // Backend field (truncated)
   full_wallet_address?: string; // Full wallet address for explorer links

@@ -38,7 +38,12 @@ class User(db.Model):
     karma = db.Column(db.Integer, default=0)
     is_admin = db.Column(db.Boolean, default=False)
     is_investor = db.Column(db.Boolean, default=False)
+    is_validator = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
+
+    # Validator approval tracking
+    validator_approved_at = db.Column(db.DateTime, nullable=True)
+    validator_approved_by = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
@@ -80,6 +85,7 @@ class User(db.Model):
             'karma': self.karma,
             'is_admin': self.is_admin,
             'is_investor': self.is_investor,
+            'is_validator': self.is_validator,
             'email_verified': self.email_verified,
             'has_oxcert': self.has_oxcert,
             'oxcert_tx_hash': self.oxcert_tx_hash,
