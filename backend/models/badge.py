@@ -40,7 +40,7 @@ class ValidationBadge(db.Model):
         'demerit': -10,
     }
 
-    def to_dict(self, include_validator=False):
+    def to_dict(self, include_validator=False, include_project=False):
         """Convert to dictionary"""
         data = {
             'id': self.id,
@@ -54,9 +54,15 @@ class ValidationBadge(db.Model):
             'created_at': self.created_at.isoformat(),
             'awarded_at': self.created_at.isoformat(),  # Alias for frontend compatibility
         }
-        if include_validator:
+        if include_validator and self.validator:
             data['validator'] = self.validator.to_dict()
             data['awarded_by'] = self.validator.to_dict()  # Alias for frontend compatibility
+        if include_project and self.project:
+            data['project'] = {
+                'id': self.project.id,
+                'title': self.project.title,
+                'tagline': self.project.tagline,
+            }
         return data
 
     def __repr__(self):

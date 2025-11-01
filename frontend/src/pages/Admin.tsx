@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -115,10 +115,10 @@ interface BadgeItem {
 }
 
 function BadgeManagementList() {
-  const [badges, setBadges] = useState<BadgeItem[]>([]);
+  const [allBadges, setAllBadges] = useState<BadgeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterBadgeType, setFilterBadgeType] = useState('all');
-  const [filterProjectId, setFilterProjectId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [editingBadge, setEditingBadge] = useState<BadgeItem | null>(null);
   const [editBadgeType, setEditBadgeType] = useState('');
   const [editRationale, setEditRationale] = useState('');
@@ -126,12 +126,8 @@ function BadgeManagementList() {
   const fetchBadges = async () => {
     setLoading(true);
     try {
-      const params: any = { perPage: 100 };
-      if (filterBadgeType && filterBadgeType !== 'all') params.badgeType = filterBadgeType;
-      if (filterProjectId) params.projectId = filterProjectId;
-
-      const response = await adminService.getAllBadges(params);
-      setBadges(response.data.data.badges || []);
+      const response = await adminService.getAllBadges({ perPage: 1000 });
+      setAllBadges(response.data.data.badges || []);
     } catch (error) {
       console.error('Failed to fetch badges:', error);
       toast.error('Failed to load badges');
@@ -143,6 +139,29 @@ function BadgeManagementList() {
   useEffect(() => {
     fetchBadges();
   }, []);
+
+  // Client-side filtering
+  const filteredBadges = useMemo(() => {
+    return allBadges.filter(badge => {
+      // Filter by badge type
+      if (filterBadgeType !== 'all' && badge.badge_type !== filterBadgeType) {
+        return false;
+      }
+
+      // Filter by search query (project name or author name)
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const projectTitle = badge.project?.title?.toLowerCase() || '';
+        const authorName = badge.validator?.username?.toLowerCase() || '';
+
+        if (!projectTitle.includes(query) && !authorName.includes(query)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allBadges, filterBadgeType, searchQuery]);
 
   const handleEditBadge = (badge: BadgeItem) => {
     setEditingBadge(badge);
@@ -217,18 +236,16 @@ function BadgeManagementList() {
               </Select>
             </div>
             <div className="flex-1">
-              <Label>Filter by Project ID</Label>
+              <Label>Search by Project or Author</Label>
               <Input
-                placeholder="Enter project ID..."
-                value={filterProjectId}
-                onChange={(e) => setFilterProjectId(e.target.value)}
+                placeholder="Search by project title or author name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-end">
-              <Button onClick={fetchBadges}>
-                Apply Filters
-              </Button>
-            </div>
+          </div>
+          <div className="mt-2 text-sm text-muted-foreground">
+            Showing {filteredBadges.length} of {allBadges.length} badges
           </div>
         </CardContent>
       </Card>
@@ -238,15 +255,17 @@ function BadgeManagementList() {
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-      ) : badges.length === 0 ? (
+      ) : filteredBadges.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No badges found</p>
+            <p className="text-muted-foreground">
+              {allBadges.length === 0 ? 'No badges found' : 'No badges match your filters'}
+            </p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
-          {badges.map((badge) => (
+          {filteredBadges.map((badge) => (
             <Card key={badge.id}>
               <CardContent className="py-4">
                 <div className="flex items-start justify-between gap-4">

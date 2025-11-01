@@ -559,66 +559,86 @@ export default function Validator() {
                     </div>
                   )}
 
-                  {selectedProject === project.id ? (
-                    <div className="border-t pt-4 space-y-3">
-                      <h4 className="text-sm font-semibold">Award Badge</h4>
-                      <Select value={badgeType} onValueChange={setBadgeType}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {permissions?.allowed_badge_types.map(type => (
-                            <SelectItem key={type} value={type}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                                <span className="ml-4 text-xs text-muted-foreground">
-                                  {getBadgePoints(type)} points
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Textarea
-                        placeholder="Rationale for awarding this badge..."
-                        value={rationale}
-                        onChange={(e) => setRationale(e.target.value)}
-                        rows={3}
-                      />
-                      <div className="flex gap-2">
+                  {/* Only show Award Badge button if assignment is pending/in_review */}
+                  {assignment.status !== 'validated' && assignment.status !== 'rejected' && (
+                    <>
+                      {selectedProject === project.id ? (
+                        <div className="border-t pt-4 space-y-3">
+                          <h4 className="text-sm font-semibold">Award Badge</h4>
+                          <Select value={badgeType} onValueChange={setBadgeType}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {permissions?.allowed_badge_types.map(type => (
+                                <SelectItem key={type} value={type}>
+                                  <div className="flex items-center justify-between w-full">
+                                    <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                                    <span className="ml-4 text-xs text-muted-foreground">
+                                      {getBadgePoints(type)} points
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Textarea
+                            placeholder="Rationale for awarding this badge..."
+                            value={rationale}
+                            onChange={(e) => setRationale(e.target.value)}
+                            rows={3}
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleAwardBadge(project.id)}
+                              disabled={isAwarding || !rationale.trim()}
+                            >
+                              {isAwarding ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Awarding...
+                                </>
+                              ) : (
+                                <>
+                                  <Award className="mr-2 h-4 w-4" />
+                                  Award Badge
+                                </>
+                              )}
+                            </Button>
+                            <Button variant="outline" onClick={() => {
+                              setSelectedProject(null);
+                              setRationale('');
+                            }}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
                         <Button
-                          onClick={() => handleAwardBadge(project.id)}
-                          disabled={isAwarding || !rationale.trim()}
+                          onClick={() => setSelectedProject(project.id)}
+                          variant="default"
+                          size="sm"
                         >
-                          {isAwarding ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Awarding...
-                            </>
-                          ) : (
-                            <>
-                              <Award className="mr-2 h-4 w-4" />
-                              Award Badge
-                            </>
-                          )}
+                          <Award className="mr-2 h-4 w-4" />
+                          Award Badge
                         </Button>
-                        <Button variant="outline" onClick={() => {
-                          setSelectedProject(null);
-                          setRationale('');
-                        }}>
-                          Cancel
-                        </Button>
+                      )}
+                    </>
+                  )}
+
+                  {/* Show validation info for validated projects */}
+                  {assignment.status === 'validated' && (
+                    <div className="border-t pt-4">
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="font-semibold">Validated</span>
                       </div>
+                      {assignment.review_notes && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {assignment.review_notes}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <Button
-                      onClick={() => setSelectedProject(project.id)}
-                      variant="default"
-                      size="sm"
-                    >
-                      <Award className="mr-2 h-4 w-4" />
-                      Award Badge
-                    </Button>
                   )}
                 </CardContent>
               </Card>

@@ -20,16 +20,14 @@ validator_bp = Blueprint('validator', __name__)  # Validator routes blueprint
 @validator_bp.route('/dashboard', methods=['GET'])
 @validator_required
 def get_validator_dashboard(user_id):
-    """Get validator's assigned projects (excluding already validated ones)"""
+    """Get validator's assigned projects"""
     try:
         from models.validator_assignment import ValidatorAssignment
         from sqlalchemy.orm import joinedload
 
-        # Get all assignments for this validator
-        # Exclude projects that have been validated by ANY validator
+        # Get ALL assignments for this validator (pending, in_review, validated, etc.)
         assignments = ValidatorAssignment.query.filter(
-            ValidatorAssignment.validator_id == user_id,
-            ValidatorAssignment.status.in_(['pending', 'in_review'])
+            ValidatorAssignment.validator_id == user_id
         ).options(
             joinedload(ValidatorAssignment.project).joinedload(Project.creator)
         ).order_by(
@@ -37,30 +35,31 @@ def get_validator_dashboard(user_id):
             ValidatorAssignment.created_at.desc()
         ).all()
 
-        # Filter out projects that have been validated or already have badges
+        # Filter assignments based on status
+        # For pending/in_review: exclude projects with badges
+        # For validated: include all
         filtered_assignments = []
         for assignment in assignments:
-            # Check if this project has been validated by anyone
-            validated = ValidatorAssignment.query.filter(
-                ValidatorAssignment.project_id == assignment.project_id,
-                ValidatorAssignment.status == 'validated'
-            ).first()
-
-            # Also check if project has any badges (additional safety check)
-            has_badges = ValidationBadge.query.filter_by(
-                project_id=assignment.project_id
-            ).first()
-
-            # Only include if not validated AND has no badges
-            if not validated and not has_badges:
+            # If validated, always include it
+            if assignment.status == 'validated':
                 filtered_assignments.append(assignment)
+            # If pending/in_review, only include if project has no badges
+            elif assignment.status in ['pending', 'in_review']:
+                # Check if project has any badges
+                has_badges = ValidationBadge.query.filter_by(
+                    project_id=assignment.project_id
+                ).first()
+
+                # Only include if no badges
+                if not has_badges:
+                    filtered_assignments.append(assignment)
 
         # Build response
         result = []
         for assignment in filtered_assignments:
             assignment_dict = assignment.to_dict()
             if assignment.project:
-                assignment_dict['project'] = assignment.project.to_dict(include_creator=True, include_badges=True)
+                assignment_dict['project'] = assignment.project.to_dict(include_creator=True)
             result.append(assignment_dict)
 
         return jsonify({
@@ -396,6 +395,28 @@ def award_badge(user_id):
         )
 
         db.session.add(badge)
+
+        # Update assignment status to "validated"
+        assignment = ValidatorAssignment.query.filter_by(
+            validator_id=user_id,
+            project_id=project_id
+        ).first()
+
+        if assignment:
+            assignment.status = 'validated'
+            assignment.validated_by = user_id
+            assignment.reviewed_at = datetime.utcnow()
+            assignment.review_notes = rationale
+
+            # Mark other assignments for this project as 'completed'
+            other_assignments = ValidatorAssignment.query.filter(
+                ValidatorAssignment.project_id == project_id,
+                ValidatorAssignment.id != assignment.id
+            ).all()
+
+            for other in other_assignments:
+                other.status = 'completed'
+                other.review_notes = f'Validated by another validator ({user_id})'
 
         # Update project scores
         ProofScoreCalculator.update_project_scores(project)
