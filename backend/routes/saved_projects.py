@@ -104,23 +104,24 @@ def get_my_saved_projects(user_id):
     try:
         page, per_page = get_pagination_params(request)
 
-        # Get saved projects with project details
+        # OPTIMIZED: Eager load project and creator to prevent N+1 queries
         from sqlalchemy.orm import joinedload
         query = SavedProject.query.filter_by(user_id=user_id)\
             .join(Project, SavedProject.project_id == Project.id)\
             .filter(Project.is_deleted == False)\
-            .options(joinedload(SavedProject.project))\
+            .options(
+                joinedload(SavedProject.project).joinedload(Project.creator)
+            )\
             .order_by(SavedProject.created_at.desc())
 
         total = query.count()
         saved_items = query.limit(per_page).offset((page - 1) * per_page).all()
 
-        # Get project data
+        # OPTIMIZED: Use eager-loaded project instead of querying again
         projects = []
         for saved in saved_items:
-            project = Project.query.get(saved.project_id)
-            if project:
-                project_dict = project.to_dict(include_creator=True, user_id=user_id)
+            if saved.project:  # Use already-loaded project
+                project_dict = saved.project.to_dict(include_creator=True, user_id=user_id)
                 project_dict['saved_at'] = saved.created_at.isoformat()
                 projects.append(project_dict)
 

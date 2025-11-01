@@ -1,43 +1,97 @@
 import { useQuery } from '@tanstack/react-query';
-import { searchService, leaderboardService } from '@/services/api';
+import { searchService } from '@/services/api';
+
+// Transform backend project data (same as useProjects)
+function transformProject(backendProject: any) {
+  return {
+    id: backendProject.id,
+    title: backendProject.title,
+    tagline: backendProject.tagline || '',
+    description: backendProject.description,
+    demoUrl: backendProject.demo_url,
+    githubUrl: backendProject.github_url,
+    hackathonName: backendProject.hackathon_name || '',
+    hackathonDate: backendProject.hackathon_date || '',
+    techStack: backendProject.tech_stack || [],
+    teamMembers: backendProject.team_members || [],
+    screenshots: backendProject.screenshots?.map((s: any) => s.url) || [],
+    authorId: backendProject.user_id,
+    author: backendProject.creator ? {
+      id: backendProject.creator.id,
+      username: backendProject.creator.username,
+      displayName: backendProject.creator.display_name,
+      avatar: backendProject.creator.avatar_url,
+      bio: backendProject.creator.bio,
+      isVerified: backendProject.creator.email_verified || false,
+      walletAddress: backendProject.creator.wallet_address,
+      has_oxcert: backendProject.creator.has_oxcert || false,
+    } : {
+      id: backendProject.user_id,
+      username: 'Unknown',
+      isVerified: false,
+    },
+    proofScore: {
+      total: backendProject.proof_score || 0,
+      verification: backendProject.verification_score || 0,
+      community: backendProject.community_score || 0,
+      validation: backendProject.validation_score || 0,
+      quality: backendProject.quality_score || 0,
+    },
+    badges: backendProject.badges || [],
+    voteCount: (backendProject.upvotes || 0) - (backendProject.downvotes || 0),
+    commentCount: backendProject.comment_count || 0,
+    userVote: backendProject.user_vote || null,
+    isFeatured: backendProject.is_featured || false,
+    createdAt: backendProject.created_at,
+    updatedAt: backendProject.updated_at,
+  };
+}
+
+// Transform backend user data
+function transformUser(backendUser: any) {
+  return {
+    id: backendUser.id,
+    username: backendUser.username,
+    displayName: backendUser.display_name,
+    avatar: backendUser.avatar_url,
+    bio: backendUser.bio,
+    isVerified: backendUser.email_verified || false,
+    walletAddress: backendUser.wallet_address,
+    has_oxcert: backendUser.has_oxcert || false,
+    karma: backendUser.karma || 0,
+    createdAt: backendUser.created_at,
+  };
+}
 
 export function useSearch(query: string, type?: string) {
   return useQuery({
-    queryKey: ['search', query, type],
-    queryFn: () => searchService.search(query, type),
-    enabled: !!query,
-    staleTime: 1000 * 60 * 5, // Search results stay fresh for 5 minutes
-    gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
-    refetchInterval: 1000 * 60 * 2, // Auto-refresh every 2 minutes
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    placeholderData: (previousData) => previousData, // Keep old data visible
-  });
-}
+    queryKey: ['search', query, type || 'all'],
+    queryFn: async () => {
+      const response = await searchService.search(query, type);
 
-export function useLeaderboardProjects(timeframe: string = 'month') {
-  return useQuery({
-    queryKey: ['leaderboard', 'projects', timeframe],
-    queryFn: () => leaderboardService.getProjects(timeframe),
-    staleTime: 1000 * 60 * 10, // Leaderboard data stays fresh for 10 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
-  });
-}
+      // Transform results
+      const projects = response.data.data?.projects?.map(transformProject) || [];
+      const users = response.data.data?.users?.map(transformUser) || [];
 
-export function useLeaderboardBuilders(timeframe: string = 'month') {
-  return useQuery({
-    queryKey: ['leaderboard', 'builders', timeframe],
-    queryFn: () => leaderboardService.getBuilders(timeframe),
-    staleTime: 1000 * 60 * 10, // Leaderboard data stays fresh for 10 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
-  });
-}
+      return {
+        projects,
+        users,
+        total: projects.length + users.length,
+      };
+    },
+    // Only search if query is at least 2 characters
+    enabled: query.length >= 2,
 
-export function useLeaderboardFeatured() {
-  return useQuery({
-    queryKey: ['leaderboard', 'featured'],
-    queryFn: () => leaderboardService.getFeatured(),
-    staleTime: 1000 * 60 * 10, // Featured projects stay fresh for 10 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    // Caching strategy for search results
+    staleTime: 1000 * 60 * 10, // 10 min - search results stay fresh
+    gcTime: 1000 * 60 * 30,    // 30 min - keep in cache for fast repeat searches
+
+    // Don't refetch automatically for search
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
+
+    // Keep old results visible while searching
+    placeholderData: (previousData) => previousData,
   });
 }

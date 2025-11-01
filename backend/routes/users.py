@@ -3,6 +3,7 @@ User routes
 """
 from flask import Blueprint, request
 from marshmallow import ValidationError
+from sqlalchemy import and_
 
 from extensions import db
 from models.user import User
@@ -216,15 +217,26 @@ def get_builders_leaderboard(user_id):
             from flask import jsonify
             return jsonify(cached), 200
 
-        # Get top users by karma
-        from sqlalchemy.orm import joinedload
-        users = User.query.order_by(User.karma.desc()).limit(limit).all()
+        # OPTIMIZED: Get top users with project count in a single query
+        from sqlalchemy import func
+        from models.project import Project
+        users_with_counts = db.session.query(
+            User,
+            func.count(Project.id).label('project_count')
+        ).outerjoin(
+            Project,
+            and_(Project.user_id == User.id, Project.is_deleted == False)
+        ).group_by(
+            User.id
+        ).order_by(
+            User.karma.desc()
+        ).limit(limit).all()
 
         data = []
-        for rank, user in enumerate(users, start=1):
+        for rank, (user, project_count) in enumerate(users_with_counts, start=1):
             user_dict = user.to_dict()
             user_dict['rank'] = rank
-            user_dict['project_count'] = user.projects.filter_by(is_deleted=False).count()
+            user_dict['project_count'] = project_count
             data.append(user_dict)
 
         # Build response data

@@ -86,6 +86,7 @@ class User(db.Model):
             'is_admin': self.is_admin,
             'is_investor': self.is_investor,
             'is_validator': self.is_validator,
+            'is_active': self.is_active,  # Added for ban/unban functionality
             'email_verified': self.email_verified,
             'has_oxcert': self.has_oxcert,
             'oxcert_tx_hash': self.oxcert_tx_hash,

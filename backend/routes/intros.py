@@ -4,6 +4,7 @@ Intro request routes
 from flask import Blueprint, request
 from datetime import datetime
 from marshmallow import ValidationError
+from sqlalchemy.orm import joinedload
 
 from extensions import db
 from models.intro import Intro
@@ -136,7 +137,13 @@ def get_received_intros(user_id):
     try:
         page, per_page = get_pagination_params(request)
 
-        query = Intro.query.filter_by(recipient_id=user_id).order_by(Intro.created_at.desc())
+        # OPTIMIZED: Eager load relationships to prevent N+1 queries
+        query = Intro.query.filter_by(recipient_id=user_id)\
+            .options(
+                joinedload(Intro.requester),
+                joinedload(Intro.recipient),
+                joinedload(Intro.project)
+            ).order_by(Intro.created_at.desc())
         total = query.count()
         intros = query.limit(per_page).offset((page - 1) * per_page).all()
 
@@ -154,7 +161,13 @@ def get_sent_intros(user_id):
     try:
         page, per_page = get_pagination_params(request)
 
-        query = Intro.query.filter_by(requester_id=user_id).order_by(Intro.created_at.desc())
+        # OPTIMIZED: Eager load relationships to prevent N+1 queries
+        query = Intro.query.filter_by(requester_id=user_id)\
+            .options(
+                joinedload(Intro.requester),
+                joinedload(Intro.recipient),
+                joinedload(Intro.project)
+            ).order_by(Intro.created_at.desc())
         total = query.count()
         intros = query.limit(per_page).offset((page - 1) * per_page).all()
 

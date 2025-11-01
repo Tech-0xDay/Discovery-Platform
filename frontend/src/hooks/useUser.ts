@@ -36,10 +36,11 @@ export function useUserByUsername(username: string) {
     },
     enabled: !!username,
     staleTime: 1000 * 60 * 5, // User data stays fresh for 5 minutes
-    gcTime: 1000 * 60 * 20, // Keep in cache for 20 minutes
-    refetchInterval: 1000 * 60 * 2, // Auto-refresh every 2 minutes
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    refetchInterval: false, // NO polling - Socket.IO handles invalidation
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    refetchOnMount: 'always', // Always check for fresh data
     placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }

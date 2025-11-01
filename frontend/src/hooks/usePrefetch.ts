@@ -23,43 +23,52 @@ export function usePrefetch() {
     const prefetchData = async () => {
       try {
         // Prefetch feed pages (trending, newest, top-rated)
+        // CRITICAL: Query keys MUST match Feed.tsx exactly for cache hits
         const feedPromises = [
           // Trending - pages 1-2
           queryClient.prefetchQuery({
-            queryKey: ['projects', 'hot', 1],
+            queryKey: ['projects', 'trending', 1],
             queryFn: async () => {
-              const response = await projectsService.getAll('hot', 1);
+              const response = await projectsService.getAll('trending', 1);
               return response.data;
             },
-            staleTime: 1000 * 60 * 15,
+            staleTime: 1000 * 60 * 5, // 5 min for real-time feel
           }),
           queryClient.prefetchQuery({
-            queryKey: ['projects', 'hot', 2],
+            queryKey: ['projects', 'trending', 2],
             queryFn: async () => {
-              const response = await projectsService.getAll('hot', 2);
+              const response = await projectsService.getAll('trending', 2);
               return response.data;
             },
-            staleTime: 1000 * 60 * 15,
+            staleTime: 1000 * 60 * 5,
+          }),
+
+          // Top Rated - pages 1-2
+          queryClient.prefetchQuery({
+            queryKey: ['projects', 'top-rated', 1],
+            queryFn: async () => {
+              const response = await projectsService.getAll('top-rated', 1);
+              return response.data;
+            },
+            staleTime: 1000 * 60 * 5,
+          }),
+          queryClient.prefetchQuery({
+            queryKey: ['projects', 'top-rated', 2],
+            queryFn: async () => {
+              const response = await projectsService.getAll('top-rated', 2);
+              return response.data;
+            },
+            staleTime: 1000 * 60 * 5,
           }),
 
           // Newest - page 1
           queryClient.prefetchQuery({
-            queryKey: ['projects', 'new', 1],
+            queryKey: ['projects', 'newest', 1],
             queryFn: async () => {
-              const response = await projectsService.getAll('new', 1);
+              const response = await projectsService.getAll('newest', 1);
               return response.data;
             },
-            staleTime: 1000 * 60 * 15,
-          }),
-
-          // Top Rated - page 1
-          queryClient.prefetchQuery({
-            queryKey: ['projects', 'top', 1],
-            queryFn: async () => {
-              const response = await projectsService.getAll('top', 1);
-              return response.data;
-            },
-            staleTime: 1000 * 60 * 15,
+            staleTime: 1000 * 60 * 5,
           }),
         ];
 
@@ -71,7 +80,7 @@ export function usePrefetch() {
               const response = await leaderboardService.getProjects(50);
               return response.data.data || [];
             },
-            staleTime: 1000 * 60 * 15,
+            staleTime: 1000 * 60 * 5, // 5 min, invalidated on badge awards
           }),
           queryClient.prefetchQuery({
             queryKey: ['leaderboard', 'builders', 50],
@@ -79,7 +88,7 @@ export function usePrefetch() {
               const response = await leaderboardService.getBuilders(50);
               return response.data.data || [];
             },
-            staleTime: 1000 * 60 * 15,
+            staleTime: 1000 * 60 * 5,
           }),
         ];
 

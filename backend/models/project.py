@@ -35,6 +35,9 @@ class Project(db.Model):
     hackathon_name = db.Column(db.String(200))
     hackathon_date = db.Column(db.Date)
 
+    # Categories/Domains for validator assignment (multiple allowed)
+    categories = db.Column(db.JSON, default=list)  # ['AI/ML', 'Web3', etc.]
+
     # Tech Stack (Array)
     tech_stack = db.Column(ARRAY(db.String(50)), default=[])
 
@@ -115,6 +118,7 @@ class Project(db.Model):
             'github_url': self.github_url,
             'hackathon_name': self.hackathon_name,
             'hackathon_date': self.hackathon_date.isoformat() if self.hackathon_date else None,
+            'categories': self.categories or [],
             'tech_stack': self.tech_stack or [],
             'team_members': self.team_members or [],
             'proof_score': self.proof_score,

@@ -10,10 +10,15 @@ function transformProject(backendProject: any) {
     tagline: backendProject.tagline || '',
     description: backendProject.description,
     projectStory: backendProject.project_story,
+    project_story: backendProject.project_story,
     inspiration: backendProject.inspiration,
     pitchDeckUrl: backendProject.pitch_deck_url,
+    pitch_deck_url: backendProject.pitch_deck_url,
     marketComparison: backendProject.market_comparison,
+    market_comparison: backendProject.market_comparison,
     noveltyFactor: backendProject.novelty_factor,
+    novelty_factor: backendProject.novelty_factor,
+    categories: backendProject.categories || [],
     demoUrl: backendProject.demo_url,
     githubUrl: backendProject.github_url,
     hackathonName: backendProject.hackathon_name || '',
@@ -89,13 +94,15 @@ export function useProjects(sort: string = 'hot', page: number = 1) {
         data: response.data.data?.map(transformProject) || [],
       };
     },
-    staleTime: 1000 * 60 * 15, // Consider data fresh for 15 minutes (matches backend Redis cache TTL)
-    gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+    // Instagram-style caching: Short stale time, long cache retention
+    staleTime: 1000 * 60 * 5, // 5 min - marks data as "stale" but still usable
+    gcTime: 1000 * 60 * 30,   // 30 min - keeps in memory for instant navigation
 
-    // Background refetch configuration (Instagram-style)
-    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
-    refetchOnWindowFocus: true, // Refresh when user returns to tab
+    // Real-time refetch strategy
+    refetchInterval: false, // NO polling - rely on Socket.IO invalidation
+    refetchOnWindowFocus: true, // Refresh when user returns (catches updates)
     refetchOnReconnect: true,   // Refresh after internet reconnects
+    refetchOnMount: 'always',   // Always check for fresh data on mount
 
     // Keep old data visible during background refetch (NO loading spinners!)
     placeholderData: (previousData) => previousData,

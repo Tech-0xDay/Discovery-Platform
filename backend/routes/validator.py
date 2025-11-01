@@ -8,12 +8,217 @@ from models.user import User
 from models.project import Project
 from models.badge import ValidationBadge
 from models.validator_permissions import ValidatorPermissions
+from models.validator_assignment import ValidatorAssignment
 from utils.decorators import validator_required, admin_or_validator_required
 from utils.cache import CacheService
 from services.socket_service import SocketService
 from utils.scores import ProofScoreCalculator
 
-validator_bp = Blueprint('validator', __name__)
+validator_bp = Blueprint('validator', __name__)  # Validator routes blueprint
+
+
+@validator_bp.route('/dashboard', methods=['GET'])
+@validator_required
+def get_validator_dashboard(user_id):
+    """Get validator's assigned projects (excluding already validated ones)"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+        from sqlalchemy.orm import joinedload
+
+        # Get all assignments for this validator
+        # Exclude projects that have been validated by ANY validator
+        assignments = ValidatorAssignment.query.filter(
+            ValidatorAssignment.validator_id == user_id,
+            ValidatorAssignment.status.in_(['pending', 'in_review'])
+        ).options(
+            joinedload(ValidatorAssignment.project).joinedload(Project.creator)
+        ).order_by(
+            ValidatorAssignment.priority.desc(),
+            ValidatorAssignment.created_at.desc()
+        ).all()
+
+        # Filter out projects that have been validated or already have badges
+        filtered_assignments = []
+        for assignment in assignments:
+            # Check if this project has been validated by anyone
+            validated = ValidatorAssignment.query.filter(
+                ValidatorAssignment.project_id == assignment.project_id,
+                ValidatorAssignment.status == 'validated'
+            ).first()
+
+            # Also check if project has any badges (additional safety check)
+            has_badges = ValidationBadge.query.filter_by(
+                project_id=assignment.project_id
+            ).first()
+
+            # Only include if not validated AND has no badges
+            if not validated and not has_badges:
+                filtered_assignments.append(assignment)
+
+        # Build response
+        result = []
+        for assignment in filtered_assignments:
+            assignment_dict = assignment.to_dict()
+            if assignment.project:
+                assignment_dict['project'] = assignment.project.to_dict(include_creator=True, include_badges=True)
+            result.append(assignment_dict)
+
+        return jsonify({
+            'status': 'success',
+            'data': result,
+            'count': len(result)
+        }), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@validator_bp.route('/assignments/<assignment_id>/validate', methods=['POST'])
+@validator_required
+def validate_assigned_project(user_id, assignment_id):
+    """Validate a project - marks all assignments for this project as completed"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+
+        data = request.get_json() or {}
+
+        # Get the assignment
+        assignment = ValidatorAssignment.query.get(assignment_id)
+        if not assignment:
+            return jsonify({'status': 'error', 'message': 'Assignment not found'}), 404
+
+        # Verify this assignment belongs to the validator
+        if assignment.validator_id != user_id:
+            return jsonify({'status': 'error', 'message': 'Not your assignment'}), 403
+
+        # Check if already validated
+        if assignment.status == 'validated':
+            return jsonify({'status': 'error', 'message': 'Project already validated'}), 400
+
+        # Check if project was validated by someone else
+        other_validation = ValidatorAssignment.query.filter(
+            ValidatorAssignment.project_id == assignment.project_id,
+            ValidatorAssignment.status == 'validated'
+        ).first()
+
+        if other_validation:
+            return jsonify({'status': 'error', 'message': 'Project already validated by another validator'}), 400
+
+        # Get badge data
+        badge_type = data.get('badge_type', 'stone')
+        rationale = data.get('rationale', '')
+
+        # Update THIS assignment as validated
+        assignment.status = 'validated'
+        assignment.validated_by = user_id
+        assignment.reviewed_at = datetime.utcnow()
+        assignment.review_notes = rationale
+
+        # Mark ALL OTHER assignments for this project as 'completed' (not validated)
+        # This removes the project from other validators' dashboards
+        other_assignments = ValidatorAssignment.query.filter(
+            ValidatorAssignment.project_id == assignment.project_id,
+            ValidatorAssignment.id != assignment_id
+        ).all()
+
+        for other in other_assignments:
+            other.status = 'completed'  # Mark as completed but not validated
+            other.review_notes = f'Validated by another validator ({user_id})'
+
+        # Award badge
+        project = assignment.project
+        if project:
+            badge = ValidationBadge(
+                project_id=project.id,
+                validator_id=user_id,
+                badge_type=badge_type,
+                rationale=rationale,
+                points=ValidationBadge.BADGE_POINTS.get(badge_type, 10)
+            )
+            db.session.add(badge)
+
+            # Update project validation score
+            ProofScoreCalculator.update_project_scores(project)
+
+        db.session.commit()
+
+        # Invalidate caches
+        CacheService.invalidate_project(assignment.project_id)
+        CacheService.invalidate_leaderboard()
+
+        # Emit real-time update
+        SocketService.emit_badge_awarded(assignment.project_id, badge.to_dict(include_validator=True))
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Project validated successfully',
+            'data': assignment.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@validator_bp.route('/assignments/<assignment_id>/start-review', methods=['POST'])
+@validator_required
+def start_review(user_id, assignment_id):
+    """Mark assignment as in_review"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+
+        assignment = ValidatorAssignment.query.get(assignment_id)
+        if not assignment:
+            return jsonify({'status': 'error', 'message': 'Assignment not found'}), 404
+
+        if assignment.validator_id != user_id:
+            return jsonify({'status': 'error', 'message': 'Not your assignment'}), 403
+
+        assignment.status = 'in_review'
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Review started',
+            'data': assignment.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@validator_bp.route('/assignments/<assignment_id>/reject', methods=['POST'])
+@validator_required
+def reject_assigned_project(user_id, assignment_id):
+    """Reject a project"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+
+        data = request.get_json() or {}
+
+        assignment = ValidatorAssignment.query.get(assignment_id)
+        if not assignment:
+            return jsonify({'status': 'error', 'message': 'Assignment not found'}), 404
+
+        if assignment.validator_id != user_id:
+            return jsonify({'status': 'error', 'message': 'Not your assignment'}), 403
+
+        assignment.status = 'rejected'
+        assignment.reviewed_at = datetime.utcnow()
+        assignment.review_notes = data.get('notes', '')
+
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Project rejected',
+            'data': assignment.to_dict()
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @validator_bp.route('/projects', methods=['GET'])
@@ -136,7 +341,19 @@ def award_badge(user_id):
 
         # Check project permission
         if not permissions.can_validate_all:
-            if project_id not in permissions.allowed_project_ids:
+            # Check if validator has an assignment for this project
+            assignment = ValidatorAssignment.query.filter_by(
+                validator_id=user_id,
+                project_id=project_id
+            ).first()
+
+            # Also check the old permissions system for backwards compatibility
+            has_permission = (
+                assignment is not None or
+                project_id in permissions.allowed_project_ids
+            )
+
+            if not has_permission:
                 return jsonify({
                     'status': 'error',
                     'message': 'You do not have permission to validate this project'

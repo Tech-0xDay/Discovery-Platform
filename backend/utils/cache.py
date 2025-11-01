@@ -145,3 +145,20 @@ class CacheService:
     def invalidate_user_projects(user_id: str):
         """Invalidate user's projects list cache"""
         CacheService.clear_pattern(f"user_projects:{user_id}:*")
+
+    @staticmethod
+    def get_projects_count(sort: str = 'all'):
+        """Get cached project count (for pagination)"""
+        key = f"count:projects:{sort}"
+        return CacheService.get(key)
+
+    @staticmethod
+    def set_projects_count(count: int, sort: str = 'all', ttl: int = 3600):
+        """Cache project count (1 hour - invalidated on project create/delete)"""
+        key = f"count:projects:{sort}"
+        return CacheService.set(key, count, ttl)
+
+    @staticmethod
+    def invalidate_counts():
+        """Invalidate all count caches when projects change"""
+        CacheService.clear_pattern("count:*")

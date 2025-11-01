@@ -65,6 +65,7 @@ class ProjectCreateSchema(Schema):
     github_url = fields.Url()
     hackathon_name = fields.Str(validate=validate.Length(max=200))
     hackathon_date = fields.Date()
+    categories = fields.List(fields.Str())  # Multiple categories for the project
     tech_stack = fields.List(fields.Str())
     screenshot_urls = fields.List(fields.Url())
     team_members = fields.List(fields.Nested(TeamMemberSchema))
@@ -74,7 +75,7 @@ class ProjectCreateSchema(Schema):
             'title', 'tagline', 'description', 'project_story', 'inspiration',
             'pitch_deck_url', 'market_comparison', 'novelty_factor',
             'demo_url', 'github_url', 'hackathon_name', 'hackathon_date',
-            'tech_stack', 'screenshot_urls', 'team_members'
+            'categories', 'tech_stack', 'screenshot_urls', 'team_members'
         )
 
 
@@ -92,7 +93,9 @@ class ProjectUpdateSchema(Schema):
     github_url = fields.Url()
     hackathon_name = fields.Str(validate=validate.Length(max=200))
     hackathon_date = fields.Date()
+    categories = fields.List(fields.Str())
     tech_stack = fields.List(fields.Str())
+    team_members = fields.List(fields.Nested(TeamMemberSchema))
 
 
 # Import after defining ProjectSchema to avoid circular imports

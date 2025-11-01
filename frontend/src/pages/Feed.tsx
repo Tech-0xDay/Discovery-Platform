@@ -13,34 +13,40 @@ export default function Feed() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch all three categories in parallel
+  // PROGRESSIVE LOADING: Load trending & top-rated first (priority), newest loads immediately after
   const { data: hotData, isLoading: hotLoading } = useProjects('trending', 1);
   const { data: topData, isLoading: topLoading } = useProjects('top-rated', 1);
   const { data: newData, isLoading: newLoading } = useProjects('newest', 1);
 
-  // Prefetch additional pages for carousel infinite scroll
+  // Prefetch additional pages for carousel infinite scroll + progressive deeper pages
   useEffect(() => {
-    const prefetchPages = async () => {
-      for (const sort of ['trending', 'top-rated', 'newest']) {
-        for (let page = 2; page <= 3; page++) {
-          queryClient.prefetchQuery({
-            queryKey: ['projects', sort, page],
-            queryFn: async () => {
-              const response = await projectsService.getAll(sort, page);
-              return {
-                ...response.data,
-                data: response.data.data || [],
-              };
-            },
-          });
+    // Only prefetch after primary data loads
+    if (!hotLoading && !topLoading) {
+      const prefetchPages = async () => {
+        // Prefetch pages 2-3 for all categories
+        for (const sort of ['trending', 'top-rated', 'newest']) {
+          for (let page = 2; page <= 3; page++) {
+            queryClient.prefetchQuery({
+              queryKey: ['projects', sort, page],
+              queryFn: async () => {
+                const response = await projectsService.getAll(sort, page);
+                return {
+                  ...response.data,
+                  data: response.data.data || [],
+                };
+              },
+              staleTime: 1000 * 60 * 5,
+            });
+          }
         }
-      }
-    };
+      };
 
-    prefetchPages();
-  }, []);
+      prefetchPages();
+    }
+  }, [hotLoading, topLoading, queryClient]);
 
-  const isLoading = hotLoading || topLoading || newLoading;
+  // Progressive loading: Show page when trending & top-rated are loaded
+  const isLoading = hotLoading || topLoading;
 
   // Categorize projects
   const categorizedProjects = useMemo(() => {

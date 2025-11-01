@@ -217,4 +217,83 @@ export const savedProjectsService = {
   checkIfSaved: (projectId: string) => api.get(`/saved/check/${projectId}`),
 };
 
+// Admin
+export const adminService = {
+  // Analytics
+  getStats: () => api.get('/admin/stats'),
+
+  // Users
+  getUsers: (params: { search?: string; role?: string; perPage?: number } = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.search) queryParams.append('search', params.search);
+    if (params.role) queryParams.append('role', params.role);
+    if (params.perPage) queryParams.append('per_page', params.perPage.toString());
+    return api.get(`/admin/users?${queryParams.toString()}`);
+  },
+  toggleUserAdmin: (userId: string) => api.post(`/admin/users/${userId}/toggle-admin`),
+  toggleUserActive: (userId: string) => api.post(`/admin/users/${userId}/toggle-active`),
+
+  // Validators
+  getValidators: () => api.get('/admin/validators'),
+  addValidator: (email: string) => api.post('/admin/validators/add-email', { email }),
+  removeValidator: (validatorId: string) => api.post(`/admin/validators/${validatorId}/remove`),
+  updateValidatorPermissions: (validatorId: string, permissions: any) =>
+    api.post(`/admin/validators/${validatorId}/permissions`, permissions),
+
+  // Projects
+  getProjects: (params: { search?: string; perPage?: number } = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.search) queryParams.append('search', params.search);
+    if (params.perPage) queryParams.append('per_page', params.perPage.toString());
+    return api.get(`/admin/projects?${queryParams.toString()}`);
+  },
+  toggleProjectFeatured: (projectId: string) => api.post(`/admin/projects/${projectId}/feature`),
+  deleteProject: (projectId: string) => api.delete(`/admin/projects/${projectId}`),
+
+  // Badges
+  awardCustomBadge: (data: {
+    project_id: string;
+    badge_type: string;
+    custom_name: string;
+    custom_image?: string;
+    points: number;
+    rationale: string;
+  }) => api.post('/admin/badges/award', data),
+  getAllBadges: (params: { page?: number; perPage?: number; projectId?: string; validatorId?: string; badgeType?: string } = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.perPage) queryParams.append('per_page', params.perPage.toString());
+    if (params.projectId) queryParams.append('project_id', params.projectId);
+    if (params.validatorId) queryParams.append('validator_id', params.validatorId);
+    if (params.badgeType) queryParams.append('badge_type', params.badgeType);
+    return api.get(`/admin/badges?${queryParams.toString()}`);
+  },
+  getBadge: (badgeId: string) => api.get(`/admin/badges/${badgeId}`),
+  updateBadge: (badgeId: string, data: { badge_type?: string; rationale?: string }) => api.patch(`/admin/badges/${badgeId}`, data),
+  deleteBadge: (badgeId: string) => api.delete(`/admin/badges/${badgeId}`),
+  getProjectBadges: (projectId: string) => api.get(`/admin/projects/${projectId}/badges`),
+
+  // Investor Requests
+  getInvestorRequests: () => api.get('/admin/investor-requests'),
+  approveInvestorRequest: (requestId: string) => api.post(`/admin/investor-requests/${requestId}/approve`),
+  rejectInvestorRequest: (requestId: string) => api.post(`/admin/investor-requests/${requestId}/reject`),
+
+  // Validator Assignments
+  assignProjectToValidator: (data: {
+    validator_id: string;
+    project_id: string;
+    category_filter?: string;
+    priority?: string;
+  }) => api.post('/admin/validator-assignments', data),
+  bulkAssignProjects: (data: {
+    validator_id: string;
+    category_filter: string;
+    priority?: string;
+    limit?: number;
+  }) => api.post('/admin/validator-assignments/bulk', data),
+  removeValidatorAssignment: (assignmentId: string) => api.delete(`/admin/validator-assignments/${assignmentId}`),
+  getValidatorAssignments: (validatorId: string) => api.get(`/admin/validator-assignments/validator/${validatorId}`),
+  getCategories: () => api.get('/admin/categories'),
+};
+
 export default api;

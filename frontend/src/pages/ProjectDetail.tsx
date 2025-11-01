@@ -1,7 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowUp, ArrowDown, Github, ExternalLink, Award, Calendar, Code, Loader2, AlertCircle, Shield, Image as ImageIcon, Users, Share2, Bookmark, Eye } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowUp, ArrowDown, Github, ExternalLink, Award, Calendar, Code, Loader2, AlertCircle, Shield, Image as ImageIcon, Users, Share2, Bookmark, Eye, Tag, Lightbulb, TrendingUp, Sparkles, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCheckIfSaved, useSaveProject, useUnsaveProject } from '@/hooks/useSavedProjects';
 import { VoteButtons } from '@/components/VoteButtons';
@@ -10,6 +11,7 @@ import { BadgeAwarder } from '@/components/BadgeAwarder';
 import { IntroRequest } from '@/components/IntroRequest';
 import { ValidationStatusCard } from '@/components/ValidationStatusCard';
 import { ProjectDetailSkeleton } from '@/components/ProjectDetailSkeleton';
+import { ShareDialog } from '@/components/ShareDialog';
 import { useAuth } from '@/context/AuthContext';
 import { useProjectById } from '@/hooks/useProjects';
 
@@ -20,15 +22,10 @@ export default function ProjectDetail() {
   const { data: isSaved, isLoading: checkingIfSaved } = useCheckIfSaved(id || '');
   const saveMutation = useSaveProject();
   const unsaveMutation = useUnsaveProject();
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
-  const handleShare = async () => {
-    try {
-      const url = `${window.location.origin}/project/${id}`;
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard!');
-    } catch (error) {
-      toast.error('Failed to copy link');
-    }
+  const handleShare = () => {
+    setShareDialogOpen(true);
   };
 
   const handleSave = async () => {
@@ -241,6 +238,49 @@ export default function ProjectDetail() {
             </div>
           </div>
 
+          {/* Missing Fields Alert for Project Owner */}
+          {user?.id === project.authorId && (
+            (() => {
+              const missingFields = [];
+              if (!project.categories || project.categories.length === 0) missingFields.push('Categories');
+              if (!project.project_story) missingFields.push('Project Journey');
+              if (!project.inspiration) missingFields.push('Inspiration');
+              if (!project.market_comparison) missingFields.push('Market Comparison');
+              if (!project.novelty_factor) missingFields.push('Novelty Factor');
+              if (!project.pitch_deck_url) missingFields.push('Pitch Deck');
+
+              if (missingFields.length > 0) {
+                return (
+                  <div className="card-elevated p-4 mb-8 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-2 border-yellow-500/30">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <h3 className="font-bold text-foreground mb-1">Complete Your Project Profile</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Add these sections to help visitors understand your project better:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {missingFields.map(field => (
+                            <span key={field} className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-500 rounded border border-yellow-500/30">
+                              {field}
+                            </span>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => window.location.href = `/edit-project/${project.id}`}
+                          className="mt-3 px-4 py-2 bg-yellow-500 text-black rounded-md font-semibold hover:bg-yellow-600 transition-colors text-sm"
+                        >
+                          Edit Project to Add These Fields
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()
+          )}
+
           {/* Verification Cards Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {/* 0xCert Verification */}
@@ -337,6 +377,23 @@ export default function ProjectDetail() {
             <ValidationStatusCard badges={project.badges} />
           </div>
 
+          {/* Categories Section */}
+          {project.categories && project.categories.length > 0 && (
+            <div className="card-elevated p-6 mb-8">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <Tag className="h-6 w-6 text-primary" />
+                Categories
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {project.categories.map((category: string) => (
+                  <Badge key={category} variant="default" className="px-3 py-1.5 text-sm font-semibold bg-primary text-black hover:bg-primary/90">
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* About Section */}
           <div className="card-elevated p-6 mb-8">
             <h2 className="text-2xl font-black mb-4 text-foreground">About This Project</h2>
@@ -344,6 +401,77 @@ export default function ProjectDetail() {
               {project.description}
             </div>
           </div>
+
+          {/* Project Story Section */}
+          {project.project_story && (
+            <div className="card-elevated p-6 mb-8">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <FileText className="h-6 w-6 text-primary" />
+                Project Journey
+              </h2>
+              <div className="prose prose-invert max-w-none whitespace-pre-wrap text-foreground leading-relaxed text-sm">
+                {project.project_story}
+              </div>
+            </div>
+          )}
+
+          {/* Inspiration Section */}
+          {project.inspiration && (
+            <div className="card-elevated p-6 mb-8 bg-gradient-to-br from-secondary/30 to-secondary/10 border-2 border-primary/20">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <Lightbulb className="h-6 w-6 text-primary" />
+                The Spark
+              </h2>
+              <div className="prose prose-invert max-w-none whitespace-pre-wrap text-foreground leading-relaxed text-sm italic">
+                {project.inspiration}
+              </div>
+            </div>
+          )}
+
+          {/* Market Comparison Section */}
+          {project.market_comparison && (
+            <div className="card-elevated p-6 mb-8">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-primary" />
+                Market Landscape
+              </h2>
+              <div className="prose prose-invert max-w-none whitespace-pre-wrap text-foreground leading-relaxed text-sm">
+                {project.market_comparison}
+              </div>
+            </div>
+          )}
+
+          {/* Novelty Factor Section */}
+          {project.novelty_factor && (
+            <div className="card-elevated p-6 mb-8 bg-gradient-to-br from-primary/10 to-primary/5 border-2 border-primary/30">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                What Makes It Unique
+              </h2>
+              <div className="prose prose-invert max-w-none whitespace-pre-wrap text-foreground leading-relaxed text-sm font-medium">
+                {project.novelty_factor}
+              </div>
+            </div>
+          )}
+
+          {/* Pitch Deck Section */}
+          {project.pitch_deck_url && (
+            <div className="card-elevated p-6 mb-8">
+              <h2 className="text-2xl font-black mb-4 text-foreground flex items-center gap-2">
+                <FileText className="h-6 w-6 text-primary" />
+                Pitch Deck
+              </h2>
+              <a
+                href={project.pitch_deck_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <ExternalLink className="h-5 w-5" />
+                View Pitch Deck
+              </a>
+            </div>
+          )}
 
           {/* Hackathon Details */}
           {(project.hackathonName || project.hackathonDate) && (
@@ -442,6 +570,15 @@ export default function ProjectDetail() {
           </div>
         </div>
       </div>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        url={`${window.location.origin}/project/${id}`}
+        title={project.title}
+        description={project.tagline}
+      />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Project } from '@/types';
 import { Card } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { VoteButtons } from '@/components/VoteButtons';
 import { IntroRequest } from '@/components/IntroRequest';
 import { InteractiveScrollBackground } from '@/components/InteractiveScrollBackground';
+import { ShareDialog } from '@/components/ShareDialog';
 
 interface ProjectCardProps {
   project: Project;
@@ -20,21 +22,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const { data: isSaved, isLoading: checkingIfSaved } = useCheckIfSaved(project.id);
   const saveMutation = useSaveProject();
   const unsaveMutation = useUnsaveProject();
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const upvoteRatio = project.voteCount > 0
     ? Math.round((project.voteCount / (project.voteCount + Math.abs(project.commentCount - project.voteCount))) * 100)
     : 0;
 
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      const url = `${window.location.origin}/project/${project.id}`;
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard!');
-    } catch (error) {
-      toast.error('Failed to copy link');
-    }
+    setShareDialogOpen(true);
   };
 
   const handleSave = async (e: React.MouseEvent) => {
@@ -269,6 +266,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
         </div>
       </Card>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        url={`${window.location.origin}/project/${project.id}`}
+        title={project.title}
+        description={project.tagline}
+      />
     </div>
   );
 }

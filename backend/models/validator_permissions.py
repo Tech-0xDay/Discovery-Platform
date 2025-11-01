@@ -19,13 +19,14 @@ class ValidatorPermissions(db.Model):
     can_validate_all = db.Column(db.Boolean, default=False)
     allowed_badge_types = db.Column(db.JSON, default=list)  # ['stone', 'silver', 'gold', 'platinum', 'demerit']
     allowed_project_ids = db.Column(db.JSON, default=list)  # List of project IDs validator can validate
+    allowed_categories = db.Column(db.JSON, default=list)  # Categories this validator can handle ['AI/ML', 'Web3/Blockchain', etc.]
 
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationship
-    validator = db.relationship('User', backref='validator_permissions', foreign_keys=[validator_id])
+    # Relationship (one-to-one: each validator has one permissions record)
+    validator = db.relationship('User', backref=db.backref('validator_permissions', uselist=False), foreign_keys=[validator_id])
 
     def to_dict(self):
         """Convert to dictionary"""
@@ -35,6 +36,7 @@ class ValidatorPermissions(db.Model):
             'can_validate_all': self.can_validate_all,
             'allowed_badge_types': self.allowed_badge_types or [],
             'allowed_project_ids': self.allowed_project_ids or [],
+            'allowed_categories': self.allowed_categories or [],
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
         }

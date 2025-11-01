@@ -123,7 +123,17 @@ def list_projects(user_id):
                 Project.created_at.desc()
             )
 
-        total = query.count()
+        # OPTIMIZED COUNT: Use cached count if no filters (avoids slow COUNT(*) on large tables)
+        if not has_filters:
+            total = CacheService.get_projects_count(sort)
+            if total is None:
+                # Cache miss - do actual count and cache it
+                total = query.count()
+                CacheService.set_projects_count(total, sort, ttl=3600)  # 1 hour cache
+        else:
+            # With filters, must do real count (but indexes make it fast)
+            total = query.count()
+
         # Eager load creator to avoid N+1 queries
         projects = query.options(joinedload(Project.creator)).limit(per_page).offset((page - 1) * per_page).all()
 
@@ -143,9 +153,9 @@ def list_projects(user_id):
             }
         }
 
-        # Cache response if no filters (15 minutes TTL)
+        # Cache response if no filters (Instagram-style: 1 hour, invalidated on changes)
         if not has_filters:
-            CacheService.cache_feed(page, sort, response_data, ttl=3600)  # 1 hour cache (auto-invalidates on changes)
+            CacheService.cache_feed(page, sort, response_data, ttl=3600)
 
         from flask import jsonify
         return jsonify(response_data), 200
@@ -230,7 +240,8 @@ def create_project(user_id):
             hackathon_name=validated_data.get('hackathon_name'),
             hackathon_date=validated_data.get('hackathon_date'),
             tech_stack=validated_data.get('tech_stack', []),
-            team_members=validated_data.get('team_members', [])
+            team_members=validated_data.get('team_members', []),
+            categories=validated_data.get('categories', [])
         )
 
         # Add screenshots
@@ -247,9 +258,14 @@ def create_project(user_id):
 
         db.session.commit()
 
+        # AUTO-ASSIGN to matching validators
+        from utils.auto_assignment import auto_assign_project_to_validators
+        auto_assign_project_to_validators(project, assigned_by_id=user_id)
+
         CacheService.invalidate_project_feed()
         CacheService.invalidate_leaderboard()  # Leaderboard rankings change
         CacheService.invalidate_user_projects(user_id)  # User's project list changed
+        CacheService.invalidate_counts()  # Project count changed
 
         # Emit Socket.IO event for real-time updates
         from services.socket_service import SocketService
@@ -265,7 +281,7 @@ def create_project(user_id):
         return error_response('Error', str(e), 500)
 
 
-@projects_bp.route('/<project_id>', methods=['PUT'])
+@projects_bp.route('/<project_id>', methods=['PUT', 'PATCH'])
 @token_required
 def update_project(user_id, project_id):
     """Update project"""
@@ -324,6 +340,7 @@ def delete_project(user_id, project_id):
         CacheService.invalidate_project(project_id)
         CacheService.invalidate_leaderboard()  # Leaderboard rankings change
         CacheService.invalidate_user_projects(user_id)  # User's project list changed
+        CacheService.invalidate_counts()  # Project count changed
 
         # Emit Socket.IO event for real-time updates
         from services.socket_service import SocketService

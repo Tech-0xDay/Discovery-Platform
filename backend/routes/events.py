@@ -380,8 +380,8 @@ def add_project_to_event(user_id, event_slug):
 
         db.session.add(event_project)
 
-        # Update event project count
-        event.project_count = EventProject.query.filter_by(event_id=event.id).count() + 1
+        # OPTIMIZED: Increment count instead of querying
+        event.project_count = (event.project_count or 0) + 1
 
         db.session.commit()
 
@@ -416,10 +416,8 @@ def remove_project_from_event(user_id, event_slug, project_id):
 
         db.session.delete(event_project)
 
-        # Update event project count
-        event.project_count = EventProject.query.filter_by(event_id=event.id).count() - 1
-        if event.project_count < 0:
-            event.project_count = 0
+        # OPTIMIZED: Decrement count instead of querying
+        event.project_count = max(0, (event.project_count or 0) - 1)
 
         db.session.commit()
 

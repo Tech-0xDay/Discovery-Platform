@@ -37,6 +37,7 @@ export default function Publish() {
   const [inspiration, setInspiration] = useState('');
   const [marketComparison, setMarketComparison] = useState('');
   const [noveltyFactor, setNoveltyFactor] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
 
   const createProjectMutation = useCreateProject();
 
@@ -248,6 +249,11 @@ export default function Publish() {
       return;
     }
 
+    if (categories.length === 0) {
+      toast.error('Please select at least one project category');
+      return;
+    }
+
     // Validate GitHub URL if provided
     if (data.githubUrl && !validateGithubUrl(data.githubUrl)) {
       toast.error('Please fix the GitHub URL before publishing');
@@ -300,6 +306,9 @@ export default function Publish() {
       if (noveltyFactor && noveltyFactor.trim()) {
         payload.novelty_factor = noveltyFactor;
       }
+      if (categories && categories.length > 0) {
+        payload.categories = categories;
+      }
 
       console.log('=== SUBMITTING PROJECT ===');
       console.log('GitHub URL from form:', data.githubUrl);
@@ -319,6 +328,7 @@ export default function Publish() {
       setPitchDeckFile(null);
       setMarketComparison('');
       setNoveltyFactor('');
+      setCategories([]);
       navigate('/my-projects');
     } catch (error: any) {
       console.error('Error publishing project:', error);
@@ -460,6 +470,48 @@ export default function Publish() {
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">Minimum 200 characters recommended for +5 quality score</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-base font-bold">
+                      Project Categories * (Select all that apply)
+                      <span className="ml-2 text-xs badge-info">Helps validators find your project</span>
+                    </Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 border rounded-md">
+                      {[
+                        'AI/ML',
+                        'Web3/Blockchain',
+                        'FinTech',
+                        'HealthTech',
+                        'EdTech',
+                        'E-Commerce',
+                        'SaaS',
+                        'DevTools',
+                        'IoT',
+                        'Gaming',
+                        'Social',
+                        'Other'
+                      ].map((cat) => (
+                        <label key={cat} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
+                          <input
+                            type="checkbox"
+                            checked={categories.includes(cat)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setCategories([...categories, cat]);
+                              } else {
+                                setCategories(categories.filter(c => c !== cat));
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm">{cat}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Selected: {categories.length > 0 ? categories.join(', ') : 'None'}
+                    </p>
                   </div>
                 </div>
               </div>

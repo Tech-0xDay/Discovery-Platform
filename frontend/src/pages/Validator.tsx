@@ -5,7 +5,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Award, Loader2, ExternalLink, Github, Calendar, Shield } from 'lucide-react';
+import {
+  Award, Loader2, ExternalLink, Github, Calendar, Shield,
+  TrendingUp, CheckCircle, Clock, Tag, BarChart3, Star
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 
@@ -20,10 +23,12 @@ interface Project {
   title: string;
   tagline: string;
   description: string;
+  categories?: string[];
   demo_url?: string;
   github_url?: string;
   hackathon_name?: string;
   hackathon_date?: string;
+  tech_stack?: string[];
   creator?: {
     username: string;
     avatar?: string;
@@ -41,16 +46,41 @@ interface Project {
   created_at: string;
 }
 
+interface Assignment {
+  id: string;
+  project_id: string;
+  status: 'pending' | 'in_review' | 'validated' | 'rejected';
+  priority: 'normal' | 'high' | 'urgent';
+  assigned_at: string;
+  category_filter?: string;
+  project?: Project;
+}
+
 interface ValidatorPermissions {
   can_validate_all: boolean;
   allowed_badge_types: string[];
   allowed_project_ids: string[];
+  category_preferences?: string[];
+}
+
+interface ValidatorStats {
+  total_badges_awarded: number;
+  badge_breakdown: {
+    stone: number;
+    silver: number;
+    gold: number;
+    platinum: number;
+    demerit: number;
+  };
+  available_projects: number;
+  permissions?: ValidatorPermissions;
 }
 
 export default function Validator() {
   const { user, token } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [permissions, setPermissions] = useState<ValidatorPermissions | null>(null);
+  const [stats, setStats] = useState<ValidatorStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [badgeType, setBadgeType] = useState<string>('silver');
@@ -62,9 +92,10 @@ export default function Validator() {
   useEffect(() => {
     if (user && token) {
       fetchPermissions();
-      fetchProjects();
+      fetchStats();
+      fetchDashboard();
     }
-  }, [user, token, filterTab]);
+  }, [user, token]);
 
   const fetchPermissions = async () => {
     try {
@@ -83,12 +114,28 @@ export default function Validator() {
     }
   };
 
-  const fetchProjects = async () => {
+  const fetchStats = async () => {
+    try {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/validator/stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setStats(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch stats:', err);
+    }
+  };
+
+  const fetchDashboard = async () => {
     setIsLoading(true);
     try {
       const backendUrl = getBackendUrl();
-      const validated = filterTab === 'pending' ? 'false' : filterTab === 'validated' ? 'true' : 'all';
-      const response = await fetch(`${backendUrl}/api/validator/projects?validated=${validated}&per_page=50`, {
+      const response = await fetch(`${backendUrl}/api/validator/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -96,17 +143,13 @@ export default function Validator() {
       const data = await response.json();
 
       if (data.status === 'success') {
-        const projectsArray = data.data?.projects || [];
-        setProjects(projectsArray);
-        if (data.data?.permissions) {
-          setPermissions(data.data.permissions);
-        }
+        setAssignments(data.data || []);
       }
     } catch (err) {
       console.error('Fetch error:', err);
       toast({
         title: 'Error',
-        description: 'Failed to fetch projects',
+        description: 'Failed to fetch assignments',
         variant: 'destructive',
       });
     } finally {
@@ -150,7 +193,8 @@ export default function Validator() {
         setSelectedProject(null);
         setRationale('');
         setBadgeType('silver');
-        fetchProjects();
+        fetchDashboard();
+        fetchStats();
       } else {
         toast({
           title: 'Error',
@@ -180,13 +224,39 @@ export default function Validator() {
     }
   };
 
-  const filteredProjects = projects.filter(project => {
-    const hasNoBadges = !project.badges || project.badges.length === 0;
-    const hasValidation = project.badges && project.badges.length > 0;
+  const getBadgePoints = (badge_type: string) => {
+    switch (badge_type) {
+      case 'stone': return '+5';
+      case 'silver': return '+10';
+      case 'gold': return '+15';
+      case 'platinum': return '+20';
+      case 'demerit': return '-10';
+      default: return '+0';
+    }
+  };
 
-    if (filterTab === 'pending') return hasNoBadges;
-    if (filterTab === 'validated') return hasValidation;
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'text-red-500';
+      case 'high': return 'text-orange-500';
+      default: return 'text-muted-foreground';
+    }
+  };
+
+  const filteredAssignments = assignments.filter(assignment => {
+    if (filterTab === 'pending') return assignment.status === 'pending';
+    if (filterTab === 'validated') return assignment.status === 'validated';
     return true;
+  });
+
+  // Calculate category breakdown
+  const categoryBreakdown: Record<string, number> = {};
+  assignments.forEach(assignment => {
+    if (assignment.project?.categories) {
+      assignment.project.categories.forEach(cat => {
+        categoryBreakdown[cat] = (categoryBreakdown[cat] || 0) + 1;
+      });
+    }
   });
 
   return (
@@ -196,39 +266,179 @@ export default function Validator() {
           <Shield className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Validator Dashboard</h1>
         </div>
-        <p className="text-muted-foreground">Award validation badges to projects</p>
+        <p className="text-muted-foreground">Award validation badges to projects and track your validation activity</p>
       </div>
 
-      {permissions && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Your Permissions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <p><strong>Can validate all projects:</strong> {permissions.can_validate_all ? 'Yes' : 'No'}</p>
-              <p><strong>Allowed badge types:</strong> {permissions.allowed_badge_types.join(', ')}</p>
-              {!permissions.can_validate_all && (
-                <p><strong>Assigned projects:</strong> {permissions.allowed_project_ids.length} projects</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats Overview */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Badges Awarded</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total_badges_awarded}</div>
+              <p className="text-xs text-muted-foreground mt-1">Across all badge types</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Assigned Projects</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{assignments.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {assignments.filter(a => a.status === 'pending').length} pending validation
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Gold Badges</CardTitle>
+              <Star className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.badge_breakdown.gold}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Silver: {stats.badge_breakdown.silver}, Platinum: {stats.badge_breakdown.platinum}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Validation Rate</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {assignments.length > 0
+                  ? Math.round((assignments.filter(a => a.status === 'validated').length / assignments.length) * 100)
+                  : 0}%
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {assignments.filter(a => a.status === 'validated').length} validated of {assignments.length}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
+      {/* Permissions and Category Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {permissions && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Your Permissions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Can validate all projects:</span>
+                  <Badge variant={permissions.can_validate_all ? 'default' : 'secondary'}>
+                    {permissions.can_validate_all ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-2">Allowed badge types:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {permissions.allowed_badge_types.map(type => (
+                      <Badge key={type} className={getBadgeColor(type)}>
+                        {type.toUpperCase()}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                {permissions.category_preferences && permissions.category_preferences.length > 0 && (
+                  <div>
+                    <p className="text-muted-foreground mb-2">Category Preferences:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {permissions.category_preferences.map(cat => (
+                        <Badge key={cat} variant="outline" className="bg-primary/10">
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {!permissions.can_validate_all && (
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <span className="text-muted-foreground">Assigned projects:</span>
+                    <span className="font-semibold">{permissions.allowed_project_ids.length} projects</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {Object.keys(categoryBreakdown).length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-primary" />
+                Category Breakdown
+              </CardTitle>
+              <CardDescription>Distribution of assigned projects by category</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(categoryBreakdown)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([category, count]) => (
+                    <div key={category} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-primary/10">
+                          {category}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full"
+                            style={{ width: `${(count / assignments.length) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold w-8 text-right">{count}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Projects Tabs */}
       <Tabs value={filterTab} onValueChange={(v) => setFilterTab(v as any)} className="mb-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="pending">Pending Validation</TabsTrigger>
-          <TabsTrigger value="validated">Validated</TabsTrigger>
-          <TabsTrigger value="all">All Projects</TabsTrigger>
+          <TabsTrigger value="pending">
+            <Clock className="h-4 w-4 mr-2" />
+            Pending ({assignments.filter(a => a.status === 'pending').length})
+          </TabsTrigger>
+          <TabsTrigger value="validated">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Validated ({assignments.filter(a => a.status === 'validated').length})
+          </TabsTrigger>
+          <TabsTrigger value="all">
+            All Projects ({assignments.length})
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
+      {/* Projects List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : filteredProjects.length === 0 ? (
+      ) : filteredAssignments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             {filterTab === 'pending' ? 'No projects pending validation' : 'No projects found'}
@@ -236,127 +446,184 @@ export default function Validator() {
         </Card>
       ) : (
         <div className="space-y-6">
-          {filteredProjects.map((project) => (
-            <Card key={project.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl mb-2">{project.title}</CardTitle>
-                    <CardDescription>{project.tagline}</CardDescription>
-                    <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                      {project.creator && (
-                        <span>By @{project.creator.username}</span>
-                      )}
-                      {project.hackathon_name && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{project.hackathon_name}</span>
+          {filteredAssignments.map((assignment) => {
+            const project = assignment.project;
+            if (!project) return null;
+
+            return (
+              <Card key={assignment.id}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle className="text-xl">
+                          <a
+                            href={`/project/${project.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary hover:underline transition-colors"
+                          >
+                            {project.title}
+                          </a>
+                        </CardTitle>
+                        {assignment.priority !== 'normal' && (
+                          <Badge variant="outline" className={`${getPriorityColor(assignment.priority)} border-current`}>
+                            {assignment.priority.toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                      <CardDescription>{project.tagline}</CardDescription>
+
+                      {/* Categories */}
+                      {project.categories && project.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {project.categories.map(cat => (
+                            <Badge key={cat} variant="secondary" className="bg-primary/20">
+                              {cat}
+                            </Badge>
+                          ))}
                         </div>
                       )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">
-                      {project.proof_score || 0}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Proof Score</div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm">{project.description}</p>
 
-                <div className="flex gap-2">
-                  {project.demo_url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={project.demo_url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-1" />
-                        Demo
-                      </a>
-                    </Button>
-                  )}
-                  {project.github_url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={project.github_url} target="_blank" rel="noopener noreferrer">
-                        <Github className="h-4 w-4 mr-1" />
-                        GitHub
-                      </a>
-                    </Button>
-                  )}
-                </div>
-
-                {project.badges && project.badges.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-sm font-semibold mb-2">Existing Badges</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.badges.map((badge, idx) => (
-                        <Badge key={idx} className={getBadgeColor(badge.badge_type)}>
-                          {badge.badge_type.toUpperCase()}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedProject === project.id ? (
-                  <div className="border-t pt-4 space-y-3">
-                    <h4 className="text-sm font-semibold">Award Badge</h4>
-                    <Select value={badgeType} onValueChange={setBadgeType}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {permissions?.allowed_badge_types.map(type => (
-                          <SelectItem key={type} value={type}>
-                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Textarea
-                      placeholder="Rationale for awarding this badge..."
-                      value={rationale}
-                      onChange={(e) => setRationale(e.target.value)}
-                      rows={3}
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleAwardBadge(project.id)}
-                        disabled={isAwarding || !rationale.trim()}
-                      >
-                        {isAwarding ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Awarding...
-                          </>
-                        ) : (
-                          <>
-                            <Award className="mr-2 h-4 w-4" />
-                            Award Badge
-                          </>
+                      <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                        {project.creator && (
+                          <span>By @{project.creator.username}</span>
                         )}
-                      </Button>
-                      <Button variant="outline" onClick={() => {
-                        setSelectedProject(null);
-                        setRationale('');
-                      }}>
-                        Cancel
-                      </Button>
+                        {project.hackathon_name && (
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{project.hackathon_name}</span>
+                          </div>
+                        )}
+                        {assignment.category_filter && (
+                          <Badge variant="outline" className="text-xs">
+                            Filter: {assignment.category_filter}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-primary">
+                        {project.proof_score || 0}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Proof Score</div>
                     </div>
                   </div>
-                ) : (
-                  <Button
-                    onClick={() => setSelectedProject(project.id)}
-                    variant="default"
-                    size="sm"
-                  >
-                    <Award className="mr-2 h-4 w-4" />
-                    Award Badge
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm">{project.description}</p>
+
+                  {/* Tech Stack */}
+                  {project.tech_stack && project.tech_stack.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Tech Stack:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {project.tech_stack.map(tech => (
+                          <Badge key={tech} variant="outline" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    {project.demo_url && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={project.demo_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          Demo
+                        </a>
+                      </Button>
+                    )}
+                    {project.github_url && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={project.github_url} target="_blank" rel="noopener noreferrer">
+                          <Github className="h-4 w-4 mr-1" />
+                          GitHub
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+
+                  {project.badges && project.badges.length > 0 && (
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-semibold mb-2">Existing Badges</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.badges.map((badge, idx) => (
+                          <Badge key={idx} className={getBadgeColor(badge.badge_type)}>
+                            {badge.badge_type.toUpperCase()}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedProject === project.id ? (
+                    <div className="border-t pt-4 space-y-3">
+                      <h4 className="text-sm font-semibold">Award Badge</h4>
+                      <Select value={badgeType} onValueChange={setBadgeType}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {permissions?.allowed_badge_types.map(type => (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                                <span className="ml-4 text-xs text-muted-foreground">
+                                  {getBadgePoints(type)} points
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Textarea
+                        placeholder="Rationale for awarding this badge..."
+                        value={rationale}
+                        onChange={(e) => setRationale(e.target.value)}
+                        rows={3}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleAwardBadge(project.id)}
+                          disabled={isAwarding || !rationale.trim()}
+                        >
+                          {isAwarding ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Awarding...
+                            </>
+                          ) : (
+                            <>
+                              <Award className="mr-2 h-4 w-4" />
+                              Award Badge
+                            </>
+                          )}
+                        </Button>
+                        <Button variant="outline" onClick={() => {
+                          setSelectedProject(null);
+                          setRationale('');
+                        }}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => setSelectedProject(project.id)}
+                      variant="default"
+                      size="sm"
+                    >
+                      <Award className="mr-2 h-4 w-4" />
+                      Award Badge
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -6,11 +6,12 @@ export function useReceivedIntros() {
   return useQuery({
     queryKey: ['intros', 'received'],
     queryFn: () => introsService.getReceived(),
-    staleTime: 1000 * 60 * 2, // Fresh for 2 minutes (intros update frequently)
-    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
-    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    staleTime: 1000 * 60 * 5, // Fresh for 5 minutes (Socket.IO handles real-time)
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    refetchInterval: false, // NO polling - Socket.IO handles invalidation
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    refetchOnMount: 'always', // Always check for fresh data
     placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }
@@ -19,11 +20,12 @@ export function useSentIntros() {
   return useQuery({
     queryKey: ['intros', 'sent'],
     queryFn: () => introsService.getSent(),
-    staleTime: 1000 * 60 * 2, // Fresh for 2 minutes
-    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
-    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    staleTime: 1000 * 60 * 5, // Fresh for 5 minutes (Socket.IO handles real-time)
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    refetchInterval: false, // NO polling - Socket.IO handles invalidation
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    refetchOnMount: 'always', // Always check for fresh data
     placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }

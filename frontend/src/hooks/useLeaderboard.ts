@@ -41,14 +41,17 @@ export function useProjectsLeaderboard(limit: number = 50) {
       const transformed = response.data.data?.map(transformProject) || [];
       return transformed;
     },
-    staleTime: 1000 * 60 * 15, // 15 min - leaderboards don't change often
-    gcTime: 1000 * 60 * 60,    // 1 hour in cache
+    staleTime: 1000 * 60 * 5, // 5 min - invalidated on badge awards via Socket.IO
+    gcTime: 1000 * 60 * 30,   // 30 min in cache for fast tab switching
 
-    // Background refetch for leaderboards
-    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    // Real-time refetch strategy
+    refetchInterval: false, // NO polling - Socket.IO handles invalidation
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     refetchOnReconnect: true,
-    // Don't use placeholderData to avoid showing empty data on navigation
+    refetchOnMount: 'always', // Always check for updates
+
+    // Keep old data during refetch
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -60,13 +63,16 @@ export function useBuildersLeaderboard(limit: number = 50) {
       const transformed = response.data.data?.map(transformBuilder) || [];
       return transformed;
     },
-    staleTime: 1000 * 60 * 15, // 15 min - leaderboards don't change often
-    gcTime: 1000 * 60 * 60,    // 1 hour in cache
+    staleTime: 1000 * 60 * 5, // 5 min - invalidated on project creation via Socket.IO
+    gcTime: 1000 * 60 * 30,   // 30 min in cache
 
-    // Background refetch for builders leaderboard
-    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    // Real-time refetch strategy
+    refetchInterval: false, // NO polling - Socket.IO handles invalidation
     refetchOnWindowFocus: true, // Refresh when user returns to tab
     refetchOnReconnect: true,
-    // Don't use placeholderData to avoid showing empty data on navigation
+    refetchOnMount: 'always', // Always check for updates
+
+    // Keep old data during refetch
+    placeholderData: (previousData) => previousData,
   });
 }

@@ -96,15 +96,48 @@ def get_conversations(user_id):
             db.desc('last_message_time')
         ).all()
 
+        # OPTIMIZED: Fetch all last messages in a single query instead of N queries
+        if conversations:
+            user_ids = [user.id for user, _, _ in conversations]
+
+            # Subquery to get the latest message for each conversation
+            from sqlalchemy import func
+            subquery = db.session.query(
+                db.case(
+                    (DirectMessage.sender_id == user_id, DirectMessage.recipient_id),
+                    else_=DirectMessage.sender_id
+                ).label('other_user_id'),
+                func.max(DirectMessage.created_at).label('max_time')
+            ).filter(
+                or_(
+                    DirectMessage.sender_id == user_id,
+                    DirectMessage.recipient_id == user_id
+                )
+            ).group_by('other_user_id').subquery()
+
+            # Get the actual last messages
+            last_messages = db.session.query(DirectMessage).join(
+                subquery,
+                and_(
+                    DirectMessage.created_at == subquery.c.max_time,
+                    or_(
+                        and_(DirectMessage.sender_id == user_id, DirectMessage.recipient_id == subquery.c.other_user_id),
+                        and_(DirectMessage.recipient_id == user_id, DirectMessage.sender_id == subquery.c.other_user_id)
+                    )
+                )
+            ).all()
+
+            # Create lookup dict: other_user_id -> last_message
+            last_message_dict = {}
+            for msg in last_messages:
+                other_id = msg.recipient_id if msg.sender_id == user_id else msg.sender_id
+                last_message_dict[other_id] = msg
+        else:
+            last_message_dict = {}
+
         result = []
         for user, last_message_time, unread_count in conversations:
-            # Get last message
-            last_message = DirectMessage.query.filter(
-                or_(
-                    and_(DirectMessage.sender_id == user_id, DirectMessage.recipient_id == user.id),
-                    and_(DirectMessage.sender_id == user.id, DirectMessage.recipient_id == user_id)
-                )
-            ).order_by(DirectMessage.created_at.desc()).first()
+            last_message = last_message_dict.get(user.id)
 
             result.append({
                 'user': user.to_dict(),

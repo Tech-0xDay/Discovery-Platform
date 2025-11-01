@@ -50,11 +50,12 @@ export function useComments(projectId: string) {
       };
     },
     enabled: !!projectId,
-    staleTime: 1000 * 60 * 2, // Comments stay fresh for 2 minutes
-    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
-    refetchInterval: 1000 * 60, // Auto-refresh every 60 seconds
+    staleTime: 1000 * 60 * 5, // Comments stay fresh for 5 minutes
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
+    refetchInterval: false, // NO polling - Socket.IO handles invalidation
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    refetchOnMount: 'always', // Always check for fresh data
     placeholderData: (previousData) => previousData, // Keep old data visible
   });
 }

@@ -51,25 +51,61 @@ export interface Project {
   title: string;
   tagline: string;
   description: string;
+  // Extended project information
+  project_story?: string; // Backend field - Project journey
+  inspiration?: string; // Backend field - What inspired the project
+  pitch_deck_url?: string; // Backend field - Link to pitch deck
+  market_comparison?: string; // Backend field - Market landscape
+  novelty_factor?: string; // Backend field - What makes it unique
+  categories?: string[]; // Backend field - Project categories
+  // URLs
   demoUrl?: string;
+  demo_url?: string; // Backend field
   githubUrl?: string;
+  github_url?: string; // Backend field
+  // Hackathon info
   hackathonName: string;
+  hackathon_name?: string; // Backend field
   hackathonDate: string;
+  hackathon_date?: string; // Backend field
+  // Arrays
   techStack: string[];
+  tech_stack?: string[]; // Backend field
   teamMembers?: TeamMember[];
   team_members?: TeamMember[]; // Backend field
   screenshots: string[];
+  // Relations
   authorId: string;
+  user_id?: string; // Backend field
   author: User;
+  creator?: User; // Backend field
+  // Scores and badges
   proofScore: ProofScore;
+  proof_score?: ProofScore; // Backend field
   badges: Badge[];
+  // Engagement metrics
   voteCount: number;
+  vote_count?: number; // Backend field
   commentCount: number;
+  comment_count?: number; // Backend field
+  viewCount?: number;
+  view_count?: number; // Backend field
+  shareCount?: number;
+  share_count?: number; // Backend field
+  // Votes
   userVote?: 'up' | 'down' | null;
   user_vote?: 'up' | 'down' | null; // Backend field
+  // Status flags
   isFeatured: boolean;
+  is_featured?: boolean; // Backend field
+  isDeleted?: boolean;
+  is_deleted?: boolean; // Backend field
+  // Timestamps
   createdAt: string;
+  created_at?: string; // Backend field
   updatedAt: string;
+  updated_at?: string; // Backend field
+  featured_at?: string; // Backend field
 }
 
 export interface ProofScore {

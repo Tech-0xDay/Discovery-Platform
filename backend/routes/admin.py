@@ -162,16 +162,21 @@ def delete_user(admin_id, user_id):
 @admin_bp.route('/validators', methods=['GET'])
 @admin_required
 def get_all_validators(user_id):
-    """Get all validators with their permissions"""
+    """Get all validators with their permissions and assignment counts"""
     try:
-        validators = User.query.filter(User.is_validator == True).all()
+        from models.validator_assignment import ValidatorAssignment
+        # OPTIMIZED: Eager load permissions to prevent N+1 queries
+        from sqlalchemy.orm import joinedload
+        validators = User.query.filter(User.is_validator == True)\
+            .options(joinedload(User.validator_permissions))\
+            .all()
 
         validators_data = []
         for validator in validators:
             validator_dict = validator.to_dict(include_email=True)
 
-            # Get permissions if exists
-            permissions = ValidatorPermissions.query.filter_by(validator_id=validator.id).first()
+            # Use eager-loaded permissions
+            permissions = validator.validator_permissions
             if permissions:
                 validator_dict['permissions'] = permissions.to_dict()
             else:
@@ -180,6 +185,42 @@ def get_all_validators(user_id):
                     'allowed_badge_types': [],
                     'allowed_project_ids': []
                 }
+
+            # Add assignment counts
+            total_assignments = ValidatorAssignment.query.filter_by(validator_id=validator.id).count()
+            pending_assignments = ValidatorAssignment.query.filter_by(
+                validator_id=validator.id,
+                status='pending'
+            ).count()
+            in_review_assignments = ValidatorAssignment.query.filter_by(
+                validator_id=validator.id,
+                status='in_review'
+            ).count()
+            completed_assignments = ValidatorAssignment.query.filter_by(
+                validator_id=validator.id,
+                status='validated'
+            ).count()
+
+            # Get category breakdown for assigned projects
+            assignments_with_projects = ValidatorAssignment.query.filter_by(
+                validator_id=validator.id
+            ).join(Project).all()
+
+            category_breakdown = {}
+            for assignment in assignments_with_projects:
+                if assignment.project and assignment.project.categories:
+                    for category in assignment.project.categories:
+                        if category not in category_breakdown:
+                            category_breakdown[category] = 0
+                        category_breakdown[category] += 1
+
+            validator_dict['assignments'] = {
+                'total': total_assignments,
+                'pending': pending_assignments,
+                'in_review': in_review_assignments,
+                'completed': completed_assignments,
+                'category_breakdown': category_breakdown
+            }
 
             validators_data.append(validator_dict)
 
@@ -300,6 +341,9 @@ def update_validator_permissions(user_id, validator_id):
 
         if 'allowed_project_ids' in data:
             permissions.allowed_project_ids = data['allowed_project_ids']
+
+        if 'allowed_categories' in data:
+            permissions.allowed_categories = data['allowed_categories']
 
         permissions.updated_at = datetime.utcnow()
         db.session.commit()
@@ -444,144 +488,6 @@ def feature_project(user_id, project_id):
 
 
 # ============================================================================
-# BADGE MANAGEMENT
-# ============================================================================
-
-@admin_bp.route('/badges', methods=['GET'])
-@admin_required
-def get_all_badges(user_id):
-    """Get all badges with pagination"""
-    try:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
-        project_id = request.args.get('project_id', '')
-
-        query = ValidationBadge.query
-
-        if project_id:
-            query = query.filter_by(project_id=project_id)
-
-        badges = query.order_by(ValidationBadge.created_at.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
-
-        return jsonify({
-            'status': 'success',
-            'data': {
-                'badges': [badge.to_dict(include_validator=True) for badge in badges.items],
-                'total': badges.total,
-                'pages': badges.pages,
-                'current_page': page,
-            }
-        }), 200
-
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-@admin_bp.route('/badges/award', methods=['POST'])
-@admin_required
-def award_badge_admin(user_id):
-    """Award badge (standard or custom)"""
-    try:
-        data = request.get_json()
-        project_id = data.get('project_id')
-        badge_type = data.get('badge_type')
-        rationale = data.get('rationale', '')
-        custom_name = data.get('custom_name')
-        custom_image = data.get('custom_image')
-        points = data.get('points', 0)
-
-        if not project_id or not badge_type:
-            return jsonify({'status': 'error', 'message': 'project_id and badge_type required'}), 400
-
-        project = Project.query.get(project_id)
-        if not project:
-            return jsonify({'status': 'error', 'message': 'Project not found'}), 404
-
-        # Handle custom badge
-        if badge_type == 'custom':
-            if not custom_name:
-                return jsonify({'status': 'error', 'message': 'custom_name required for custom badges'}), 400
-
-            badge = ValidationBadge(
-                project_id=project_id,
-                validator_id=user_id,
-                badge_type='custom',
-                rationale=rationale,
-                points=points,
-                custom_badge_name=custom_name,
-                custom_badge_image_url=custom_image
-            )
-        else:
-            # Standard badge
-            if badge_type not in ValidationBadge.BADGE_POINTS:
-                return jsonify({'status': 'error', 'message': 'Invalid badge type'}), 400
-
-            badge = ValidationBadge(
-                project_id=project_id,
-                validator_id=user_id,
-                badge_type=badge_type,
-                rationale=rationale,
-                points=ValidationBadge.BADGE_POINTS[badge_type]
-            )
-
-        db.session.add(badge)
-
-        # Update project scores
-        ProofScoreCalculator.update_project_scores(project)
-
-        db.session.commit()
-
-        # Invalidate cache and emit real-time update
-        CacheService.invalidate_project(project_id)
-        SocketService.emit_badge_awarded(project_id, badge.to_dict(include_validator=True))
-
-        return jsonify({
-            'status': 'success',
-            'message': 'Badge awarded successfully',
-            'data': badge.to_dict(include_validator=True)
-        }), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-@admin_bp.route('/badges/<badge_id>', methods=['DELETE'])
-@admin_required
-def delete_badge(user_id, badge_id):
-    """Delete any badge"""
-    try:
-        badge = ValidationBadge.query.get(badge_id)
-        if not badge:
-            return jsonify({'status': 'error', 'message': 'Badge not found'}), 404
-
-        project_id = badge.project_id
-        project = badge.project
-
-        db.session.delete(badge)
-
-        # Recalculate project scores
-        if project:
-            ProofScoreCalculator.update_project_scores(project)
-
-        db.session.commit()
-
-        # Invalidate cache
-        CacheService.invalidate_project(project_id)
-
-        return jsonify({
-            'status': 'success',
-            'message': 'Badge deleted successfully'
-        }), 200
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-# ============================================================================
 # INVESTOR REQUEST MANAGEMENT
 # ============================================================================
 
@@ -718,6 +624,477 @@ def get_platform_stats(user_id):
                     'pending': pending_investor_requests,
                     'approved': approved_investor_requests,
                 }
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# ============================================================================
+# VALIDATOR ASSIGNMENT MANAGEMENT
+# ============================================================================
+
+@admin_bp.route('/validator-assignments', methods=['POST'])
+@admin_required
+def assign_project_to_validator(admin_id):
+    """Assign a project to a validator for review"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+        from uuid import uuid4
+
+        data = request.get_json()
+        validator_id = data.get('validator_id')
+        project_id = data.get('project_id')
+        category_filter = data.get('category_filter')
+        priority = data.get('priority', 'normal')
+
+        if not validator_id or not project_id:
+            return jsonify({'status': 'error', 'message': 'validator_id and project_id are required'}), 400
+
+        # Verify validator exists and is a validator
+        validator = User.query.get(validator_id)
+        if not validator or not validator.is_validator:
+            return jsonify({'status': 'error', 'message': 'Invalid validator'}), 400
+
+        # Verify project exists
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'status': 'error', 'message': 'Project not found'}), 404
+
+        # Check if assignment already exists
+        existing = ValidatorAssignment.query.filter_by(
+            validator_id=validator_id,
+            project_id=project_id
+        ).first()
+
+        if existing:
+            return jsonify({'status': 'error', 'message': 'Project already assigned to this validator'}), 400
+
+        # Create assignment
+        assignment = ValidatorAssignment(
+            id=str(uuid4()),
+            validator_id=validator_id,
+            project_id=project_id,
+            assigned_by=admin_id,
+            category_filter=category_filter,
+            priority=priority,
+            status='pending'
+        )
+
+        db.session.add(assignment)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Project assigned to validator successfully',
+            'data': assignment.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/validator-assignments/bulk', methods=['POST'])
+@admin_required
+def bulk_assign_projects(admin_id):
+    """Bulk assign projects to a validator based on filters"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+        from uuid import uuid4
+
+        data = request.get_json()
+        validator_id = data.get('validator_id')
+        category_filter = data.get('category_filter')  # 'all', or specific category
+        priority = data.get('priority', 'normal')
+        limit = data.get('limit', 50)  # Max projects to assign
+
+        if not validator_id:
+            return jsonify({'status': 'error', 'message': 'validator_id is required'}), 400
+
+        # Verify validator exists
+        validator = User.query.get(validator_id)
+        if not validator or not validator.is_validator:
+            return jsonify({'status': 'error', 'message': 'Invalid validator'}), 400
+
+        # Build query for projects
+        query = Project.query.filter_by(is_deleted=False)
+
+        if category_filter and category_filter != 'all':
+            # Check if category is in the categories JSON array
+            from sqlalchemy import cast, String
+            query = query.filter(
+                cast(Project.categories, String).like(f'%{category_filter}%')
+            )
+
+        # Get projects that aren't already assigned to this validator
+        assigned_project_ids = db.session.query(ValidatorAssignment.project_id).filter_by(
+            validator_id=validator_id
+        ).all()
+        assigned_ids = [p[0] for p in assigned_project_ids]
+
+        if assigned_ids:
+            query = query.filter(Project.id.notin_(assigned_ids))
+
+        projects = query.order_by(Project.created_at.desc()).limit(limit).all()
+
+        # Create assignments
+        assignments_created = 0
+        for project in projects:
+            assignment = ValidatorAssignment(
+                id=str(uuid4()),
+                validator_id=validator_id,
+                project_id=project.id,
+                assigned_by=admin_id,
+                category_filter=category_filter,
+                priority=priority,
+                status='pending'
+            )
+            db.session.add(assignment)
+            assignments_created += 1
+
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': f'{assignments_created} projects assigned to validator',
+            'data': {'count': assignments_created}
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/validator-assignments/<assignment_id>', methods=['DELETE'])
+@admin_required
+def remove_validator_assignment(admin_id, assignment_id):
+    """Remove a validator assignment"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+
+        assignment = ValidatorAssignment.query.get(assignment_id)
+        if not assignment:
+            return jsonify({'status': 'error', 'message': 'Assignment not found'}), 404
+
+        db.session.delete(assignment)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Assignment removed successfully'
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/validator-assignments/validator/<validator_id>', methods=['GET'])
+@admin_required
+def get_validator_assignments(admin_id, validator_id):
+    """Get all assignments for a specific validator"""
+    try:
+        from models.validator_assignment import ValidatorAssignment
+
+        assignments = ValidatorAssignment.query.filter_by(
+            validator_id=validator_id
+        ).order_by(ValidatorAssignment.created_at.desc()).all()
+
+        # Include project details
+        result = []
+        for assignment in assignments:
+            assignment_data = assignment.to_dict()
+            assignment_data['project'] = assignment.project.to_dict(include_creator=True)
+            result.append(assignment_data)
+
+        return jsonify({
+            'status': 'success',
+            'data': result
+        }), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/categories', methods=['GET'])
+@admin_required
+def get_project_categories(admin_id):
+    """Get all unique project categories"""
+    try:
+        # Get distinct categories
+        categories = db.session.query(Project.category).distinct().filter(
+            Project.category.isnot(None),
+            Project.is_deleted == False
+        ).all()
+
+        category_list = [c[0] for c in categories if c[0]]
+
+        # Add default categories if not present
+        default_categories = [
+            'AI/ML', 'Web3/Blockchain', 'FinTech', 'HealthTech', 'EdTech',
+            'E-Commerce', 'SaaS', 'DevTools', 'IoT', 'Gaming', 'Social', 'Other'
+        ]
+
+        all_categories = list(set(category_list + default_categories))
+        all_categories.sort()
+
+        return jsonify({
+            'status': 'success',
+            'data': {'categories': all_categories}
+        }), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# ============================================================================
+# BADGE MANAGEMENT
+# ============================================================================
+
+@admin_bp.route('/badges', methods=['GET'])
+@admin_required
+def get_all_badges(user_id):
+    """Get all badges with pagination and filtering"""
+    try:
+        from sqlalchemy.orm import joinedload
+
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 100, type=int)
+        project_id = request.args.get('project_id')
+        validator_id = request.args.get('validator_id')
+        badge_type = request.args.get('badge_type')
+
+        query = ValidationBadge.query.options(
+            joinedload(ValidationBadge.validator),
+            joinedload(ValidationBadge.project)
+        )
+
+        # Apply filters
+        if project_id:
+            query = query.filter(ValidationBadge.project_id == project_id)
+        if validator_id:
+            query = query.filter(ValidationBadge.validator_id == validator_id)
+        if badge_type:
+            query = query.filter(ValidationBadge.badge_type == badge_type)
+
+        # Paginate
+        badges = query.order_by(ValidationBadge.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'badges': [badge.to_dict(include_validator=True, include_project=True) for badge in badges.items],
+                'total': badges.total,
+                'pages': badges.pages,
+                'current_page': page
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/badges/<badge_id>', methods=['GET'])
+@admin_required
+def get_badge(user_id, badge_id):
+    """Get a specific badge"""
+    try:
+        badge = ValidationBadge.query.get(badge_id)
+        if not badge:
+            return jsonify({'status': 'error', 'message': 'Badge not found'}), 404
+
+        return jsonify({
+            'status': 'success',
+            'data': badge.to_dict(include_validator=True, include_project=True)
+        }), 200
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/badges/<badge_id>', methods=['PUT', 'PATCH'])
+@admin_required
+def update_badge(user_id, badge_id):
+    """Update a badge (change type, rationale, points)"""
+    try:
+        data = request.get_json()
+
+        badge = ValidationBadge.query.get(badge_id)
+        if not badge:
+            return jsonify({'status': 'error', 'message': 'Badge not found'}), 404
+
+        # Update fields
+        if 'badge_type' in data:
+            if data['badge_type'] not in ValidationBadge.BADGE_POINTS:
+                return jsonify({'status': 'error', 'message': 'Invalid badge type'}), 400
+            badge.badge_type = data['badge_type']
+            badge.points = ValidationBadge.BADGE_POINTS[data['badge_type']]
+
+        if 'rationale' in data:
+            badge.rationale = data['rationale']
+
+        # Update project scores
+        project = Project.query.get(badge.project_id)
+        if project:
+            ProofScoreCalculator.update_project_scores(project)
+
+        db.session.commit()
+
+        # Invalidate caches
+        CacheService.invalidate_project(badge.project_id)
+        CacheService.invalidate_leaderboard()
+
+        # Emit real-time update
+        SocketService.emit_badge_updated(badge.project_id, badge.to_dict(include_validator=True))
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Badge updated successfully',
+            'data': badge.to_dict(include_validator=True, include_project=True)
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/badges/<badge_id>', methods=['DELETE'])
+@admin_required
+def delete_badge(user_id, badge_id):
+    """Delete a badge and reset validation status if no badges remain"""
+    try:
+        badge = ValidationBadge.query.get(badge_id)
+        if not badge:
+            return jsonify({'status': 'error', 'message': 'Badge not found'}), 404
+
+        project_id = badge.project_id
+
+        db.session.delete(badge)
+        db.session.flush()  # Flush to get accurate count
+
+        # Check if project has any remaining badges
+        remaining_badges = ValidationBadge.query.filter_by(project_id=project_id).count()
+
+        # If no badges remain, reset all validator assignments back to pending
+        if remaining_badges == 0:
+            assignments = ValidatorAssignment.query.filter_by(project_id=project_id).all()
+            for assignment in assignments:
+                if assignment.status in ['validated', 'completed']:
+                    assignment.status = 'pending'
+                    assignment.validated_by = None
+                    assignment.reviewed_at = None
+                    assignment.review_notes = 'Badge removed by admin - reset to pending'
+
+        # Update project scores
+        project = Project.query.get(project_id)
+        if project:
+            ProofScoreCalculator.update_project_scores(project)
+
+        db.session.commit()
+
+        # Invalidate caches
+        CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()
+
+        # Emit real-time update
+        SocketService.emit_badge_removed(project_id, badge_id)
+
+        message = 'Badge deleted successfully'
+        if remaining_badges == 0:
+            message += ' - Project reset to pending validation status'
+
+        return jsonify({
+            'status': 'success',
+            'message': message,
+            'remaining_badges': remaining_badges
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/badges/award', methods=['POST'])
+@admin_required
+def award_badge_as_admin(user_id):
+    """Award a badge as admin (no permission checks)"""
+    try:
+        data = request.get_json()
+
+        project_id = data.get('project_id')
+        validator_id = data.get('validator_id', user_id)  # Can be admin or specific validator
+        badge_type = data.get('badge_type')
+        rationale = data.get('rationale', '')
+
+        if not project_id or not badge_type:
+            return jsonify({'status': 'error', 'message': 'project_id and badge_type required'}), 400
+
+        # Validate badge type
+        if badge_type not in ValidationBadge.BADGE_POINTS:
+            return jsonify({'status': 'error', 'message': 'Invalid badge type'}), 400
+
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'status': 'error', 'message': 'Project not found'}), 404
+
+        # Create badge
+        badge = ValidationBadge(
+            project_id=project_id,
+            validator_id=validator_id,
+            badge_type=badge_type,
+            rationale=rationale,
+            points=ValidationBadge.BADGE_POINTS[badge_type]
+        )
+
+        db.session.add(badge)
+
+        # Update project scores
+        ProofScoreCalculator.update_project_scores(project)
+
+        db.session.commit()
+
+        # Invalidate cache and emit real-time update
+        CacheService.invalidate_project(project_id)
+        CacheService.invalidate_leaderboard()
+        SocketService.emit_badge_awarded(project_id, badge.to_dict(include_validator=True))
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Badge awarded successfully',
+            'data': badge.to_dict(include_validator=True)
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@admin_bp.route('/projects/<project_id>/badges', methods=['GET'])
+@admin_required
+def get_project_badges(user_id, project_id):
+    """Get all badges for a specific project"""
+    try:
+        from sqlalchemy.orm import joinedload
+
+        project = Project.query.get(project_id)
+        if not project:
+            return jsonify({'status': 'error', 'message': 'Project not found'}), 404
+
+        badges = ValidationBadge.query.filter_by(project_id=project_id).options(
+            joinedload(ValidationBadge.validator)
+        ).order_by(ValidationBadge.created_at.desc()).all()
+
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'project': project.to_dict(include_creator=True),
+                'badges': [badge.to_dict(include_validator=True) for badge in badges],
+                'total_badges': len(badges),
+                'total_points': sum(badge.points for badge in badges)
             }
         }), 200
 

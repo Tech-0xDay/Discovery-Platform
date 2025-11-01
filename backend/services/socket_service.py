@@ -279,6 +279,32 @@ class SocketService:
         except Exception as e:
             print(f"[Socket.IO] Error emitting badge:awarded: {e}")
 
+    @staticmethod
+    def emit_badge_updated(project_id, badge_data):
+        """Emit event when badge is updated"""
+        try:
+            socketio.emit('badge:updated', {
+                'type': 'badge_updated',
+                'project_id': project_id,
+                'data': badge_data,
+            }, namespace='/', broadcast=True)
+            print(f"[Socket.IO] Emitted badge:updated - Project {project_id}")
+        except Exception as e:
+            print(f"[Socket.IO] Error emitting badge:updated: {e}")
+
+    @staticmethod
+    def emit_badge_removed(project_id, badge_id):
+        """Emit event when badge is removed"""
+        try:
+            socketio.emit('badge:removed', {
+                'type': 'badge_removed',
+                'project_id': project_id,
+                'badge_id': badge_id,
+            }, namespace='/', broadcast=True)
+            print(f"[Socket.IO] Emitted badge:removed - Project {project_id}, Badge {badge_id}")
+        except Exception as e:
+            print(f"[Socket.IO] Error emitting badge:removed: {e}")
+
 
 # Socket.IO event handlers (optional - for connection tracking)
 @socketio.on('connect')

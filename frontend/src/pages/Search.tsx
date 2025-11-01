@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
 import { ProjectCard } from '@/components/ProjectCard';
@@ -6,6 +6,8 @@ import { ProjectCardSkeletonGrid } from '@/components/ProjectCardSkeleton';
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useSearch } from '@/hooks/useSearch';
 
 // Helper function to get the backend URL
 const getBackendUrl = (): string => {
@@ -90,54 +92,14 @@ interface SearchResults {
 
 export default function Search() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  // Debounce search query
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, 500);
+  // Instagram-style search: Debounce query + React Query caching
+  const debouncedQuery = useDebounce(query, 300); // 300ms delay
+  const { data, isLoading } = useSearch(debouncedQuery);
 
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // Perform search when debounced query changes
-  useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      setResults(null);
-      return;
-    }
-
-    const performSearch = async () => {
-      setLoading(true);
-      try {
-        const backendUrl = getBackendUrl();
-        const response = await fetch(`${backendUrl}/api/search?q=${encodeURIComponent(debouncedQuery)}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = await response.json();
-        if (data.status === 'success') {
-          // Transform projects to match frontend format
-          const transformedResults = {
-            ...data.data,
-            projects: data.data.projects?.map(transformProject) || [],
-            users: data.data.users || [],
-          };
-          setResults(transformedResults);
-        }
-      } catch (error) {
-        console.error('Search error:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    performSearch();
-  }, [debouncedQuery]);
+  // Extract results (with defaults)
+  const results = data || { projects: [], users: [], total: 0 };
+  const loading = isLoading;
 
   return (
     <div className="bg-background min-h-screen overflow-hidden">
